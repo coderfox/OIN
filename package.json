@@ -1,0 +1,29 @@
+{
+  "name": "my-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@types/jest": "^20.0.2",
+    "@types/material-ui": "^0.17.14",
+    "@types/node": "^8.0.7",
+    "@types/react": "^15.0.34",
+    "@types/react-dom": "^15.5.1",
+    "@types/react-router-dom": "^4.0.5",
+    "@types/react-tap-event-plugin": "^0.0.30",
+    "material-ui": "^0.18.5",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "react-router-dom": "^4.1.1",
+    "react-scripts-ts": "2.3.2",
+    "react-tap-event-plugin": "^2.0.1",
+    "typeface-roboto": "^0.0.29",
+    "typescript": "^2.4.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "react-scripts-ts start",
+    "build": "react-scripts-ts build",
+    "test": "react-scripts-ts test --env=jsdom",
+    "eject": "react-scripts-ts eject"
+  }
+}
