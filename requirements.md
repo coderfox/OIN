@@ -6,8 +6,8 @@ Definitions
 
 - User
 - Message
-- Channel: what describes a rule of populating messages
-- Channel instance: what populates messages
+- Service: what describes a rule of populating messages
+- Subscription: what populates messages
 
 User-end
 -----
