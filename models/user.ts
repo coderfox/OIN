@@ -3,7 +3,6 @@
 import { Entity, Index, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import * as bcrypt from "bcrypt";
 import config from "../lib/config";
-import { connection } from "../lib/db";
 import IPermission from "./IPermission";
 import * as uuid from "uuid/v4";
 
@@ -15,7 +14,7 @@ export default class User {
   }
   @PrimaryGeneratedColumn()
   public id: number;
-  @Column({ length: 50, nullable: false })
+  @Column({ type: "varchar", length: 50, nullable: false })
   public email: string;
   @Column({ name: "password", type: "varchar" })
   public hashedPassword: string;
@@ -30,8 +29,8 @@ export default class User {
   public createdAt: Date;
   @UpdateDateColumn()
   public updatedAt: Date;
-  @Column({ name: "delete_token", nullable: true })
-  public deleteToken: string;
+  @Column({ name: "delete_token", type: "uuid", nullable: true })
+  public deleteToken?: string;
 
   public toView = () => {
     return {

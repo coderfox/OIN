@@ -48,7 +48,7 @@ export default class Session {
 
   @Column({ type: "int" })
   public uid: number;
-  @PrimaryColumn()
+  @PrimaryColumn({ type: "uuid" })
   public token: string;
   @Column({ type: "jsonb" })
   public permissions: IPermission = { admin: false };
@@ -56,7 +56,7 @@ export default class Session {
   public createdAt: Date;
   @UpdateDateColumn()
   public updatedAt: Date;
-  @Column()
+  @Column({ type: "timestamp without time zone" })
   public expiresAt: Date = this.getNewExpirationDate();
   public get expired() {
     return this.expiresAt <= new Date(Date.now());

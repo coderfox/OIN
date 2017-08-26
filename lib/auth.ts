@@ -1,11 +1,9 @@
 "use strict";
 
 import * as Koa from "koa";
-import config from "../lib/config";
 import User from "../models/user";
 import Session from "../models/session";
 import { connection as db } from "../lib/db";
-import log from "../lib/log";
 import parse from "../lib/parseAuth";
 import { InvalidInputError, UnsupportedAuthTypeError } from "../lib/parseAuth";
 import * as Errors from "../lib/errors";

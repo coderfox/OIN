@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === "test") {
 const PORT = config.get("port") || 3000;
 
 export default db
-  .then((connection) => {
+  .then(() => {
     log.info(`database connected to ${config.get("db_url")}`);
     server.listen(PORT);
     log.info(`server listening on port ${PORT}`);

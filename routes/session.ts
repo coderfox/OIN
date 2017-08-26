@@ -2,10 +2,8 @@
 
 import Router = require("koa-router");
 const router = new Router();
-import config from "../lib/config";
 import { User, Session } from "../models";
 import { connection as db } from "../lib/db";
-import log from "../lib/log";
 import * as Errors from "../lib/errors";
 import { authUser } from "../lib/auth";
 
