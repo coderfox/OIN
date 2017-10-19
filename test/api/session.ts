@@ -16,7 +16,7 @@ export default () => {
     before(async () => {
       await db.getRepository(User).clear();
       await user.setPassword("123456");
-      await db.getRepository(User).persist(user);
+      await db.getRepository(User).save(user);
     });
     after(async () => {
       await db.getRepository(User).clear();
@@ -116,7 +116,7 @@ export default () => {
     describe("without admin permissions", () => {
       before(async () => {
         user.permissions.admin = false;
-        await db.getRepository(User).persist(user);
+        await db.getRepository(User).save(user);
       });
       it("throws 403 on insufficient permissions", async () => {
         const result = await request({
@@ -142,7 +142,7 @@ export default () => {
     describe("with admin permission", () => {
       before(async () => {
         user.permissions.admin = true;
-        await db.getRepository(User).persist(user);
+        await db.getRepository(User).save(user);
       });
       it("defaults to false", async () => {
         const result = await request({
@@ -208,10 +208,10 @@ export default () => {
       user = new User("user@example.com");
       await db.getRepository(User).clear();
       await user.setPassword("123456");
-      await db.getRepository(User).persist(user);
+      await db.getRepository(User).save(user);
       session = new Session(user);
       await db.getRepository(Session).clear();
-      await db.getRepository(Session).persist(session);
+      await db.getRepository(Session).save(session);
     });
     after(async () => {
       await db.getRepository(User).clear();
@@ -247,7 +247,7 @@ export default () => {
     });
     it("403 TOKEN_EXPIRED", async () => {
       session.expiresAt = new Date(Date.now());
-      await db.getRepository(Session).persist(session);
+      await db.getRepository(Session).save(session);
       const result = await request({
         method: "GET",
         url: `${baseUrl}/session`,
@@ -264,7 +264,7 @@ export default () => {
     it("403 INVALID_TOKEN on user not exists", async () => {
       await db.getRepository(User).removeById(user.id);
       session.renew();
-      await db.getRepository(Session).persist(session);
+      await db.getRepository(Session).save(session);
       const result = await request({
         method: "GET",
         url: `${baseUrl}/session`,
@@ -277,7 +277,7 @@ export default () => {
       });
       expect(result.statusCode).eql(403);
       expect(result.body.code).to.eql("INVALID_TOKEN");
-      await db.getRepository(User).persist(user);
+      await db.getRepository(User).save(user);
     });
     it("403 INVALID_TOKEN on empty token", async () => {
       const result = await request({
@@ -315,10 +315,10 @@ export default () => {
       user = new User("user@example.com");
       await db.getRepository(User).clear();
       await user.setPassword("123456");
-      await db.getRepository(User).persist(user);
+      await db.getRepository(User).save(user);
       session = new Session(user);
       await db.getRepository(Session).clear();
-      await db.getRepository(Session).persist(session);
+      await db.getRepository(Session).save(session);
     });
     after(async () => {
       await db.getRepository(User).clear();

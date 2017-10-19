@@ -18,8 +18,10 @@ export default class User {
   public email: string;
   @Column({ name: "password", type: "varchar" })
   public hashedPassword: string;
+  public static hashPassword = (password: string) =>
+    bcrypt.hash(password, config.get("password_hash_rounds"))
   public setPassword = async (password: string) => {
-    this.hashedPassword = await bcrypt.hash(password, config.get("password_hash_rounds"));
+    this.hashedPassword = await User.hashPassword(password);
   }
   public checkPassword = async (password: string) =>
     bcrypt.compare(password, this.hashedPassword)

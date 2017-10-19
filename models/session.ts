@@ -1,10 +1,13 @@
 "use strict";
 
-import { Entity, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import {
+  Entity,
+  Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn,
+  Generated,
+} from "typeorm";
 import config from "../lib/config";
 import { connection } from "../lib/db";
 import User from "./user";
-import * as uuid from "uuid/v4";
 import ms = require("ms");
 import IPermission from "./IPermission";
 
@@ -38,7 +41,6 @@ export default class Session {
   constructor(user: User) {
     if (user) {
       this.uid = user.id;
-      this.token = uuid();
     }
   }
   private getNewExpirationDate = () =>
@@ -47,6 +49,7 @@ export default class Session {
   @Column({ type: "int" })
   public uid: number;
   @PrimaryColumn({ type: "uuid" })
+  @Generated("uuid")
   public token: string;
   @Column({ type: "jsonb" })
   public permissions: IPermission = { admin: false };

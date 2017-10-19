@@ -25,7 +25,7 @@ router.put("/session", async (ctx) => {
       throw new Errors.InsufficientPermissionError(session, "admin");
     }
   }
-  await db.getRepository(Session).persist(session);
+  await db.getRepository(Session).save(session);
   ctx.body = await session.toView();
 });
 router.get("/session", async (ctx) => {
@@ -40,7 +40,7 @@ router.delete("/session", async (ctx) => {
   const state = ctx.state as ICtxState;
   if (state.session) {
     state.session.expiresAt = new Date(Date.now());
-    await db.getRepository(Session).persist(state.session);
+    await db.getRepository(Session).save(state.session);
     ctx.body = await state.session.toView(true);
   }
 });

@@ -26,7 +26,7 @@ export default db
     server.listen(PORT);
     log.info(`server listening on port ${PORT}`);
   })
-  .catch((err) => {
+  .catch((err: any) => {
     console.error(err);
     process.exit(1);
   });

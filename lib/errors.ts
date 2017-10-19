@@ -2,6 +2,7 @@
 
 import User from "../models/user";
 import Session from "../models/session";
+import { Context } from "koa";
 
 // tslint:disable:max-classes-per-file
 export class ApiError extends Error {
@@ -94,5 +95,19 @@ export class InsufficientPermissionError extends ApiError {
     super("INSUFFICIENT_PERMISSION", 403);
     this.session = session;
     this.permission = permission;
+  }
+}
+export class BadRequestError extends ApiError {
+  public readonly context: Context;
+  constructor(context: Context) {
+    super("BAD_REQUEST", 400);
+    this.context = context;
+  }
+}
+export class DuplicateEmailError extends ApiError {
+  public readonly email: string;
+  constructor(email: string) {
+    super("DUPLICATED_EMAIL", 303);
+    this.email = email;
   }
 }

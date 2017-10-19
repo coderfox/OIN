@@ -19,12 +19,12 @@ export default () => {
       user = new User("admin@example.com");
       await user.setPassword("123456");
       user.permissions.admin = true;
-      await db.getRepository(User).persist(user);
+      await db.getRepository(User).save(user);
       session = new Session(user);
       session.permissions.admin = false;
       sessionAdmin = new Session(user);
       sessionAdmin.permissions.admin = true;
-      await db.getRepository(Session).persist([session, sessionAdmin]);
+      await db.getRepository(Session).save([session, sessionAdmin]);
     });
     after(clearDb);
     it("200 OK", async () => {

@@ -41,7 +41,20 @@ export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") 
         break;
       }
       case "Bearer": {
-        const session = await db.getRepository(Session).findOneById(parsed.token);
+        let session;
+        try {
+          session = await db.getRepository(Session).findOneById(parsed.token);
+        } catch (error) {
+          if (
+            error &&
+            error.message &&
+            error.message.startsWith("invalid input syntax for type uuid")
+          ) {
+            throw new Errors.TokenInvalidError(parsed.token);
+          } else {
+            throw error;
+          }
+        }
         ctx.state.session = session;
         if (!session) {
           throw new Errors.TokenInvalidError(parsed.token);
