@@ -1,14 +1,12 @@
 "use strict";
 
 import { Entity, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
-import * as bcrypt from "bcrypt";
 import config from "../lib/config";
 import { connection } from "../lib/db";
 import User from "./user";
 import * as uuid from "uuid/v4";
 import ms = require("ms");
 import IPermission from "./IPermission";
-import log from "../lib/log";
 
 // tslint:disable:max-classes-per-file
 // tslint:disable-next-line:no-namespace

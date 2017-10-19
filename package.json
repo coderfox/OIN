@@ -11,7 +11,6 @@
     "@types/koa-bodyparser": "^3.0.23",
     "@types/koa-json": "^2.0.16",
     "@types/koa-logger": "^2.0.2",
-    "@types/koa-mount": "^2.0.18",
     "@types/koa-router": "^7.0.22",
     "@types/ms": "^0.7.29",
     "@types/node": "^8.0.4",
@@ -29,7 +28,6 @@
     "koa-bodyparser": "^4.2.0",
     "koa-json": "^2.0.2",
     "koa-logger": "^3.0.0",
-    "koa-mount": "^3.0.0",
     "koa-router": "^7.2.1",
     "material-design-lite": "^1.3.0",
     "ms": "^2.0.0",
@@ -42,7 +40,7 @@
     "sendgrid": "^5.1.1",
     "tslint-language-service": "^0.9.6",
     "typeorm": "^0.1.0-alpha.22",
-    "typescript": "^2.4.1",
+    "typescript": "^2.5.0-dev.20170807",
     "uuid": "^3.1.0"
   },
   "devDependencies": {

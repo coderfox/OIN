@@ -15,7 +15,7 @@ import config from "../lib/config";
 import log from "../lib/log";
 
 if (process.env.NODE_ENV === "test") {
-  log.level = "silent";
+  log.level = "warn";
 }
 
 const PORT = config.get("port") || 3000;

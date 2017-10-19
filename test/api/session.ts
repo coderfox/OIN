@@ -5,8 +5,6 @@ import * as request from "request-promise-native";
 import { connection as db } from "../../lib/db";
 import User from "../../models/user";
 import Session from "../../models/session";
-import * as Errors from "../../lib/errors";
-import ms = require("ms");
 
 const baseUrl = "http://127.0.0.1:3000";
 const dateRegExp = /^\d{4,4}-\d{2,2}-\d{2,2}T\d{2,2}:\d{2,2}:\d{2,2}.\d{3,3}Z$/;

@@ -2,7 +2,6 @@
 // tslint:disable:no-unused-expression
 
 import { expect } from "chai";
-import config from "../../lib/config";
 import * as request from "request-promise-native";
 import { clearDb, expectDateEquals } from "../helpers";
 import { User, Session } from "../../models";

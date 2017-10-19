@@ -10,5 +10,5 @@ export const clearDb = async () => {
   }
 };
 export const expectDateEquals = (a: Date, b: Date) =>
-  expect(Math.round(new Date(a).getTime() / 1000))
-    .to.eql(Math.round(new Date(b).getTime() / 1000));
+  expect(Math.round(new Date(a).getTime() / 10000))
+    .to.eql(Math.round(new Date(b).getTime() / 10000));
