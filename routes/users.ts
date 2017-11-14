@@ -12,7 +12,6 @@ interface ICtxBearerState {
   authType: "Bearer";
   user: User;
   session: Session;
-  // TODO: support confirmation& service
 }
 
 router.get("/users", async (ctx) => {
@@ -41,6 +40,25 @@ router.post("/users", async (ctx) => {
     hashedPassword: await User.hashPassword(ctx.request.body.password),
   });
   db.getRepository(Confirmation).save(confirmation);
+  // TODO: send email
+  // TODO: if confirmation with the
+  //       specified email exists, do not create a new one
+  ctx.status = 202;
+  ctx.body = {};
+});
+router.put("/confirmations/:code", async (ctx) => {
+  const confirmation = await db.getRepository(Confirmation).findOneById(ctx.params.code);
+  if (!confirmation || confirmation.expired) {
+    throw new Errors.ConfirmationNotFoundError(ctx.params.code);
+  }
+  if (confirmation.operation === ConfirmationOperations.Register) {
+    const user = new User(confirmation.data.email);
+    user.hashedPassword = confirmation.data.hashedPassword;
+    ctx.status = 201;
+    ctx.body = user.toView();
+  } else {
+    throw new Errors.NotImplementedError();
+  }
 });
 
 export default router;

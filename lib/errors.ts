@@ -111,3 +111,10 @@ export class DuplicateEmailError extends ApiError {
     this.email = email;
   }
 }
+export class ConfirmationNotFoundError extends ApiError {
+  public readonly code: string;
+  constructor(code: string) {
+    super("CONFIRMATION_NOT_FOUND", 404);
+    this.code = code;
+  }
+}
