@@ -47,8 +47,8 @@ export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") 
         } catch (error) {
           if (
             error &&
-            error.message &&
-            error.message.includes("invalid input syntax for type uuid")
+            error.stack &&
+            error.stack.includes("invalid input syntax for type uuid")
           ) {
             throw new Errors.TokenInvalidError(parsed.token);
           } else {
