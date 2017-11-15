@@ -2,11 +2,10 @@
 
 import {
   Entity,
-  Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn,
-  Generated,
+  Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  ManyToOne, JoinColumn,
 } from "typeorm";
 import config from "../lib/config";
-import { connection } from "../lib/db";
 import User from "./user";
 import ms = require("ms");
 import IPermission from "./IPermission";
@@ -40,16 +39,20 @@ export namespace Errors {
 export default class Session {
   constructor(user: User) {
     if (user) {
-      this.uid = user.id;
+      this.user = user;
     }
   }
   private getNewExpirationDate = () =>
     new Date(Date.now() + ms(config.get("token_expires") as string))
 
-  @Column({ type: "int" })
-  public uid: number;
-  @PrimaryColumn({ type: "uuid" })
-  @Generated("uuid")
+  @ManyToOne(() => User, (user) => user.sessions, {
+    eager: true,
+    cascadeInsert: true,
+    cascadeUpdate: true,
+  })
+  @JoinColumn()
+  public user: User;
+  @PrimaryGeneratedColumn("uuid")
   public token: string;
   @Column({ type: "jsonb" })
   public permissions: IPermission = { admin: false };
@@ -60,29 +63,20 @@ export default class Session {
   @Column({ type: "timestamp without time zone" })
   public expiresAt: Date = this.getNewExpirationDate();
   public get expired() {
-    return this.expiresAt <= new Date(Date.now());
+    return this.expiresAt <= new Date(Date.now()) || !!this.user.deleteToken;
   }
 
-  public getUser = async (ignoreExpiration = false) => {
-    if ((!ignoreExpiration) && this.expired) {
-      throw new Errors.TokenExpiredError(this.expiresAt);
-    }
-    const user = await connection.getRepository(User).findOneById(this.uid);
-    if (!user) {
-      throw new Errors.UserNotFoundError(this.token, this.uid);
-    } else {
-      return user;
-    }
-  }
   public renew = () => {
     this.expiresAt = this.getNewExpirationDate();
   }
 
   public toView = async (ignoreExpiration = false) => {
-    const user = await this.getUser(ignoreExpiration);
+    if (!ignoreExpiration && this.expired) {
+      throw new Errors.TokenExpiredError(this.expiresAt);
+    }
     return {
       token: this.token,
-      user: user.toView(),
+      user: this.user.toView(),
       permissions: this.permissions,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

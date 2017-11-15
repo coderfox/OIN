@@ -40,7 +40,7 @@ export default () => {
       expect(result.statusCode).to.eql(200);
       expect(Array.isArray(result.body)).to.be.true;
       for (const u of result.body) {
-        expect(u.id).to.be.a("number");
+        expect(u.id).to.be.a("string"); // TODO: validate it to be uuid
         expect(u.email).to.eql("admin@example.com");
         expect(u.permissions).to.be.not.undefined;
         expect(u.permissions.admin).to.be.true;

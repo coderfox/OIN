@@ -48,7 +48,7 @@ export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") 
           if (
             error &&
             error.message &&
-            error.message.startsWith("invalid input syntax for type uuid")
+            error.message.includes("invalid input syntax for type uuid")
           ) {
             throw new Errors.TokenInvalidError(parsed.token);
           } else {
@@ -60,8 +60,10 @@ export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") 
           throw new Errors.TokenInvalidError(parsed.token);
         } else {
           try {
-            const user = await session.getUser();
-            ctx.state.user = user;
+            if (session.expired) {
+              throw new Errors.TokenExpiredError(session);
+            }
+            ctx.state.user = session.user;
           } catch (error) {
             if (error instanceof SessionErrors.UserNotFoundError) {
               throw new Errors.TokenInvalidError(parsed.token);

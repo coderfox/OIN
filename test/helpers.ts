@@ -2,10 +2,10 @@
 
 import { expect } from "chai";
 import { connection as db } from "../lib/db";
-import { User, Session } from "../models";
+import { User, Session, Confirmation } from "../models";
 
 export const clearDb = async () => {
-  for (const schema of [Session, User]) {
+  for (const schema of [Session, User, Confirmation]) {
     db.getRepository(schema).remove(await db.getRepository(schema).find());
   }
 };

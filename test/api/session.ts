@@ -5,6 +5,7 @@ import * as request from "request-promise-native";
 import { connection as db } from "../../lib/db";
 import User from "../../models/user";
 import Session from "../../models/session";
+import { clearDb } from "../helpers";
 
 const baseUrl = "http://127.0.0.1:3000";
 const dateRegExp = /^\d{4,4}-\d{2,2}-\d{2,2}T\d{2,2}:\d{2,2}:\d{2,2}.\d{3,3}Z$/;
@@ -14,17 +15,14 @@ export default () => {
   describe("PUT /session", () => {
     const user = new User("user@example.com");
     before(async () => {
-      await db.getRepository(User).clear();
+      await clearDb();
       await user.setPassword("123456");
       await db.getRepository(User).save(user);
     });
     after(async () => {
-      await db.getRepository(User).clear();
+      await clearDb();
     });
     beforeEach(async () => {
-      await db.getRepository(Session).clear();
-    });
-    after(async () => {
       await db.getRepository(Session).clear();
     });
     it("return 200 for correct request", async () => {
@@ -205,17 +203,15 @@ export default () => {
     let user: User;
     let session: Session;
     before(async () => {
+      await clearDb();
       user = new User("user@example.com");
-      await db.getRepository(User).clear();
       await user.setPassword("123456");
       await db.getRepository(User).save(user);
       session = new Session(user);
-      await db.getRepository(Session).clear();
       await db.getRepository(Session).save(session);
     });
     after(async () => {
-      await db.getRepository(User).clear();
-      await db.getRepository(Session).clear();
+      await clearDb();
     });
     it("200 OK", async () => {
       const result = await request({
@@ -245,7 +241,7 @@ export default () => {
       expect(result.body.updatedAt).to.match(dateRegExp);
       expect(result.body.expiresAt).to.match(dateRegExp);
     });
-    it("403 TOKEN_EXPIRED", async () => {
+    it("403 EXPIRED_TOKEN", async () => {
       session.expiresAt = new Date(Date.now());
       await db.getRepository(Session).save(session);
       const result = await request({
@@ -261,8 +257,9 @@ export default () => {
       expect(result.statusCode).eql(403);
       expect(result.body.code).to.eql("EXPIRED_TOKEN");
     });
-    it("403 INVALID_TOKEN on user not exists", async () => {
-      await db.getRepository(User).removeById(user.id);
+    it("403 EXPIRED_TOKEN on user deleted from database", async () => {
+      user.markDeleted();
+      await db.getRepository(User).save(user);
       session.renew();
       await db.getRepository(Session).save(session);
       const result = await request({
@@ -276,7 +273,7 @@ export default () => {
         },
       });
       expect(result.statusCode).eql(403);
-      expect(result.body.code).to.eql("INVALID_TOKEN");
+      expect(result.body.code).to.eql("EXPIRED_TOKEN");
       await db.getRepository(User).save(user);
     });
     it("403 INVALID_TOKEN on empty token", async () => {
@@ -312,17 +309,15 @@ export default () => {
     let user: User;
     let session: Session;
     before(async () => {
+      await clearDb();
       user = new User("user@example.com");
-      await db.getRepository(User).clear();
       await user.setPassword("123456");
       await db.getRepository(User).save(user);
       session = new Session(user);
-      await db.getRepository(Session).clear();
       await db.getRepository(Session).save(session);
     });
     after(async () => {
-      await db.getRepository(User).clear();
-      await db.getRepository(Session).clear();
+      await clearDb();
     });
     it("200 OK", async () => {
       const result = await request({
