@@ -6,7 +6,7 @@ import { User, Session, Confirmation } from "../models";
 
 export const clearDb = async () => {
   for (const schema of [Session, User, Confirmation]) {
-    db.getRepository(schema).remove(await db.getRepository(schema).find());
+    await db.getRepository(schema).remove(await db.getRepository(schema).find());
   }
 };
 export const expectDateEquals = (a: Date, b: Date) =>

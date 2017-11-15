@@ -35,6 +35,6 @@ export default class Cofirmation {
   @Column({ type: "timestamp without time zone" })
   public expiresAt: Date = this.getNewExpirationDate();
   public get expired() {
-    return this.expiresAt <= new Date(Date.now());
+    return this.expiresAt <= new Date();
   }
 }

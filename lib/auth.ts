@@ -30,7 +30,7 @@ export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") 
           email: parsed.username,
         });
         if (!user) {
-          throw new Errors.UserNotFoundError(parsed.username);
+          throw new Errors.UserNotFound403Error(parsed.username);
         } else {
           if (await user.checkPassword(parsed.password)) {
             ctx.state.user = user;

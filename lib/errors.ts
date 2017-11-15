@@ -48,11 +48,18 @@ export class CorruptedAuthorizationHeaderError extends ApiError {
     super("CORRUPTED_AUTHORIZATION_HEADER", 400);
   }
 }
-export class UserNotFoundError extends ApiError {
+export class UserNotFound403Error extends ApiError {
   public readonly email: string;
   constructor(email: string) {
     super("USER_NOT_FOUND", 403);
     this.email = email;
+  }
+}
+export class UserNotFoundByIdError extends ApiError {
+  public readonly id: string;
+  constructor(id: string) {
+    super("USER_NOT_FOUND", 404);
+    this.id = id;
   }
 }
 export class PasswordMismatchError extends ApiError {
@@ -112,9 +119,9 @@ export class DuplicateEmailError extends ApiError {
   }
 }
 export class ConfirmationNotFoundError extends ApiError {
-  public readonly code: string;
+  public readonly confirmationCode: string;
   constructor(code: string) {
     super("CONFIRMATION_NOT_FOUND", 404);
-    this.code = code;
+    this.confirmationCode = code;
   }
 }

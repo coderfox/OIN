@@ -7,6 +7,7 @@ import { Operations as ConfirmationOperations } from "../models/confirmation";
 import { connection as db } from "../lib/db";
 import * as Errors from "../lib/errors";
 import { authUser } from "../lib/auth";
+import { Serialize } from "cerialize";
 
 interface ICtxBearerState {
   authType: "Bearer";
@@ -20,26 +21,27 @@ router.get("/users", async (ctx) => {
   if (!state.session.permissions.admin) {
     throw new Errors.InsufficientPermissionError(ctx.state.session, "admin");
   }
-  ctx.body = (await db.getRepository(User).find({
+  ctx.body = Serialize(await db.getRepository(User).find({
     skip: ctx.request.header["x-page-skip"] || ctx.request.query.skip || 0,
     take: ctx.request.header["x-page-limit"] || ctx.request.query.take || 50,
-  })).map((val) => val.toView());
+  }));
 },
 );
 router.post("/users", async (ctx) => {
   if (!ctx.request.body.email || !ctx.request.body.password) {
     throw new Errors.BadRequestError(ctx);
   }
-  if (await db.getRepository(User).findOne({
+  const presentUser = await db.getRepository(User).findOne({
     email: ctx.request.body.email,
-  })) {
+  });
+  if (presentUser && !presentUser.deleteToken) {
     throw new Errors.DuplicateEmailError(ctx.request.body.email);
   }
   const confirmation = new Confirmation(ConfirmationOperations.Register, {
     email: ctx.request.body.email,
     hashedPassword: await User.hashPassword(ctx.request.body.password),
   });
-  db.getRepository(Confirmation).save(confirmation);
+  await db.getRepository(Confirmation).save(confirmation);
   // TODO: send email
   // TODO: if confirmation with the
   //       specified email exists, do not create a new one
@@ -47,18 +49,46 @@ router.post("/users", async (ctx) => {
   ctx.body = {};
 });
 router.put("/confirmations/:code", async (ctx) => {
-  const confirmation = await db.getRepository(Confirmation).findOneById(ctx.params.code);
-  if (!confirmation || confirmation.expired) {
-    throw new Errors.ConfirmationNotFoundError(ctx.params.code);
+  try {
+    const confirmation = await db.getRepository(Confirmation).findOneById(ctx.params.code);
+    if (!confirmation || confirmation.expired) {
+      throw new Errors.ConfirmationNotFoundError(ctx.params.code);
+    }
+    if (confirmation.operation === ConfirmationOperations.Register) {
+      const presentUser = await db.getRepository(User).findOne({ email: confirmation.data.email });
+      if (presentUser && !presentUser.deleteToken) {
+        throw new Errors.ConfirmationNotFoundError(ctx.params.code);
+      }
+      const user = new User(confirmation.data.email);
+      user.hashedPassword = confirmation.data.hashedPassword;
+      await db.getRepository(User).save(user);
+      confirmation.expiresAt = new Date();
+      await db.getRepository(Confirmation).save(confirmation);
+      ctx.status = 201;
+      ctx.body = user.toView();
+    } else {
+      throw new Errors.NotImplementedError();
+    }
+  } catch (err) {
+    if (err && err.message &&
+      err.message.includes("invalid input syntax for type uuid")) {
+      throw new Errors.ConfirmationNotFoundError(ctx.params.code);
+    } else {
+      throw err;
+    }
   }
-  if (confirmation.operation === ConfirmationOperations.Register) {
-    const user = new User(confirmation.data.email);
-    user.hashedPassword = confirmation.data.hashedPassword;
-    ctx.status = 201;
-    ctx.body = user.toView();
-  } else {
-    throw new Errors.NotImplementedError();
+});
+router.get("/users/:id", async (ctx) => {
+  await authUser(ctx, "Bearer");
+  const state = ctx.state as ICtxBearerState;
+  if (ctx.params.id !== state.user.id && !state.session.permissions.admin) {
+    throw new Errors.InsufficientPermissionError(state.session, "admin");
   }
+  const user = await db.getRepository(User).findOneById(ctx.params.id);
+  if (!user || !!user.deleteToken) {
+    throw new Errors.UserNotFoundByIdError(ctx.params.id);
+  }
+  ctx.body = user.toView();
 });
 
 export default router;

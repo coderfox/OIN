@@ -274,6 +274,8 @@ export default () => {
       });
       expect(result.statusCode).eql(403);
       expect(result.body.code).to.eql("EXPIRED_TOKEN");
+      // restore user
+      user.deleteToken = undefined;
       await db.getRepository(User).save(user);
     });
     it("403 INVALID_TOKEN on empty token", async () => {
