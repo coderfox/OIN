@@ -104,9 +104,11 @@ export default () => {
     let confirm: Confirmation;
     beforeEach(async () => {
       await clearDb();
-      confirm = new Confirmation(ConfirmationOperations.Register, {
-        email: "user@example.com",
-        hashedPassword: await User.hashPassword("123456"),
+      confirm = new Confirmation({
+        operation: ConfirmationOperations.Register, data: {
+          email: "user@example.com",
+          hashedPassword: await User.hashPassword("123456"),
+        },
       });
       await db.getRepository(Confirmation).save(confirm);
     });

@@ -103,8 +103,8 @@ router.put("/confirmations/:code", async (ctx) => {
       }
     }
   } catch (err) {
-    if (err && err.stack &&
-      err.stack.includes("invalid input syntax for type uuid")) {
+    if (err && err.message &&
+      err.message.includes("invalid input syntax")) {
       throw new Errors.ConfirmationNotFoundError(ctx.params.code);
     } else {
       throw err;

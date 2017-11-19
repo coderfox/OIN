@@ -29,8 +29,10 @@ export interface IPasswordRecoveryData {
 export default class Cofirmation {
   constructor(opData: op) {
     this.id = uuid();
-    this.operation = opData.operation;
-    this.data = opData.data;
+    if (opData) {
+      this.operation = opData.operation;
+      this.data = opData.data;
+    }
   }
   private getNewExpirationDate = () =>
     new Date(Date.now() + ms(config.get("confirmation_expires") as string))
