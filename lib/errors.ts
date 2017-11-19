@@ -38,9 +38,11 @@ export class InternalServerError extends ApiError {
   }
 }
 export class AuthenticationNotFoundError extends ApiError {
-  constructor() {
+  constructor(ctx: Context, expected?: string) {
     super("AUTHENTICATION_NOT_FOUND", 401);
-    // TODO: auto respond WWW-Authenticate header
+    if (expected) {
+      ctx.set("WWW-Authenticate", expected);
+    }
   }
 }
 export class CorruptedAuthorizationHeaderError extends ApiError {
@@ -123,5 +125,10 @@ export class ConfirmationNotFoundError extends ApiError {
   constructor(code: string) {
     super("CONFIRMATION_NOT_FOUND", 404);
     this.confirmationCode = code;
+  }
+}
+export class NewEmailOrPasswordNotSuppliedError extends ApiError {
+  constructor() {
+    super("NEW_EMAIL_OR_PASSWORD_NOT_SUPPLIED", 400);
   }
 }

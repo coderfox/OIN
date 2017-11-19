@@ -5,19 +5,26 @@ import config from "../lib/config";
 import * as uuid from "uuid/v4";
 import ms = require("ms");
 
+type op = { operation: Operations.Register, data: IRegisterData } |
+  { operation: Operations.UpdateEmail, data: IUpdateEmailData };
 export enum Operations {
   Register,
+  UpdateEmail,
 }
 export interface IRegisterData {
   email: string;
   hashedPassword: string;
 }
+export interface IUpdateEmailData {
+  uid: string; // uuid
+  newEmail: string;
+}
 @Entity()
 export default class Cofirmation {
-  constructor(operation: Operations, data: IRegisterData) {
+  constructor(opData: op) {
     this.id = uuid();
-    this.operation = operation;
-    this.data = data;
+    this.operation = opData.operation;
+    this.data = opData.data;
   }
   private getNewExpirationDate = () =>
     new Date(Date.now() + ms(config.get("confirmation_expires") as string))
@@ -27,7 +34,7 @@ export default class Cofirmation {
   @Column({ type: "int", nullable: false })
   public operation: number;
   @Column({ type: "json", nullable: false })
-  public data: IRegisterData;
+  public data: IRegisterData | IUpdateEmailData;
   @CreateDateColumn()
   public createdAt: Date;
   @UpdateDateColumn()

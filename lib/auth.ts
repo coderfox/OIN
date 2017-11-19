@@ -12,10 +12,7 @@ import { Errors as SessionErrors } from "../models/session";
 // TODO: recognize confirmation& service
 export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") => {
   if (!ctx.headers.authorization) {
-    if (required) {
-      ctx.set("WWW-Authenticate", required);
-    }
-    throw new Errors.AuthenticationNotFoundError();
+    throw new Errors.AuthenticationNotFoundError(ctx, required);
   }
   try {
     const parsed = parse(ctx.headers.authorization);
@@ -29,7 +26,7 @@ export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") 
         const user = await db.getRepository(User).findOne({
           email: parsed.username,
         });
-        if (!user) {
+        if (!user || !!user.deleteToken) {
           throw new Errors.UserNotFound403Error(parsed.username);
         } else {
           if (await user.checkPassword(parsed.password)) {
