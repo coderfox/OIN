@@ -9,6 +9,17 @@ import { InvalidInputError, UnsupportedAuthTypeError } from "../lib/parseAuth";
 import * as Errors from "../lib/errors";
 import { Errors as SessionErrors } from "../models/session";
 
+export type ICtxState = ICtxBasicState | ICtxBearerState;
+export interface ICtxBasicState {
+  authType: "Basic";
+  user: User;
+}
+export interface ICtxBearerState {
+  authType: "Bearer";
+  user: User;
+  session: Session;
+}
+
 // TODO: recognize confirmation& service
 export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") => {
   if (!ctx.headers.authorization) {

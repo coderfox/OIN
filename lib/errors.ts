@@ -132,3 +132,8 @@ export class NewEmailOrPasswordNotSuppliedError extends ApiError {
     super("NEW_EMAIL_OR_PASSWORD_NOT_SUPPLIED", 400);
   }
 }
+export class PasswordNotSuppliedError extends ApiError {
+  constructor() {
+    super("PASSWORD_NOT_SUPPLIED", 400);
+  }
+}

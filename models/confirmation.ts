@@ -6,10 +6,12 @@ import * as uuid from "uuid/v4";
 import ms = require("ms");
 
 type op = { operation: Operations.Register, data: IRegisterData } |
-  { operation: Operations.UpdateEmail, data: IUpdateEmailData };
+  { operation: Operations.UpdateEmail, data: IUpdateEmailData } |
+  { operation: Operations.PasswordRecovery, data: IPasswordRecoveryData };
 export enum Operations {
   Register,
   UpdateEmail,
+  PasswordRecovery,
 }
 export interface IRegisterData {
   email: string;
@@ -18,6 +20,10 @@ export interface IRegisterData {
 export interface IUpdateEmailData {
   uid: string; // uuid
   newEmail: string;
+}
+export interface IPasswordRecoveryData {
+  uid: string; // uuid
+  newPassword: string;
 }
 @Entity()
 export default class Cofirmation {
@@ -34,7 +40,7 @@ export default class Cofirmation {
   @Column({ type: "int", nullable: false })
   public operation: number;
   @Column({ type: "json", nullable: false })
-  public data: IRegisterData | IUpdateEmailData;
+  public data: IRegisterData | IUpdateEmailData | IPasswordRecoveryData;
   @CreateDateColumn()
   public createdAt: Date;
   @UpdateDateColumn()

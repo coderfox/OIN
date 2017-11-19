@@ -2,24 +2,13 @@
 
 import Router = require("koa-router");
 const router = new Router();
-import { User, Session, Confirmation } from "../models";
+import { User, Confirmation } from "../models";
 import { Operations as ConfirmationOperations } from "../models/confirmation";
 import * as ConfirmationTypes from "../models/confirmation";
 import { connection as db } from "../lib/db";
 import * as Errors from "../lib/errors";
-import { authUser } from "../lib/auth";
+import { authUser, ICtxBearerState, ICtxState } from "../lib/auth";
 import { Serialize } from "cerialize";
-
-type ICtxState = ICtxBasicState | ICtxBearerState;
-interface ICtxBasicState {
-  authType: "Basic";
-  user: User;
-}
-interface ICtxBearerState {
-  authType: "Bearer";
-  user: User;
-  session: Session;
-}
 
 router.get("/users", async (ctx) => {
   await authUser(ctx, "Bearer");
@@ -76,6 +65,7 @@ router.put("/confirmations/:code", async (ctx) => {
         await db.getRepository(User).save(user);
         confirmation.expiresAt = new Date();
         await db.getRepository(Confirmation).save(confirmation);
+        ctx.set("Location", `/users/${user.id}`);
         ctx.status = 201;
         ctx.body = user.toView();
         break;
@@ -88,7 +78,21 @@ router.put("/confirmations/:code", async (ctx) => {
           await db.getRepository(User).save(user);
           confirmation.expiresAt = new Date();
           await db.getRepository(Confirmation).save(confirmation);
-          ctx.body = user.toView();
+          ctx.body = { confirmed: true };
+        } else {
+          throw new Errors.ConfirmationNotFoundError(ctx.params.code);
+        }
+        break;
+      }
+      case ConfirmationOperations.PasswordRecovery: {
+        const data = confirmation.data as ConfirmationTypes.IPasswordRecoveryData;
+        const user = await db.getRepository(User).findOneById(data.uid);
+        if (user && !user.deleteToken) {
+          user.setPassword(data.newPassword);
+          await db.getRepository(User).save(user);
+          confirmation.expiresAt = new Date();
+          await db.getRepository(Confirmation).save(confirmation);
+          ctx.body = { confirmed: true };
         } else {
           throw new Errors.ConfirmationNotFoundError(ctx.params.code);
         }
@@ -156,6 +160,24 @@ router.post("/users/:id", async (ctx) => {
     throw new Errors.NewEmailOrPasswordNotSuppliedError();
   }
   ctx.body = user.toView();
+});
+router.post("/users/:id/confirmations", async (ctx) => {
+  const user = await db.getRepository(User).findOneById(ctx.params.id);
+  if (!user || !!user.deleteToken) {
+    throw new Errors.UserNotFoundByIdError(ctx.params.id);
+  }
+  if (!ctx.request.body.password) {
+    throw new Errors.PasswordNotSuppliedError();
+  }
+  const confirmation = new Confirmation({
+    operation: ConfirmationOperations.PasswordRecovery, data: {
+      uid: user.id,
+      newPassword: ctx.request.body.password,
+    },
+  });
+  await db.getRepository(Confirmation).save(confirmation);
+  ctx.status = 202;
+  ctx.body = {};
 });
 
 export default router;
