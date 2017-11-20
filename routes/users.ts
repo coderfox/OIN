@@ -179,5 +179,25 @@ router.post("/users/:id/confirmations", async (ctx) => {
   ctx.status = 202;
   ctx.body = {};
 });
+router.delete("/user/:id", async (ctx) => {
+  await authUser(ctx);
+  const state = ctx.state as ICtxState;
+  if (state.authType === "Basic") {
+    if (ctx.params.id !== state.user.id) {
+      throw new Errors.AuthenticationNotFoundError(ctx, "Bearer");
+    }
+  } else {
+    if (!state.session.permissions.admin) {
+      throw new Errors.InsufficientPermissionError(state.session, "admin");
+    }
+  }
+  const user = await db.getRepository(User).findOneById(ctx.params.id);
+  if (!user || !!user.deleteToken) {
+    throw new Errors.UserNotFoundByIdError(ctx.params.id);
+  }
+  user.markDeleted();
+  await db.getRepository(User).save(user);
+  ctx.body = user.toView();
+});
 
 export default router;
