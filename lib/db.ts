@@ -12,7 +12,8 @@ export const config: ConnectionOptions = {
   migrations: [
     "./migrations/*.js",
   ],
-  synchronize: process.env.NODE_ENV === "dev",
+  synchronize: false,
+  migrationsRun: true,
 };
 export let connection: Connection;
 export default createConnection(config).then((conn) => connection = conn);

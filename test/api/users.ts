@@ -6,6 +6,7 @@ import * as request from "request-promise-native";
 import { clearDb, expectDateEquals } from "../helpers";
 import { User, Session, Confirmation, ConfirmationOperations } from "../../models";
 import { connection as db } from "../../lib/db";
+import * as uuid from "uuid/v4";
 
 const baseUrl = "http://127.0.0.1:3000";
 
@@ -181,6 +182,90 @@ export default () => {
       });
       expect(resultB.statusCode).to.eql(404);
       expect(resultB.body.code).to.eql("CONFIRMATION_NOT_FOUND");
+    });
+  });
+  describe("GET /user/:id", () => {
+    let admin: User;
+    let user: User;
+    let adminSession: Session;
+    let adminSessionWithoutPermission: Session;
+    let userSession: Session;
+    beforeEach(async () => {
+      admin = new User("admin@example.com");
+      await admin.setPassword("admin");
+      adminSession = new Session(admin);
+      adminSession.permissions.admin = true;
+      adminSessionWithoutPermission = new Session(admin);
+      user = new User("user@example.com");
+      await user.setPassword("user");
+      userSession = new Session(user);
+      await db.manager.save([admin, user]);
+      await db.manager.save([adminSession, adminSessionWithoutPermission, userSession]);
+    });
+    afterEach(clearDb);
+    it("200 OK # normal user", async () => {
+      const result = await request({
+        method: "GET",
+        url: `${baseUrl}/users/${user.id}`,
+        simple: false,
+        resolveWithFullResponse: true,
+        json: {
+          confirmed: true,
+        },
+        auth: {
+          bearer: userSession.token,
+        },
+      });
+      expect(result.statusCode).to.eql(200);
+      expect(result.body).to.eql(user.toView());
+    });
+    it("200 OK # admin", async () => {
+      const result = await request({
+        method: "GET",
+        url: `${baseUrl}/users/${user.id}`,
+        simple: false,
+        resolveWithFullResponse: true,
+        json: {
+          confirmed: true,
+        },
+        auth: {
+          bearer: adminSession.token,
+        },
+      });
+      expect(result.statusCode).to.eql(200);
+      expect(result.body).to.eql(user.toView());
+    });
+    it("404 USER_NOT_FOUND", async () => {
+      const result = await request({
+        method: "GET",
+        url: `${baseUrl}/users/${uuid()}`,
+        simple: false,
+        resolveWithFullResponse: true,
+        json: {
+          confirmed: true,
+        },
+        auth: {
+          bearer: userSession.token,
+        },
+      });
+      expect(result.statusCode).to.eql(404);
+      expect(result.body.code).to.eql("USER_NOT_FOUND");
+    });
+    it("403 INSUFFICIENT_PERMISSION", async () => {
+      const result = await request({
+        method: "GET",
+        url: `${baseUrl}/users/${admin.id}`,
+        simple: false,
+        resolveWithFullResponse: true,
+        json: {
+          confirmed: true,
+        },
+        auth: {
+          bearer: userSession.token,
+        },
+      });
+      expect(result.statusCode).to.eql(403);
+      expect(result.body.code).to.eql("INSUFFICIENT_PERMISSION");
     });
   });
 };

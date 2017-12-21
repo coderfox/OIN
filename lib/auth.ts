@@ -3,7 +3,6 @@
 import * as Koa from "koa";
 import User from "../models/user";
 import Session from "../models/session";
-import { connection as db } from "../lib/db";
 import parse from "../lib/parseAuth";
 import { InvalidInputError, UnsupportedAuthTypeError } from "../lib/parseAuth";
 import * as Errors from "../lib/errors";

@@ -48,7 +48,6 @@ export default class Session extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.sessions, {
     eager: true,
-    cascadeInsert: true,
     cascadeUpdate: true,
   })
   @JoinColumn()

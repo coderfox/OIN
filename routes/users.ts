@@ -114,13 +114,19 @@ router.get("/users/:id", async (ctx) => {
   await authUser(ctx, "Bearer");
   const state = ctx.state as ICtxBearerState;
   if (ctx.params.id !== state.user.id && !state.session.permissions.admin) {
-    throw new Errors.InsufficientPermissionError(state.session, "admin");
+    const user = await User.findOneById(ctx.params.id);
+    if (!user || !!user.deleteToken) {
+      throw new Errors.UserNotFoundByIdError(ctx.params.id);
+    } else {
+      throw new Errors.InsufficientPermissionError(state.session, "admin");
+    }
+  } else {
+    const user = await User.findOneById(ctx.params.id);
+    if (!user || !!user.deleteToken) {
+      throw new Errors.UserNotFoundByIdError(ctx.params.id);
+    }
+    ctx.body = user.toView();
   }
-  const user = await User.findOneById(ctx.params.id);
-  if (!user || !!user.deleteToken) {
-    throw new Errors.UserNotFoundByIdError(ctx.params.id);
-  }
-  ctx.body = user.toView();
 });
 router.post("/users/:id", async (ctx) => {
   await authUser(ctx);
