@@ -34,7 +34,7 @@ export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") 
     }
     switch (parsed.type) {
       case "Basic": {
-        const user = await db.getRepository(User).findOne({
+        const user = await User.findOne({
           email: parsed.username,
         });
         if (!user || !!user.deleteToken) {
@@ -51,7 +51,7 @@ export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") 
       case "Bearer": {
         let session;
         try {
-          session = await db.getRepository(Session).findOneById(parsed.token);
+          session = await Session.findOneById(parsed.token);
         } catch (error) {
           if (
             error &&

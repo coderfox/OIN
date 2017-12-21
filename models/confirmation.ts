@@ -1,6 +1,9 @@
 "use strict";
 
-import { Entity, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import {
+  Entity, BaseEntity,
+  Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn,
+} from "typeorm";
 import config from "../lib/config";
 import * as uuid from "uuid/v4";
 import ms = require("ms");
@@ -26,8 +29,9 @@ export interface IPasswordRecoveryData {
   newPassword: string;
 }
 @Entity()
-export default class Cofirmation {
+export default class Cofirmation extends BaseEntity {
   constructor(opData: op) {
+    super();
     this.id = uuid();
     if (opData) {
       this.operation = opData.operation;

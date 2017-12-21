@@ -19,7 +19,7 @@ export default () => {
       user = new User("admin@example.com");
       await user.setPassword("123456");
       user.permissions.admin = true;
-      await db.getRepository(User).save(user);
+      await user.save();
       session = new Session(user);
       session.permissions.admin = false;
       sessionAdmin = new Session(user);
@@ -83,7 +83,7 @@ export default () => {
       // prepare a user
       const user = new User("user@example.com");
       await user.setPassword("123456");
-      await db.getRepository(User).save(user);
+      await user.save();
       // start test
       const result = await request({
         method: "POST",
@@ -110,7 +110,7 @@ export default () => {
           hashedPassword: await User.hashPassword("123456"),
         },
       });
-      await db.getRepository(Confirmation).save(confirm);
+      await confirm.save();
     });
     afterEach(clearDb);
     it("201 Created", async () => {
@@ -124,7 +124,7 @@ export default () => {
         },
       });
       expect(result.statusCode).to.eql(201);
-      const user = await db.getRepository(User).findOne();
+      const user = await User.findOne();
       expect(user).to.be.not.undefined;
       expect(result.body).to.eql((user as User).toView());
     });
@@ -167,7 +167,7 @@ export default () => {
         },
       });
       expect(result.statusCode).to.eql(201);
-      const user = await db.getRepository(User).findOne();
+      const user = await User.findOne();
       expect(user).to.be.not.undefined;
       expect(result.body).to.eql((user as User).toView());
       const resultB = await request({

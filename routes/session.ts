@@ -3,7 +3,6 @@
 import Router = require("koa-router");
 const router = new Router();
 import { User, Session } from "../models";
-import { connection as db } from "../lib/db";
 import * as Errors from "../lib/errors";
 import { authUser } from "../lib/auth";
 
@@ -25,7 +24,7 @@ router.put("/session", async (ctx) => {
       throw new Errors.InsufficientPermissionError(session, "admin");
     }
   }
-  await db.getRepository(Session).save(session);
+  await session.save();
   ctx.body = await session.toView();
 });
 router.get("/session", async (ctx) => {
@@ -40,7 +39,7 @@ router.delete("/session", async (ctx) => {
   const state = ctx.state as ICtxState;
   if (state.session) {
     state.session.expiresAt = new Date(Date.now());
-    await db.getRepository(Session).save(state.session);
+    await state.session.save();
     ctx.body = await state.session.toView(true);
   }
 });

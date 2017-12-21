@@ -48,6 +48,7 @@
     "tslint-eslint-rules": "^4.1.1"
   },
   "scripts": {
+    "compile": "tsc && tslint -p . -e node_modules/**.* && node bin/buildOrmConfig",
     "test": "nyc -r html mocha",
     "test-cov": "nyc -r lcovonly -r html mocha",
     "postinstall": "tsc",
@@ -55,7 +56,9 @@
     "dev": "supervisor -i coverage bin/run | pino",
     "start": "node ./bin/run",
     "lint": "tslint -p . -e node_modules/**.*",
-    "test-nocompile": "nyc -r html mocha"
+    "test-nocompile": "nyc -r html mocha",
+    "db:migrate": "node bin/buildOrmConfig && typeorm migrations:run",
+    "db:revert": "node bin/buildOrmConfig && typeorm migrations:revert"
   },
   "greenkeeper": {
     "ignore": []

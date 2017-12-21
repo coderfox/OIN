@@ -5,7 +5,6 @@ const router = new Router();
 import { User, Confirmation } from "../models";
 import { Operations as ConfirmationOperations } from "../models/confirmation";
 import * as ConfirmationTypes from "../models/confirmation";
-import { connection as db } from "../lib/db";
 import * as Errors from "../lib/errors";
 import { authUser, ICtxBearerState, ICtxState } from "../lib/auth";
 import { Serialize } from "cerialize";
@@ -16,7 +15,7 @@ router.get("/users", async (ctx) => {
   if (!state.session.permissions.admin) {
     throw new Errors.InsufficientPermissionError(ctx.state.session, "admin");
   }
-  ctx.body = Serialize(await db.getRepository(User).find({
+  ctx.body = Serialize(await User.find({
     skip: ctx.request.header["x-page-skip"] || ctx.request.query.skip || 0,
     take: ctx.request.header["x-page-limit"] || ctx.request.query.take || 50,
   }));
@@ -25,7 +24,7 @@ router.post("/users", async (ctx) => {
   if (!ctx.request.body.email || !ctx.request.body.password) {
     throw new Errors.BadRequestError(ctx);
   }
-  const presentUser = await db.getRepository(User).findOne({
+  const presentUser = await User.findOne({
     email: ctx.request.body.email,
   });
   if (presentUser && !presentUser.deleteToken) {
@@ -38,7 +37,7 @@ router.post("/users", async (ctx) => {
       hashedPassword: await User.hashPassword(ctx.request.body.password),
     },
   });
-  await db.getRepository(Confirmation).save(confirmation);
+  await confirmation.save();
   // TODO: send email
   // TODO: if confirmation with the
   //       specified email exists, do not create a new one
@@ -47,14 +46,14 @@ router.post("/users", async (ctx) => {
 });
 router.put("/confirmations/:code", async (ctx) => {
   try {
-    const confirmation = await db.getRepository(Confirmation).findOneById(ctx.params.code);
+    const confirmation = await Confirmation.findOneById(ctx.params.code);
     if (!confirmation || confirmation.expired) {
       throw new Errors.ConfirmationNotFoundError(ctx.params.code);
     }
     switch (confirmation.operation) {
       case ConfirmationOperations.Register: {
         const data = confirmation.data as ConfirmationTypes.IRegisterData;
-        const presentUser = await db.getRepository(User).findOne({
+        const presentUser = await User.findOne({
           email: data.email,
         });
         if (presentUser && !presentUser.deleteToken) {
@@ -62,9 +61,9 @@ router.put("/confirmations/:code", async (ctx) => {
         }
         const user = new User(data.email);
         user.hashedPassword = data.hashedPassword;
-        await db.getRepository(User).save(user);
+        await user.save();
         confirmation.expiresAt = new Date();
-        await db.getRepository(Confirmation).save(confirmation);
+        await confirmation.save();
         ctx.set("Location", `/users/${user.id}`);
         ctx.status = 201;
         ctx.body = user.toView();
@@ -72,12 +71,12 @@ router.put("/confirmations/:code", async (ctx) => {
       }
       case ConfirmationOperations.UpdateEmail: {
         const data = confirmation.data as ConfirmationTypes.IUpdateEmailData;
-        const user = await db.getRepository(User).findOneById(data.uid);
+        const user = await User.findOneById(data.uid);
         if (user && !user.deleteToken) {
           user.email = data.newEmail;
-          await db.getRepository(User).save(user);
+          await user.save();
           confirmation.expiresAt = new Date();
-          await db.getRepository(Confirmation).save(confirmation);
+          await confirmation.save();
           ctx.body = { confirmed: true };
         } else {
           throw new Errors.ConfirmationNotFoundError(ctx.params.code);
@@ -86,12 +85,12 @@ router.put("/confirmations/:code", async (ctx) => {
       }
       case ConfirmationOperations.PasswordRecovery: {
         const data = confirmation.data as ConfirmationTypes.IPasswordRecoveryData;
-        const user = await db.getRepository(User).findOneById(data.uid);
+        const user = await User.findOneById(data.uid);
         if (user && !user.deleteToken) {
           user.setPassword(data.newPassword);
-          await db.getRepository(User).save(user);
+          await user.save();
           confirmation.expiresAt = new Date();
-          await db.getRepository(Confirmation).save(confirmation);
+          await confirmation.save();
           ctx.body = { confirmed: true };
         } else {
           throw new Errors.ConfirmationNotFoundError(ctx.params.code);
@@ -117,7 +116,7 @@ router.get("/users/:id", async (ctx) => {
   if (ctx.params.id !== state.user.id && !state.session.permissions.admin) {
     throw new Errors.InsufficientPermissionError(state.session, "admin");
   }
-  const user = await db.getRepository(User).findOneById(ctx.params.id);
+  const user = await User.findOneById(ctx.params.id);
   if (!user || !!user.deleteToken) {
     throw new Errors.UserNotFoundByIdError(ctx.params.id);
   }
@@ -135,14 +134,14 @@ router.post("/users/:id", async (ctx) => {
       throw new Errors.InsufficientPermissionError(state.session, "admin");
     }
   }
-  const user = await db.getRepository(User).findOneById(ctx.params.id);
+  const user = await User.findOneById(ctx.params.id);
   if (!user || !!user.deleteToken) {
     throw new Errors.UserNotFoundByIdError(ctx.params.id);
   }
   if (ctx.body.email) {
     if (state.authType === "Bearer") {
       user.email = ctx.body.email;
-      await db.getRepository(User).save(user);
+      await user.save();
     } else {
       const confirmation = new Confirmation({
         operation: ConfirmationOperations.UpdateEmail, data: {
@@ -150,19 +149,19 @@ router.post("/users/:id", async (ctx) => {
           newEmail: ctx.request.body.email,
         },
       });
-      await db.getRepository(Confirmation).save(confirmation);
+      await confirmation.save();
       ctx.status = 202;
     }
   } else if (ctx.body.password) {
     user.setPassword(ctx.body.password);
-    await db.getRepository(User).save(user);
+    await user.save();
   } else {
     throw new Errors.NewEmailOrPasswordNotSuppliedError();
   }
   ctx.body = user.toView();
 });
 router.post("/users/:id/confirmations", async (ctx) => {
-  const user = await db.getRepository(User).findOneById(ctx.params.id);
+  const user = await User.findOneById(ctx.params.id);
   if (!user || !!user.deleteToken) {
     throw new Errors.UserNotFoundByIdError(ctx.params.id);
   }
@@ -175,7 +174,7 @@ router.post("/users/:id/confirmations", async (ctx) => {
       newPassword: ctx.request.body.password,
     },
   });
-  await db.getRepository(Confirmation).save(confirmation);
+  await confirmation.save();
   ctx.status = 202;
   ctx.body = {};
 });
@@ -191,12 +190,12 @@ router.delete("/user/:id", async (ctx) => {
       throw new Errors.InsufficientPermissionError(state.session, "admin");
     }
   }
-  const user = await db.getRepository(User).findOneById(ctx.params.id);
+  const user = await User.findOneById(ctx.params.id);
   if (!user || !!user.deleteToken) {
     throw new Errors.UserNotFoundByIdError(ctx.params.id);
   }
   user.markDeleted();
-  await db.getRepository(User).save(user);
+  await user.save();
   ctx.body = user.toView();
 });
 

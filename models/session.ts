@@ -1,7 +1,7 @@
 "use strict";
 
 import {
-  Entity,
+  Entity, BaseEntity,
   Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
   ManyToOne, JoinColumn,
 } from "typeorm";
@@ -36,8 +36,9 @@ export namespace Errors {
 }
 
 @Entity()
-export default class Session {
+export default class Session extends BaseEntity {
   constructor(user: User) {
+    super();
     if (user) {
       this.user = user;
     }

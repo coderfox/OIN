@@ -1,7 +1,7 @@
 "use strict";
 
 import {
-  Entity, Index,
+  Entity, BaseEntity, Index,
   Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
   OneToMany,
 } from "typeorm";
@@ -14,8 +14,9 @@ import Session from "./session";
 
 @Entity()
 @Index("email_unique_with_deletion", ["email", "deleteToken"], { unique: true })
-export default class User {
+export default class User extends BaseEntity {
   constructor(email: string) {
+    super();
     this.email = email;
   }
   @PrimaryGeneratedColumn("uuid")
