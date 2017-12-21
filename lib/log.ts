@@ -1,6 +1,6 @@
 "use strict";
 
 import * as logger from "pino";
-import config from "./config";
+import { log_level } from "./config";
 
-export default logger({ level: config.get("log_level") });
+export default logger({ level: log_level });

@@ -1,11 +1,11 @@
 "use strict";
 
 import { createConnection, Connection, ConnectionOptions } from "typeorm";
-import { default as conf } from "../lib/config";
+import { db_url } from "../lib/config";
 
 export const config: ConnectionOptions = {
   type: "postgres",
-  url: conf.get("db_url"),
+  url: db_url,
   entities: [
     "./models/*.js",
   ],

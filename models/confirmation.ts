@@ -4,7 +4,7 @@ import {
   Entity, BaseEntity,
   Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn,
 } from "typeorm";
-import config from "../lib/config";
+import { confirmation_expires } from "../lib/config";
 import * as uuid from "uuid/v4";
 import ms = require("ms");
 
@@ -39,7 +39,7 @@ export default class Cofirmation extends BaseEntity {
     }
   }
   private getNewExpirationDate = () =>
-    new Date(Date.now() + ms(config.get("confirmation_expires") as string))
+    new Date(Date.now() + ms(confirmation_expires))
 
   @PrimaryColumn({ type: "uuid" })
   public id: string;

@@ -1,5 +1,6 @@
 "use strict";
 
+import "dotenv/config";
 import "./lib/db";
 import * as Koa from "koa";
 import * as bodyParser from "koa-bodyparser";

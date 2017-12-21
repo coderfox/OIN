@@ -5,7 +5,7 @@ import {
   Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
   ManyToOne, JoinColumn,
 } from "typeorm";
-import config from "../lib/config";
+import { token_expires } from "../lib/config";
 import User from "./user";
 import ms = require("ms");
 import IPermission from "./IPermission";
@@ -44,7 +44,7 @@ export default class Session extends BaseEntity {
     }
   }
   private getNewExpirationDate = () =>
-    new Date(Date.now() + ms(config.get("token_expires") as string))
+    new Date(Date.now() + ms(token_expires))
 
   @ManyToOne(() => User, (user) => user.sessions, {
     eager: true,

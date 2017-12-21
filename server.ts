@@ -2,7 +2,7 @@
 
 import app from "./app";
 import { default as initDb, connection as db } from "./lib/db";
-import config from "./lib/config";
+import { port, db_url } from "./lib/config";
 import log from "./lib/log";
 import * as http from "http";
 
@@ -26,13 +26,12 @@ switch (process.env.NODE_ENV) {
 }
 
 export const server = http.createServer(app.callback());
-const PORT = config.get("port") || 3000;
 
 export const start = async () => {
   await initDb;
-  log.info(`database connected to ${config.get("db_url")}`);
-  server.listen(PORT);
-  log.info(`server listening on port ${PORT}`);
+  log.info(`database connected to ${db_url}`);
+  server.listen(port);
+  log.info(`server listening on port ${port}`);
 };
 export const stop = (signal?: Signals) => {
   log.info(`shutting down server gracefully on ${signal || "demand"}`);

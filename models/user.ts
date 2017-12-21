@@ -6,7 +6,7 @@ import {
   OneToMany,
 } from "typeorm";
 import * as bcrypt from "bcrypt";
-import config from "../lib/config";
+import { password_hash_rounds } from "../lib/config";
 import IPermission from "./IPermission";
 import * as uuid from "uuid/v4";
 import { serialize, Serialize } from "cerialize";
@@ -28,7 +28,7 @@ export default class User extends BaseEntity {
   @Column({ name: "password", type: "varchar" })
   public hashedPassword: string;
   public static hashPassword = (password: string) =>
-    bcrypt.hash(password, config.get("password_hash_rounds"))
+    bcrypt.hash(password, password_hash_rounds)
   public setPassword = async (password: string) => {
     this.hashedPassword = await User.hashPassword(password);
   }
