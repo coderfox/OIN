@@ -2,7 +2,7 @@
 
 import { expect } from "chai";
 import * as request from "request-promise-native";
-import { connection as db } from "../../lib/db";
+import { getRepository } from "typeorm";
 import User from "../../models/user";
 import Session from "../../models/session";
 import { clearDb } from "../helpers";
@@ -17,13 +17,13 @@ export default () => {
     before(async () => {
       await clearDb();
       await user.setPassword("123456");
-      await db.getRepository(User).save(user);
+      await getRepository(User).save(user);
     });
     after(async () => {
       await clearDb();
     });
     beforeEach(async () => {
-      await db.getRepository(Session).clear();
+      await getRepository(Session).clear();
     });
     it("return 200 for correct request", async () => {
       const result = await request({
@@ -114,7 +114,7 @@ export default () => {
     describe("without admin permissions", () => {
       before(async () => {
         user.permissions.admin = false;
-        await db.getRepository(User).save(user);
+        await getRepository(User).save(user);
       });
       it("throws 403 on insufficient permissions", async () => {
         const result = await request({
@@ -140,7 +140,7 @@ export default () => {
     describe("with admin permission", () => {
       before(async () => {
         user.permissions.admin = true;
-        await db.getRepository(User).save(user);
+        await getRepository(User).save(user);
       });
       it("defaults to false", async () => {
         const result = await request({
@@ -206,9 +206,9 @@ export default () => {
       await clearDb();
       user = new User("user@example.com");
       await user.setPassword("123456");
-      await db.getRepository(User).save(user);
+      await getRepository(User).save(user);
       session = new Session(user);
-      await db.getRepository(Session).save(session);
+      await getRepository(Session).save(session);
     });
     after(async () => {
       await clearDb();
@@ -243,7 +243,7 @@ export default () => {
     });
     it("403 EXPIRED_TOKEN", async () => {
       session.expiresAt = new Date(Date.now());
-      await db.getRepository(Session).save(session);
+      await getRepository(Session).save(session);
       const result = await request({
         method: "GET",
         url: `${baseUrl}/session`,
@@ -259,9 +259,9 @@ export default () => {
     });
     it("403 EXPIRED_TOKEN on user deleted from database", async () => {
       user.markDeleted();
-      await db.getRepository(User).save(user);
+      await getRepository(User).save(user);
       session.renew();
-      await db.getRepository(Session).save(session);
+      await getRepository(Session).save(session);
       const result = await request({
         method: "GET",
         url: `${baseUrl}/session`,
@@ -276,7 +276,7 @@ export default () => {
       expect(result.body.code).to.eql("EXPIRED_TOKEN");
       // restore user
       user.deleteToken = undefined;
-      await db.getRepository(User).save(user);
+      await getRepository(User).save(user);
     });
     it("403 INVALID_TOKEN on empty token", async () => {
       const result = await request({
@@ -314,9 +314,9 @@ export default () => {
       await clearDb();
       user = new User("user@example.com");
       await user.setPassword("123456");
-      await db.getRepository(User).save(user);
+      await getRepository(User).save(user);
       session = new Session(user);
-      await db.getRepository(Session).save(session);
+      await getRepository(Session).save(session);
     });
     after(async () => {
       await clearDb();

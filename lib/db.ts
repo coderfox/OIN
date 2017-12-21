@@ -1,9 +1,10 @@
 "use strict";
 
-import { createConnection, Connection, ConnectionOptions } from "typeorm";
+import { createConnection, ConnectionOptions } from "typeorm";
 import { db_url } from "../lib/config";
 
 export const config: ConnectionOptions = {
+  name: "default",
   type: "postgres",
   url: db_url,
   entities: [
@@ -15,5 +16,4 @@ export const config: ConnectionOptions = {
   synchronize: false,
   migrationsRun: true,
 };
-export let connection: Connection;
-export default createConnection(config).then((conn) => connection = conn);
+export default () => createConnection(config);

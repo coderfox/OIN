@@ -5,8 +5,8 @@ import { expect } from "chai";
 import * as request from "request-promise-native";
 import { clearDb, expectDateEquals } from "../helpers";
 import { User, Session, Confirmation, ConfirmationOperations } from "../../models";
-import { connection as db } from "../../lib/db";
 import * as uuid from "uuid/v4";
+import { getRepository, getManager } from "typeorm";
 
 const baseUrl = "http://127.0.0.1:3000";
 
@@ -25,7 +25,7 @@ export default () => {
       session.permissions.admin = false;
       sessionAdmin = new Session(user);
       sessionAdmin.permissions.admin = true;
-      await db.getRepository(Session).save([session, sessionAdmin]);
+      await getRepository(Session).save([session, sessionAdmin]);
     });
     after(clearDb);
     it("200 OK", async () => {
@@ -144,7 +144,7 @@ export default () => {
     });
     it("404 CONFIRMATION_NOT_FOUND #expired", async () => {
       confirm.expiresAt = new Date();
-      await db.manager.save(confirm);
+      await getManager().save(confirm);
       const result = await request({
         method: "PUT",
         url: `${baseUrl}/confirmations/${confirm.id}`,
@@ -199,8 +199,8 @@ export default () => {
       user = new User("user@example.com");
       await user.setPassword("user");
       userSession = new Session(user);
-      await db.manager.save([admin, user]);
-      await db.manager.save([adminSession, adminSessionWithoutPermission, userSession]);
+      await getManager().save([admin, user]);
+      await getManager().save([adminSession, adminSessionWithoutPermission, userSession]);
     });
     afterEach(clearDb);
     it("200 OK # normal user", async () => {

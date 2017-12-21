@@ -9,7 +9,7 @@ For more information, see "${__dirname}/../LICENSE.md".
 
 import dbInit from "../lib/db";
 import { User, Session } from "../models";
-import { connection as db } from "../lib/db";
+import { getManager } from "typeorm";
 
 (async () => {
   await dbInit;
@@ -21,5 +21,5 @@ import { connection as db } from "../lib/db";
   await admin.setPassword("admin");
   adminSession.permissions.admin = true;
   await user.setPassword("user");
-  await db.manager.save([admin, user, adminSession, adminSessionWithoutPermission, userSession]);
+  await getManager().save([admin, user, adminSession, adminSessionWithoutPermission, userSession]);
 })();

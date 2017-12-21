@@ -1,12 +1,13 @@
 "use strict";
 
 import { expect } from "chai";
-import { connection as db } from "../lib/db";
 import { User, Session, Confirmation } from "../models";
+import { getRepository } from "typeorm";
 
 export const clearDb = async () => {
   for (const schema of [Session, User, Confirmation]) {
-    await db.getRepository(schema).remove(await db.getRepository(schema).find());
+    const repo = getRepository(schema);
+    await repo.remove(await repo.find());
   }
 };
 export const expectDateEquals = (a: Date, b: Date) =>

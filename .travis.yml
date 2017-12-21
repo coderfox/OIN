@@ -12,7 +12,7 @@ after_script:
   - greenkeeper-lockfile-upload
   - cat ./coverage/lcov.info | ./node_modules/.bin/coveralls && rm -rf ./coverage
 env:
-  - CXX=g++-4.8 SANDRA_BACKEND_CONFIG=./config/config.travis.yaml
+  - CXX=g++-4.8 PASSWORD_HASH_ROUNDS=1 LOG_LEVEL=silent
 addons:
   apt:
     sources:
