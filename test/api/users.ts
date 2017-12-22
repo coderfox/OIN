@@ -314,15 +314,28 @@ export default () => {
         auth: { username: "user@example.com", password: "user" },
       }),
     );
-    it("401 INVALID_AUTHENTICATION_TYPE");
+    it("401 INVALID_AUTHENTICATION_TYPE", () => request(
+      `POST /users/${admin.id}`,
+      "401 INVALID_AUTHENTICATION_TYPE", {
+        auth: { username: "user@example.com", password: "user" },
+        body: { password: "usernew" },
+      }),
+    );
     it("200 OK # admin", () => request(
       `POST /users/${user.id}`,
       "200 OK", {
         auth: { bearer: adminSession.token },
         body: { email: "new", password: "newpass" },
       }));
-    it("403 INSUFFICIENT_PERMISSION");
-    it("404 USER_NOT_FOUND");
+    it("403 INSUFFICIENT_PERMISSION", () => request(
+      `POST /users/${user.id}`,
+      "403 INSUFFICIENT_PERMISSION", {
+        auth: { bearer: adminSessionWithoutPermission.token },
+        body: { email: "new", password: "newpass" },
+      }));
+    it("404 USER_NOT_FOUND", () => request(
+      `POST /users/${uuid()}`,
+      "404 USER_NOT_FOUND"));
   });
   describe("PUT /confirmations/:id #confirm_new_email", async () => {
     let confirm: Confirmation;
@@ -356,20 +369,122 @@ export default () => {
       expect((user as User).email).to.eql("new@example.com");
     });
   });
-  describe("POST /users/:id/confirmations", () => {
-    it("200 OK");
-    it("404 USER_NOT_FOUND");
-    it("400 PASSWORD_NOT_SUPPLIED");
+  describe("POST /confirmations/password_recovery", () => {
+    let user: User;
+    beforeEach(async () => {
+      await clearDb();
+      user = new User("user@example.com");
+      await user.setPassword("user");
+      await user.save();
+    });
+    it("200 OK", async () => {
+      const result = await request(
+        "POST /confirmations/password_recovery",
+        "200 OK",
+        { body: { email: user.email, password: "new" } },
+      );
+      expect(result).eql({});
+    });
+    it("404 USER_NOT_FOUND", () => request(
+      "POST /confirmations/password_recovery",
+      "404 USER_NOT_FOUND",
+      { body: { email: "null@example.com", password: "new" } },
+    ));
+    it("400 PASSWORD_NOT_SUPPLIED", () => request(
+      "POST /confirmations/password_recovery",
+      "400 PASSWORD_NOT_SUPPLIED",
+      { body: { email: user.email } },
+    ));
+    it("400 EMAIL_NOT_SUPPLIED", () => request(
+      "POST /confirmations/password_recovery",
+      "400 EMAIL_NOT_SUPPLIED",
+      { body: { password: "new" } },
+    ));
   });
   describe("PUT /confirmations/:id #password_recovery", () => {
-    it("200 OK");
+    let confirm: Confirmation;
+    beforeEach(async () => {
+      await clearDb();
+      const user = new User("user@example.com");
+      await user.setPassword("pass");
+      await user.save();
+      confirm = new Confirmation({
+        operation: ConfirmationOperations.PasswordRecovery, data: {
+          uid: user.id,
+          newPassword: "new",
+        },
+      });
+      await confirm.save();
+    });
+    afterEach(clearDb);
+    it("200 OK", async () => {
+      const result = await requestO({
+        method: "PUT",
+        url: `${baseUrl}/confirmations/${confirm.id}`,
+        simple: false,
+        resolveWithFullResponse: true,
+        json: {
+          confirmed: true,
+        },
+      });
+      expect(result.statusCode).to.eql(200);
+      const user = await User.findOne();
+      expect(user).not.to.be.undefined;
+      expect(await (user as User).checkPassword("new")).to.be.true;
+    });
   });
   describe("DELETE /users/:id", () => {
-    it("200 OK #user");
-    it("200 OK #admin");
-    it("200 OK #user");
-    it("401 INVALID_AUTHENTICATION_TYPE");
-    it("404 USER_NOT_FOUND");
-    it("403 INSUFFICIENT_PERMISSION");
+    let admin: User;
+    let user: User;
+    let adminSession: Session;
+    let adminSessionWithoutPermission: Session;
+    let userSession: Session;
+    beforeEach(async () => {
+      await clearDb();
+      admin = new User("admin@example.com");
+      await admin.setPassword("admin");
+      adminSession = new Session(admin);
+      adminSession.permissions.admin = true;
+      adminSessionWithoutPermission = new Session(admin);
+      user = new User("user@example.com");
+      await user.setPassword("user");
+      userSession = new Session(user);
+      await getManager().save([admin, user]);
+      await getManager().save([adminSession, adminSessionWithoutPermission, userSession]);
+    });
+    it("200 OK #user", async () => {
+      await request(
+        `DELETE /users/${user.id}`,
+        "200 OK",
+        { auth: { username: user.email, password: "user" } },
+      );
+      const u = await User.findOneById(user.id);
+      expect(u).not.to.be.undefined;
+      expect((u as User).deleteToken).not.to.be.undefined;
+    });
+    it("200 OK #admin", async () => {
+      await request(
+        `DELETE /users/${user.id}`,
+        "200 OK",
+        { auth: { bearer: adminSession.token } },
+      );
+      const u = await User.findOneById(user.id);
+      expect(u).not.to.be.undefined;
+      expect((u as User).deleteToken).not.to.be.undefined;
+    });
+    it("401 INVALID_AUTHENTICATION_TYPE", async () => request(
+      `DELETE /users/${admin.id}`,
+      "401 INVALID_AUTHENTICATION_TYPE",
+      { auth: { username: user.email, password: "user" } },
+    ));
+    it("404 USER_NOT_FOUND", async () => request(
+      `DELETE /users/${uuid()}`,
+      "404 USER_NOT_FOUND",
+    ));
+    it("403 INSUFFICIENT_PERMISSION", async () => request(
+      `DELETE /users/${user.id}`,
+      "403 INSUFFICIENT_PERMISSION",
+      { auth: { bearer: adminSessionWithoutPermission.token } },
+    ));
   });
 };

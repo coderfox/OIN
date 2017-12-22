@@ -64,6 +64,13 @@ export class UserNotFoundByIdError extends ApiError {
     this.id = id;
   }
 }
+export class UserNotFoundByEmailError extends ApiError {
+  public readonly email: string;
+  constructor(email: string) {
+    super("USER_NOT_FOUND", 404);
+    this.email = email;
+  }
+}
 export class PasswordMismatchError extends ApiError {
   public readonly user: User;
   public readonly wrongPassword: string;
@@ -135,5 +142,10 @@ export class NewEmailOrPasswordNotSuppliedError extends ApiError {
 export class PasswordNotSuppliedError extends ApiError {
   constructor() {
     super("PASSWORD_NOT_SUPPLIED", 400);
+  }
+}
+export class EmailNotSuppliedError extends ApiError {
+  constructor() {
+    super("EMAIL_NOT_SUPPLIED", 400);
   }
 }

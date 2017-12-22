@@ -107,21 +107,7 @@ router.post("/users/:id", async (ctx) => {
     }
   }
 });
-router.post("/users/:id/confirmations", async (ctx) => {
-  if (!ctx.request.body.password) {
-    throw new Errors.PasswordNotSuppliedError();
-  }
-  const confirmation = new Confirmation({
-    operation: ConfirmationOperations.PasswordRecovery, data: {
-      uid: ctx.params.user.id,
-      newPassword: ctx.request.body.password,
-    },
-  });
-  await confirmation.save();
-  ctx.status = 202;
-  ctx.body = {};
-});
-router.delete("/user/:id", async (ctx) => {
+router.delete("/users/:id", async (ctx) => {
   const modify = async () => {
     ctx.params.user.markDeleted();
     await ctx.params.user.save();
@@ -130,7 +116,7 @@ router.delete("/user/:id", async (ctx) => {
   const userAction = async () => {
     const user = await authBasic(ctx);
     if (ctx.params.id !== user.id) {
-      throw new Errors.AuthenticationNotFoundError(ctx, "Bearer");
+      throw new Errors.InvalidAuthenticationTypeError("Basic", "Bearer");
     }
     await modify();
   };
@@ -144,7 +130,7 @@ router.delete("/user/:id", async (ctx) => {
   try {
     await userAction();
   } catch (err) {
-    if (err instanceof Errors.AuthenticationNotFoundError) {
+    if (err instanceof Errors.InvalidAuthenticationTypeError) {
       await adminAction();
     } else {
       throw err;

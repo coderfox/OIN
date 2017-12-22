@@ -7,6 +7,27 @@ import { Operations as ConfirmationOperations } from "../models/confirmation";
 import * as ConfirmationTypes from "../models/confirmation";
 import * as Errors from "../lib/errors";
 
+router.post("/confirmations/password_recovery", async (ctx) => {
+  if (!ctx.request.body.email) {
+    throw new Errors.EmailNotSuppliedError();
+  }
+  if (!ctx.request.body.password) {
+    throw new Errors.PasswordNotSuppliedError();
+  }
+  const user = await User.findOne({ email: ctx.request.body.email });
+  if (!user || !!user.deleteToken) {
+    throw new Errors.UserNotFoundByEmailError(ctx.request.body.email);
+  }
+  const confirmation = new Confirmation({
+    operation: ConfirmationOperations.PasswordRecovery, data: {
+      uid: user.id,
+      newPassword: ctx.request.body.password,
+    },
+  });
+  await confirmation.save();
+  ctx.status = 200;
+  ctx.body = {};
+});
 router.put("/confirmations/:code", async (ctx) => {
   try {
     const confirmation = await Confirmation.findOneById(ctx.params.code);
