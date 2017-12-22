@@ -314,12 +314,15 @@ export default () => {
         auth: { username: "user@example.com", password: "user" },
       }),
     );
+    it("401 INVALID_AUTHENTICATION_TYPE");
     it("200 OK # admin", () => request(
       `POST /users/${user.id}`,
       "200 OK", {
         auth: { bearer: adminSession.token },
         body: { email: "new", password: "newpass" },
       }));
+    it("403 INSUFFICIENT_PERMISSION");
+    it("404 USER_NOT_FOUND");
   });
   describe("PUT /confirmations/:id #confirm_new_email", async () => {
     let confirm: Confirmation;
@@ -352,28 +355,21 @@ export default () => {
       expect(user).not.to.be.undefined;
       expect((user as User).email).to.eql("new@example.com");
     });
-    it("404 CONFIRMATION_NOT_FOUND #used", async () => {
-      const result = await requestO({
-        method: "PUT",
-        url: `${baseUrl}/confirmations/${confirm.id}`,
-        simple: false,
-        resolveWithFullResponse: true,
-        json: {
-          confirmed: true,
-        },
-      });
-      expect(result.statusCode).to.eql(200);
-      const resultB = await requestO({
-        method: "PUT",
-        url: `${baseUrl}/confirmations/${confirm.id}`,
-        simple: false,
-        resolveWithFullResponse: true,
-        json: {
-          confirmed: true,
-        },
-      });
-      expect(resultB.statusCode).to.eql(404);
-      expect(resultB.body.code).to.eql("CONFIRMATION_NOT_FOUND");
-    });
+  });
+  describe("POST /users/:id/confirmations", () => {
+    it("200 OK");
+    it("404 USER_NOT_FOUND");
+    it("400 PASSWORD_NOT_SUPPLIED");
+  });
+  describe("PUT /confirmations/:id #password_recovery", () => {
+    it("200 OK");
+  });
+  describe("DELETE /users/:id", () => {
+    it("200 OK #user");
+    it("200 OK #admin");
+    it("200 OK #user");
+    it("401 INVALID_AUTHENTICATION_TYPE");
+    it("404 USER_NOT_FOUND");
+    it("403 INSUFFICIENT_PERMISSION");
   });
 };
