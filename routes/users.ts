@@ -131,9 +131,9 @@ router.post("/users/:id", async (ctx) => {
     if (!user || !!user.deleteToken) {
       throw new Errors.UserNotFoundByIdError(ctx.params.id);
     }
-    if (ctx.body.email) {
+    if (ctx.request.body.email) {
       if (!requireNewEmailConfirmation) {
-        user.email = ctx.body.email;
+        user.email = ctx.request.body.email;
         await user.save();
       } else {
         const confirmation = new Confirmation({
@@ -145,8 +145,8 @@ router.post("/users/:id", async (ctx) => {
         await confirmation.save();
         ctx.status = 202;
       }
-    } else if (ctx.body.password) {
-      user.setPassword(ctx.body.password);
+    } else if (ctx.request.body.password) {
+      user.setPassword(ctx.request.body.password);
       await user.save();
     } else {
       throw new Errors.NewEmailOrPasswordNotSuppliedError();
@@ -156,7 +156,7 @@ router.post("/users/:id", async (ctx) => {
   const userAction = async () => {
     const user = await authBasic(ctx);
     if (ctx.params.id !== user.id) {
-      throw new Errors.AuthenticationNotFoundError(ctx, "Bearer");
+      throw new Errors.InvalidAuthenticationTypeError("Basic", "Bearer");
     }
     await modify(user, true);
   };
@@ -171,7 +171,7 @@ router.post("/users/:id", async (ctx) => {
   try {
     await userAction();
   } catch (err) {
-    if (err instanceof Errors.AuthenticationNotFoundError) {
+    if (err instanceof Errors.InvalidAuthenticationTypeError) {
       await adminAction();
     } else {
       throw err;

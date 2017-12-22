@@ -2,8 +2,8 @@
 // tslint:disable:no-unused-expression
 
 import { expect } from "chai";
-import * as request from "request-promise-native";
-import { clearDb, expectDateEquals } from "../helpers";
+import * as requestO from "request-promise-native";
+import { clearDb, expectDateEquals, request } from "../helpers";
 import { User, Session, Confirmation, ConfirmationOperations } from "../../models";
 import * as uuid from "uuid/v4";
 import { getRepository, getManager } from "typeorm";
@@ -29,7 +29,7 @@ export default () => {
     });
     after(clearDb);
     it("200 OK", async () => {
-      const result = await request({
+      const result = await requestO({
         url: `${baseUrl}/users`,
         simple: false,
         resolveWithFullResponse: true,
@@ -50,7 +50,7 @@ export default () => {
       }
     });
     it("403 INSUFFICIENT_PERMISSION", async () => {
-      const result = await request({
+      const result = await requestO({
         url: `${baseUrl}/users`,
         simple: false,
         resolveWithFullResponse: true,
@@ -66,7 +66,7 @@ export default () => {
   describe("POST /users", () => {
     afterEach(clearDb);
     it("200 OK", async () => {
-      const result = await request({
+      const result = await requestO({
         method: "POST",
         url: `${baseUrl}/users`,
         simple: false,
@@ -86,7 +86,7 @@ export default () => {
       await user.setPassword("123456");
       await user.save();
       // start test
-      const result = await request({
+      const result = await requestO({
         method: "POST",
         url: `${baseUrl}/users`,
         simple: false,
@@ -115,7 +115,7 @@ export default () => {
     });
     afterEach(clearDb);
     it("201 Created", async () => {
-      const result = await request({
+      const result = await requestO({
         method: "PUT",
         url: `${baseUrl}/confirmations/${confirm.id}`,
         simple: false,
@@ -130,7 +130,7 @@ export default () => {
       expect(result.body).to.eql((user as User).toView());
     });
     it("404 CONFIRMATION_NOT_FOUND #invalid", async () => {
-      const result = await request({
+      const result = await requestO({
         method: "PUT",
         url: `${baseUrl}/confirmations/invalid`,
         simple: false,
@@ -145,7 +145,7 @@ export default () => {
     it("404 CONFIRMATION_NOT_FOUND #expired", async () => {
       confirm.expiresAt = new Date();
       await getManager().save(confirm);
-      const result = await request({
+      const result = await requestO({
         method: "PUT",
         url: `${baseUrl}/confirmations/${confirm.id}`,
         simple: false,
@@ -158,7 +158,7 @@ export default () => {
       expect(result.body.code).to.eql("CONFIRMATION_NOT_FOUND");
     });
     it("404 CONFIRMATION_NOT_FOUND #used", async () => {
-      const result = await request({
+      const result = await requestO({
         method: "PUT",
         url: `${baseUrl}/confirmations/${confirm.id}`,
         simple: false,
@@ -171,7 +171,7 @@ export default () => {
       const user = await User.findOne();
       expect(user).to.be.not.undefined;
       expect(result.body).to.eql((user as User).toView());
-      const resultB = await request({
+      const resultB = await requestO({
         method: "PUT",
         url: `${baseUrl}/confirmations/${confirm.id}`,
         simple: false,
@@ -204,7 +204,7 @@ export default () => {
     });
     afterEach(clearDb);
     it("200 OK # normal user", async () => {
-      const result = await request({
+      const result = await requestO({
         method: "GET",
         url: `${baseUrl}/users/${user.id}`,
         simple: false,
@@ -220,7 +220,7 @@ export default () => {
       expect(result.body).to.eql(user.toView());
     });
     it("200 OK # admin", async () => {
-      const result = await request({
+      const result = await requestO({
         method: "GET",
         url: `${baseUrl}/users/${user.id}`,
         simple: false,
@@ -236,7 +236,7 @@ export default () => {
       expect(result.body).to.eql(user.toView());
     });
     it("404 USER_NOT_FOUND", async () => {
-      const result = await request({
+      const result = await requestO({
         method: "GET",
         url: `${baseUrl}/users/${uuid()}`,
         simple: false,
@@ -252,7 +252,7 @@ export default () => {
       expect(result.body.code).to.eql("USER_NOT_FOUND");
     });
     it("403 INSUFFICIENT_PERMISSION", async () => {
-      const result = await request({
+      const result = await requestO({
         method: "GET",
         url: `${baseUrl}/users/${admin.id}`,
         simple: false,
@@ -266,6 +266,114 @@ export default () => {
       });
       expect(result.statusCode).to.eql(403);
       expect(result.body.code).to.eql("INSUFFICIENT_PERMISSION");
+    });
+  });
+  describe("POST /users/:id", () => {
+    let admin: User;
+    let user: User;
+    let adminSession: Session;
+    let adminSessionWithoutPermission: Session;
+    let userSession: Session;
+    beforeEach(async () => {
+      admin = new User("admin@example.com");
+      await admin.setPassword("admin");
+      adminSession = new Session(admin);
+      adminSession.permissions.admin = true;
+      adminSessionWithoutPermission = new Session(admin);
+      user = new User("user@example.com");
+      await user.setPassword("user");
+      userSession = new Session(user);
+      await getManager().save([admin, user]);
+      await getManager().save([adminSession, adminSessionWithoutPermission, userSession]);
+    });
+    afterEach(clearDb);
+    it("202 Accepted # user email", async () => {
+      const result = await request(
+        `POST /users/${user.id}`,
+        "202 Accepted", {
+          auth: {
+            username: "user@example.com",
+            password: "user",
+          },
+          body: {
+            email: "new@example.com",
+          },
+        });
+      expect(result).to.eql(user.toView());
+    });
+    it("200 OK # user password", () => request(
+      `POST /users/${user.id}`,
+      "200 OK", {
+        auth: { username: "user@example.com", password: "user" },
+        body: { password: "usernew" },
+      }),
+    );
+    it("400 NEW_EMAIL_OR_PASSWORD_NOT_SUPPLIED", () => request(
+      `POST /users/${user.id}`,
+      "400 NEW_EMAIL_OR_PASSWORD_NOT_SUPPLIED", {
+        auth: { username: "user@example.com", password: "user" },
+      }),
+    );
+    it("200 OK # admin", () => request(
+      `POST /users/${user.id}`,
+      "200 OK", {
+        auth: { bearer: adminSession.token },
+        body: { email: "new", password: "newpass" },
+      }));
+  });
+  describe("PUT /confirmations/:id #confirm_new_email", async () => {
+    let confirm: Confirmation;
+    beforeEach(async () => {
+      await clearDb();
+      const user = new User("user@example.com");
+      await user.setPassword("pass");
+      await user.save();
+      confirm = new Confirmation({
+        operation: ConfirmationOperations.UpdateEmail, data: {
+          uid: user.id,
+          newEmail: "new@example.com",
+        },
+      });
+      await confirm.save();
+    });
+    afterEach(clearDb);
+    it("200 OK", async () => {
+      const result = await requestO({
+        method: "PUT",
+        url: `${baseUrl}/confirmations/${confirm.id}`,
+        simple: false,
+        resolveWithFullResponse: true,
+        json: {
+          confirmed: true,
+        },
+      });
+      expect(result.statusCode).to.eql(200);
+      const user = await User.findOne();
+      expect(user).not.to.be.undefined;
+      expect((user as User).email).to.eql("new@example.com");
+    });
+    it("404 CONFIRMATION_NOT_FOUND #used", async () => {
+      const result = await requestO({
+        method: "PUT",
+        url: `${baseUrl}/confirmations/${confirm.id}`,
+        simple: false,
+        resolveWithFullResponse: true,
+        json: {
+          confirmed: true,
+        },
+      });
+      expect(result.statusCode).to.eql(200);
+      const resultB = await requestO({
+        method: "PUT",
+        url: `${baseUrl}/confirmations/${confirm.id}`,
+        simple: false,
+        resolveWithFullResponse: true,
+        json: {
+          confirmed: true,
+        },
+      });
+      expect(resultB.statusCode).to.eql(404);
+      expect(resultB.body.code).to.eql("CONFIRMATION_NOT_FOUND");
     });
   });
 };
