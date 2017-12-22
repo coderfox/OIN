@@ -74,9 +74,9 @@ export class PasswordMismatchError extends ApiError {
   }
 }
 export class InvalidAuthenticationTypeError extends ApiError {
-  public readonly wrong: string;
+  public readonly wrong?: string;
   public readonly right: string;
-  constructor(wrong: string, right: string) {
+  constructor(right: string, wrong?: string) {
     super("INVALID_AUTHENTICATION_TYPE", 401);
     // TODO: auto respond WWW-Authenticate header
     this.wrong = wrong;

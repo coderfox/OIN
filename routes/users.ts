@@ -6,14 +6,13 @@ import { User, Confirmation } from "../models";
 import { Operations as ConfirmationOperations } from "../models/confirmation";
 import * as ConfirmationTypes from "../models/confirmation";
 import * as Errors from "../lib/errors";
-import { authUser, ICtxBearerState, ICtxState } from "../lib/auth";
+import { authBasic, authBearer } from "../lib/auth";
 import { Serialize } from "cerialize";
 
 router.get("/users", async (ctx) => {
-  await authUser(ctx, "Bearer");
-  const state = ctx.state as ICtxBearerState;
-  if (!state.session.permissions.admin) {
-    throw new Errors.InsufficientPermissionError(ctx.state.session, "admin");
+  const session = await authBearer(ctx);
+  if (!session.permissions.admin) {
+    throw new Errors.InsufficientPermissionError(session, "admin");
   }
   ctx.body = Serialize(await User.find({
     skip: ctx.request.header["x-page-skip"] || ctx.request.query.skip || 0,
@@ -111,14 +110,13 @@ router.put("/confirmations/:code", async (ctx) => {
   }
 });
 router.get("/users/:id", async (ctx) => {
-  await authUser(ctx, "Bearer");
-  const state = ctx.state as ICtxBearerState;
-  if (ctx.params.id !== state.user.id && !state.session.permissions.admin) {
+  const session = await authBearer(ctx);
+  if (ctx.params.id !== session.user.id && !session.permissions.admin) {
     const user = await User.findOneById(ctx.params.id);
     if (!user || !!user.deleteToken) {
       throw new Errors.UserNotFoundByIdError(ctx.params.id);
     } else {
-      throw new Errors.InsufficientPermissionError(state.session, "admin");
+      throw new Errors.InsufficientPermissionError(session, "admin");
     }
   } else {
     const user = await User.findOneById(ctx.params.id);
@@ -129,42 +127,56 @@ router.get("/users/:id", async (ctx) => {
   }
 });
 router.post("/users/:id", async (ctx) => {
-  await authUser(ctx);
-  const state = ctx.state as ICtxState;
-  if (state.authType === "Basic") {
-    if (ctx.params.id !== state.user.id) {
-      throw new Errors.AuthenticationNotFoundError(ctx, "Bearer");
+  const modify = async (user: User | undefined, requireNewEmailConfirmation: boolean) => {
+    if (!user || !!user.deleteToken) {
+      throw new Errors.UserNotFoundByIdError(ctx.params.id);
     }
-  } else {
-    if (!state.session.permissions.admin) {
-      throw new Errors.InsufficientPermissionError(state.session, "admin");
-    }
-  }
-  const user = await User.findOneById(ctx.params.id);
-  if (!user || !!user.deleteToken) {
-    throw new Errors.UserNotFoundByIdError(ctx.params.id);
-  }
-  if (ctx.body.email) {
-    if (state.authType === "Bearer") {
-      user.email = ctx.body.email;
+    if (ctx.body.email) {
+      if (!requireNewEmailConfirmation) {
+        user.email = ctx.body.email;
+        await user.save();
+      } else {
+        const confirmation = new Confirmation({
+          operation: ConfirmationOperations.UpdateEmail, data: {
+            uid: user.id,
+            newEmail: ctx.request.body.email,
+          },
+        });
+        await confirmation.save();
+        ctx.status = 202;
+      }
+    } else if (ctx.body.password) {
+      user.setPassword(ctx.body.password);
       await user.save();
     } else {
-      const confirmation = new Confirmation({
-        operation: ConfirmationOperations.UpdateEmail, data: {
-          uid: user.id,
-          newEmail: ctx.request.body.email,
-        },
-      });
-      await confirmation.save();
-      ctx.status = 202;
+      throw new Errors.NewEmailOrPasswordNotSuppliedError();
     }
-  } else if (ctx.body.password) {
-    user.setPassword(ctx.body.password);
-    await user.save();
-  } else {
-    throw new Errors.NewEmailOrPasswordNotSuppliedError();
+    ctx.body = user.toView();
+  };
+  const userAction = async () => {
+    const user = await authBasic(ctx);
+    if (ctx.params.id !== user.id) {
+      throw new Errors.AuthenticationNotFoundError(ctx, "Bearer");
+    }
+    await modify(user, true);
+  };
+  const adminAction = async () => {
+    const session = await authBearer(ctx);
+    if (!session.permissions.admin) {
+      throw new Errors.InsufficientPermissionError(session, "admin");
+    }
+    const user = await User.findOneById(ctx.params.id);
+    await modify(user, false);
+  };
+  try {
+    await userAction();
+  } catch (err) {
+    if (err instanceof Errors.AuthenticationNotFoundError) {
+      await adminAction();
+    } else {
+      throw err;
+    }
   }
-  ctx.body = user.toView();
 });
 router.post("/users/:id/confirmations", async (ctx) => {
   const user = await User.findOneById(ctx.params.id);
@@ -185,24 +197,38 @@ router.post("/users/:id/confirmations", async (ctx) => {
   ctx.body = {};
 });
 router.delete("/user/:id", async (ctx) => {
-  await authUser(ctx);
-  const state = ctx.state as ICtxState;
-  if (state.authType === "Basic") {
-    if (ctx.params.id !== state.user.id) {
+  const modify = async (user: User | undefined) => {
+    if (!user || !!user.deleteToken) {
+      throw new Errors.UserNotFoundByIdError(ctx.params.id);
+    }
+    user.markDeleted();
+    await user.save();
+    ctx.body = user.toView();
+  };
+  const userAction = async () => {
+    const user = await authBasic(ctx);
+    if (ctx.params.id !== user.id) {
       throw new Errors.AuthenticationNotFoundError(ctx, "Bearer");
     }
-  } else {
-    if (!state.session.permissions.admin) {
-      throw new Errors.InsufficientPermissionError(state.session, "admin");
+    await modify(user);
+  };
+  const adminAction = async () => {
+    const session = await authBearer(ctx);
+    if (!session.permissions.admin) {
+      throw new Errors.InsufficientPermissionError(session, "admin");
+    }
+    const user = await User.findOneById(ctx.params.id);
+    await modify(user);
+  };
+  try {
+    await userAction();
+  } catch (err) {
+    if (err instanceof Errors.AuthenticationNotFoundError) {
+      await adminAction();
+    } else {
+      throw err;
     }
   }
-  const user = await User.findOneById(ctx.params.id);
-  if (!user || !!user.deleteToken) {
-    throw new Errors.UserNotFoundByIdError(ctx.params.id);
-  }
-  user.markDeleted();
-  await user.save();
-  ctx.body = user.toView();
 });
 
 export default router;

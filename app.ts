@@ -26,6 +26,9 @@ app.use(async (ctx, next) => {
       log.error(error, "internal server error");
       error = new Errors.InternalServerError(error);
     } else {
+      if (error instanceof Errors.InvalidAuthenticationTypeError) {
+        ctx.set("WWW-Authenticate", error.right);
+      }
       log.info(error, "handled server error");
     }
     ctx.status = error.status;
