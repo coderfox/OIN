@@ -4,7 +4,6 @@ import Router = require("koa-router");
 const router = new Router();
 import { User, Confirmation } from "../models";
 import { Operations as ConfirmationOperations } from "../models/confirmation";
-import * as ConfirmationTypes from "../models/confirmation";
 import * as Errors from "../lib/errors";
 import { authBasic, authBearer } from "../lib/auth";
 import { Serialize } from "cerialize";
@@ -43,102 +42,33 @@ router.post("/users", async (ctx) => {
   ctx.status = 202;
   ctx.body = {};
 });
-router.put("/confirmations/:code", async (ctx) => {
-  try {
-    const confirmation = await Confirmation.findOneById(ctx.params.code);
-    if (!confirmation || confirmation.expired) {
-      throw new Errors.ConfirmationNotFoundError(ctx.params.code);
-    }
-    switch (confirmation.operation) {
-      case ConfirmationOperations.Register: {
-        const data = confirmation.data as ConfirmationTypes.IRegisterData;
-        const presentUser = await User.findOne({
-          email: data.email,
-        });
-        if (presentUser && !presentUser.deleteToken) {
-          throw new Errors.ConfirmationNotFoundError(ctx.params.code);
-        }
-        const user = new User(data.email);
-        user.hashedPassword = data.hashedPassword;
-        await user.save();
-        confirmation.expiresAt = new Date();
-        await confirmation.save();
-        ctx.set("Location", `/users/${user.id}`);
-        ctx.status = 201;
-        ctx.body = user.toView();
-        break;
-      }
-      case ConfirmationOperations.UpdateEmail: {
-        const data = confirmation.data as ConfirmationTypes.IUpdateEmailData;
-        const user = await User.findOneById(data.uid);
-        if (user && !user.deleteToken) {
-          user.email = data.newEmail;
-          await user.save();
-          confirmation.expiresAt = new Date();
-          await confirmation.save();
-          ctx.body = { confirmed: true };
-        } else {
-          throw new Errors.ConfirmationNotFoundError(ctx.params.code);
-        }
-        break;
-      }
-      case ConfirmationOperations.PasswordRecovery: {
-        const data = confirmation.data as ConfirmationTypes.IPasswordRecoveryData;
-        const user = await User.findOneById(data.uid);
-        if (user && !user.deleteToken) {
-          user.setPassword(data.newPassword);
-          await user.save();
-          confirmation.expiresAt = new Date();
-          await confirmation.save();
-          ctx.body = { confirmed: true };
-        } else {
-          throw new Errors.ConfirmationNotFoundError(ctx.params.code);
-        }
-        break;
-      }
-      default: {
-        throw new Errors.NotImplementedError();
-      }
-    }
-  } catch (err) {
-    if (err && err.message &&
-      err.message.includes("invalid input syntax")) {
-      throw new Errors.ConfirmationNotFoundError(ctx.params.code);
-    } else {
-      throw err;
-    }
+router.use("/users/:id", async (ctx, next) => {
+  const user = await User.findOneById(ctx.params.id);
+  if (user && !user.deleteToken) {
+    ctx.params.user = user;
+    await next();
+  } else {
+    throw new Errors.UserNotFoundByIdError(ctx.params.id);
   }
 });
 router.get("/users/:id", async (ctx) => {
   const session = await authBearer(ctx);
   if (ctx.params.id !== session.user.id && !session.permissions.admin) {
-    const user = await User.findOneById(ctx.params.id);
-    if (!user || !!user.deleteToken) {
-      throw new Errors.UserNotFoundByIdError(ctx.params.id);
-    } else {
-      throw new Errors.InsufficientPermissionError(session, "admin");
-    }
+    throw new Errors.InsufficientPermissionError(session, "admin");
   } else {
-    const user = await User.findOneById(ctx.params.id);
-    if (!user || !!user.deleteToken) {
-      throw new Errors.UserNotFoundByIdError(ctx.params.id);
-    }
-    ctx.body = user.toView();
+    ctx.body = ctx.params.user.toView();
   }
 });
 router.post("/users/:id", async (ctx) => {
-  const modify = async (user: User | undefined, requireNewEmailConfirmation: boolean) => {
-    if (!user || !!user.deleteToken) {
-      throw new Errors.UserNotFoundByIdError(ctx.params.id);
-    }
+  const modify = async (requireNewEmailConfirmation: boolean) => {
     if (ctx.request.body.email) {
       if (!requireNewEmailConfirmation) {
-        user.email = ctx.request.body.email;
-        await user.save();
+        ctx.params.user.email = ctx.request.body.email;
+        await ctx.params.user.save();
       } else {
         const confirmation = new Confirmation({
           operation: ConfirmationOperations.UpdateEmail, data: {
-            uid: user.id,
+            uid: ctx.params.user.id,
             newEmail: ctx.request.body.email,
           },
         });
@@ -146,27 +76,26 @@ router.post("/users/:id", async (ctx) => {
         ctx.status = 202;
       }
     } else if (ctx.request.body.password) {
-      user.setPassword(ctx.request.body.password);
-      await user.save();
+      ctx.params.user.setPassword(ctx.request.body.password);
+      await ctx.params.user.save();
     } else {
       throw new Errors.NewEmailOrPasswordNotSuppliedError();
     }
-    ctx.body = user.toView();
+    ctx.body = ctx.params.user.toView();
   };
   const userAction = async () => {
     const user = await authBasic(ctx);
     if (ctx.params.id !== user.id) {
       throw new Errors.InvalidAuthenticationTypeError("Basic", "Bearer");
     }
-    await modify(user, true);
+    await modify(true);
   };
   const adminAction = async () => {
     const session = await authBearer(ctx);
     if (!session.permissions.admin) {
       throw new Errors.InsufficientPermissionError(session, "admin");
     }
-    const user = await User.findOneById(ctx.params.id);
-    await modify(user, false);
+    await modify(false);
   };
   try {
     await userAction();
@@ -179,16 +108,12 @@ router.post("/users/:id", async (ctx) => {
   }
 });
 router.post("/users/:id/confirmations", async (ctx) => {
-  const user = await User.findOneById(ctx.params.id);
-  if (!user || !!user.deleteToken) {
-    throw new Errors.UserNotFoundByIdError(ctx.params.id);
-  }
   if (!ctx.request.body.password) {
     throw new Errors.PasswordNotSuppliedError();
   }
   const confirmation = new Confirmation({
     operation: ConfirmationOperations.PasswordRecovery, data: {
-      uid: user.id,
+      uid: ctx.params.user.id,
       newPassword: ctx.request.body.password,
     },
   });
@@ -197,28 +122,24 @@ router.post("/users/:id/confirmations", async (ctx) => {
   ctx.body = {};
 });
 router.delete("/user/:id", async (ctx) => {
-  const modify = async (user: User | undefined) => {
-    if (!user || !!user.deleteToken) {
-      throw new Errors.UserNotFoundByIdError(ctx.params.id);
-    }
-    user.markDeleted();
-    await user.save();
-    ctx.body = user.toView();
+  const modify = async () => {
+    ctx.params.user.markDeleted();
+    await ctx.params.user.save();
+    ctx.body = ctx.params.user.toView();
   };
   const userAction = async () => {
     const user = await authBasic(ctx);
     if (ctx.params.id !== user.id) {
       throw new Errors.AuthenticationNotFoundError(ctx, "Bearer");
     }
-    await modify(user);
+    await modify();
   };
   const adminAction = async () => {
     const session = await authBearer(ctx);
     if (!session.permissions.admin) {
       throw new Errors.InsufficientPermissionError(session, "admin");
     }
-    const user = await User.findOneById(ctx.params.id);
-    await modify(user);
+    await modify();
   };
   try {
     await userAction();
