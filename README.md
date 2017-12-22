@@ -9,11 +9,16 @@ API provider for [Sandra](https://github.com/SANDRAProject).
 
 ## Config
 
-It discovers config file at the follwing sequence:
+The server is configured via environmental variables:
 
-1. environment variable `SANDRA_BACKEND_CONFIG`
-2. /config/config.yaml
-3. /config/config.sample.yaml
+| name                 | description | default                             |
+| -------------------- | ----------- | ----------------------------------- |
+| PASSWORD_HASH_ROUNDS |             | 12                                  |
+| DB_URL               |             | pg://postgres@127.0.0.1:5432/sandra |
+| PORT                 |             | 3000                                |
+| TOKEN_EXPIRES        |             | 7d                                  |
+| LOG_LEVEL            |             | info                                |
+| CONFIRMATION_EXPIRES |             | 2h                                  |
 
 ## Start
 

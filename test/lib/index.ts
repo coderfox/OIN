@@ -1,7 +1,7 @@
 "use strict";
 
-import parseAuth from "./parseAuth";
+import auth from "./auth";
 
 export default () => {
-  describe("parseAuth", parseAuth);
+  describe("auth", auth);
 };

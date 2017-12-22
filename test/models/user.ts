@@ -2,7 +2,6 @@
 
 import User from "../../models/user";
 import { expect } from "chai";
-import config from "../../lib/config";
 
 export default () => {
   describe("#setPassword", () => {

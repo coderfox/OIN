@@ -1,16 +1,19 @@
 "use strict";
 
-import { createConnection, Connection } from "typeorm";
-import config from "../lib/config";
+import { createConnection, ConnectionOptions } from "typeorm";
+import { db_url } from "../lib/config";
 
-export let connection: Connection;
-export default createConnection({
+export const config: ConnectionOptions = {
+  name: "default",
   type: "postgres",
-  url: config.get("db_url"),
+  url: db_url,
   entities: [
-    __dirname + "/../models/*.js",
+    "./models/*.js",
   ],
-  autoSchemaSync: true,
-}).then((conn) => {
-  connection = conn;
-});
+  migrations: [
+    "./migrations/*.js",
+  ],
+  synchronize: false,
+  migrationsRun: true,
+};
+export default () => createConnection(config);

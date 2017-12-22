@@ -1,76 +1,94 @@
 "use strict";
 
-import * as Koa from "koa";
-import config from "../lib/config";
+import { Context } from "koa";
 import User from "../models/user";
 import Session from "../models/session";
-import { connection as db } from "../lib/db";
-import log from "../lib/log";
-import parse from "../lib/parseAuth";
-import { InvalidInputError, UnsupportedAuthTypeError } from "../lib/parseAuth";
 import * as Errors from "../lib/errors";
 import { Errors as SessionErrors } from "../models/session";
 
-// TODO: recognize confirmation& service
-export const authUser = async (ctx: Koa.Context, required?: "Basic" | "Bearer") => {
-  if (!ctx.headers.authorization) {
-    if (required) {
-      ctx.set("WWW-Authenticate", required);
-    }
-    throw new Errors.AuthenticationNotFoundError();
+const UuidRegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export const parseAuth = (authorization: string, required?: "Basic" | "Bearer") => {
+  const indexOfSpace = authorization.indexOf(" ");
+  if (indexOfSpace < 0) {
+    throw new Errors.CorruptedAuthorizationHeaderError();
   }
-  try {
-    const parsed = parse(ctx.headers.authorization);
-    ctx.state.authType = parsed.type;
-    if (required && parsed.type !== required) {
-      ctx.set("WWW-Authenticate", required);
-      throw new Errors.InvalidAuthenticationTypeError(parsed.type, required);
-    }
-    switch (parsed.type) {
-      case "Basic": {
-        const user = await db.getRepository(User).findOne({
-          email: parsed.username,
-        });
-        if (!user) {
-          throw new Errors.UserNotFoundError(parsed.username);
-        } else {
-          if (await user.checkPassword(parsed.password)) {
-            ctx.state.user = user;
-          } else {
-            throw new Errors.PasswordMismatchError(user, parsed.password);
-          }
-        }
-        break;
-      }
-      case "Bearer": {
-        const session = await db.getRepository(Session).findOneById(parsed.token);
-        ctx.state.session = session;
-        if (!session) {
-          throw new Errors.TokenInvalidError(parsed.token);
-        } else {
-          try {
-            const user = await session.getUser();
-            ctx.state.user = user;
-          } catch (error) {
-            if (error instanceof SessionErrors.UserNotFoundError) {
-              throw new Errors.TokenInvalidError(parsed.token);
-            } else if (error instanceof SessionErrors.TokenExpiredError) {
-              throw new Errors.TokenExpiredError(session);
-            } else {
-              throw error;
-            }
-          }
-        }
-        break;
-      }
-    }
-  } catch (err) {
-    if (err instanceof InvalidInputError) {
-      throw new Errors.CorruptedAuthorizationHeaderError();
-    } else if (err instanceof UnsupportedAuthTypeError) {
-      throw new Errors.CorruptedAuthorizationHeaderError();
+  const type = authorization.substr(0, indexOfSpace);
+  const data = authorization.substr(indexOfSpace + 1);
+  if (type === "" || data === "") {
+    throw new Errors.CorruptedAuthorizationHeaderError();
+  }
+  if (required && type !== required) {
+    throw new Errors.InvalidAuthenticationTypeError(required, type);
+  } else {
+    return data;
+  }
+};
+export const parseBasic = (authorization: string) => {
+  const credentials = parseAuth(authorization, "Basic");
+  const decoded = Buffer.from(credentials, "base64").toString();
+  const indexOfColon = decoded.indexOf(":");
+  if (indexOfColon < 0) {
+    throw new Errors.CorruptedAuthorizationHeaderError();
+  }
+  const username = decoded.substr(0, indexOfColon);
+  const password = decoded.substr(indexOfColon + 1);
+  if (username === "" || password === "") {
+    throw new Errors.CorruptedAuthorizationHeaderError();
+  }
+  return {
+    username,
+    password,
+  };
+};
+export const parseBearer = (authorization: string) => {
+  const credentials = parseAuth(authorization, "Bearer");
+  if (!UuidRegExp.test(credentials)) {
+    throw new Errors.TokenInvalidError(credentials);
+  }
+  return credentials;
+};
+
+export const authBasic = async (ctx: Context) => {
+  if (!ctx.headers.authorization) {
+    throw new Errors.AuthenticationNotFoundError(ctx, "Basic");
+  }
+  const result = parseBasic(ctx.headers.authorization);
+  const user = await User.findOne({
+    email: result.username,
+  });
+  if (!user || !!user.deleteToken) {
+    throw new Errors.UserNotFound403Error(result.username);
+  } else {
+    if (await user.checkPassword(result.password)) {
+      return user;
     } else {
-      throw err;
+      throw new Errors.PasswordMismatchError(user, result.password);
+    }
+  }
+};
+export const authBearer = async (ctx: Context) => {
+  if (!ctx.headers.authorization) {
+    throw new Errors.AuthenticationNotFoundError(ctx, "Bearer");
+  }
+  const token = parseBearer(ctx.headers.authorization);
+  const session = await Session.findOneById(token);
+  if (!session) {
+    throw new Errors.TokenInvalidError(token);
+  } else {
+    try {
+      if (session.expired) {
+        throw new Errors.TokenExpiredError(session);
+      }
+      return session;
+    } catch (error) {
+      if (error instanceof SessionErrors.UserNotFoundError) {
+        throw new Errors.TokenInvalidError(token);
+      } else if (error instanceof SessionErrors.TokenExpiredError) {
+        throw new Errors.TokenExpiredError(session);
+      } else {
+        throw error;
+      }
     }
   }
 };

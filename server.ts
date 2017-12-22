@@ -1,47 +1,52 @@
 "use strict";
 
-import "./lib/db";
-import * as Koa from "koa";
-import * as bodyParser from "koa-bodyparser";
-import "reflect-metadata";
-import * as mount from "koa-mount";
-import * as koaJson from "koa-json";
-import config from "./lib/config";
-import router from "./routes";
+import app from "./app";
+import initDb from "./lib/db";
+import { getConnection } from "typeorm";
+import { port, db_url } from "./lib/config";
 import log from "./lib/log";
-import * as Errors from "./lib/errors";
+import * as http from "http";
 
-const app = new Koa();
-
-app.use(koaJson({
-  pretty: false,
-}));
-app.use(async (ctx, next) => {
-  try {
-    await next();
-    if (!ctx.body) {
-      throw new Errors.NotFoundError();
-    }
-  } catch (error) {
-    if (!(error instanceof Errors.ApiError)) {
-      error = new Errors.InternalServerError(error);
-    }
-    log.error(error, "an error occured",
-      JSON.stringify(error.baseError, ["message", "arguments", "type", "name", "stack"]));
-    ctx.status = error.status;
-    ctx.body = {
-      code: error.code,
-    };
+switch (process.env.NODE_ENV) {
+  case "test": {
+    log.level = "warn";
+    break;
   }
-});
-// TODO: logger
-app.use(bodyParser());
-app
-  .use(router.routes())
-  .use(router.allowedMethods({
-    throw: true,
-    notImplemented: () => new Errors.NotImplementedError(),
-    methodNotAllowed: () => new Errors.NotFoundError(),
-  }));
+  case "dev":
+  case "develop":
+  case "development": {
+    log.level = "trace";
+    break;
+  }
+  case "prod":
+  case "production":
+  default: {
+    log.level = "info";
+    break;
+  }
+}
 
-export default app;
+export const server = http.createServer(app.callback());
+
+export const start = async () => {
+  await initDb();
+  log.info(`database connected to ${db_url}`);
+  server.listen(port);
+  log.info(`server listening on port ${port}`);
+};
+export const stop = (signal?: Signals) => {
+  log.info(`shutting down server gracefully on ${signal || "demand"}`);
+  getConnection().close();
+  log.info("database disconnected");
+  server.close();
+  log.info("server closed");
+};
+
+type Signals =
+  "SIGABRT" | "SIGALRM" | "SIGBUS" | "SIGCHLD" | "SIGCONT" | "SIGFPE" | "SIGHUP" | "SIGILL" | "SIGINT" | "SIGIO" |
+  "SIGIOT" | "SIGKILL" | "SIGPIPE" | "SIGPOLL" | "SIGPROF" | "SIGPWR" | "SIGQUIT" | "SIGSEGV" | "SIGSTKFLT" |
+  "SIGSTOP" | "SIGSYS" | "SIGTERM" | "SIGTRAP" | "SIGTSTP" | "SIGTTIN" | "SIGTTOU" | "SIGUNUSED" | "SIGURG" |
+  "SIGUSR1" | "SIGUSR2" | "SIGVTALRM" | "SIGWINCH" | "SIGXCPU" | "SIGXFSZ" | "SIGBREAK" | "SIGLOST" | "SIGINFO";
+for (const signal of ["SIGABRT", "SIGINT", "SIGTERM"]) {
+  process.on(signal as Signals, () => stop(signal as Signals));
+}

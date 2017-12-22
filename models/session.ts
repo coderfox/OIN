@@ -1,14 +1,14 @@
 "use strict";
 
-import { Entity, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
-import * as bcrypt from "bcrypt";
-import config from "../lib/config";
-import { connection } from "../lib/db";
+import {
+  Entity, BaseEntity,
+  Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  ManyToOne, JoinColumn,
+} from "typeorm";
+import { token_expires } from "../lib/config";
 import User from "./user";
-import * as uuid from "uuid/v4";
 import ms = require("ms");
 import IPermission from "./IPermission";
-import log from "../lib/log";
 
 // tslint:disable:max-classes-per-file
 // tslint:disable-next-line:no-namespace
@@ -36,19 +36,23 @@ export namespace Errors {
 }
 
 @Entity()
-export default class Session {
+export default class Session extends BaseEntity {
   constructor(user: User) {
+    super();
     if (user) {
-      this.uid = user.id;
-      this.token = uuid();
+      this.user = user;
     }
   }
   private getNewExpirationDate = () =>
-    new Date(Date.now() + ms(config.get("token_expires") as string))
+    new Date(Date.now() + ms(token_expires))
 
-  @Column({ type: "int" })
-  public uid: number;
-  @PrimaryColumn()
+  @ManyToOne(() => User, (user) => user.sessions, {
+    eager: true,
+    cascadeUpdate: true,
+  })
+  @JoinColumn()
+  public user: User;
+  @PrimaryGeneratedColumn("uuid")
   public token: string;
   @Column({ type: "jsonb" })
   public permissions: IPermission = { admin: false };
@@ -56,32 +60,23 @@ export default class Session {
   public createdAt: Date;
   @UpdateDateColumn()
   public updatedAt: Date;
-  @Column()
+  @Column({ type: "timestamp without time zone" })
   public expiresAt: Date = this.getNewExpirationDate();
   public get expired() {
-    return this.expiresAt <= new Date(Date.now());
+    return this.expiresAt <= new Date(Date.now()) || !!this.user.deleteToken;
   }
 
-  public getUser = async (ignoreExpiration = false) => {
-    if ((!ignoreExpiration) && this.expired) {
-      throw new Errors.TokenExpiredError(this.expiresAt);
-    }
-    const user = await connection.getRepository(User).findOneById(this.uid);
-    if (!user) {
-      throw new Errors.UserNotFoundError(this.token, this.uid);
-    } else {
-      return user;
-    }
-  }
   public renew = () => {
     this.expiresAt = this.getNewExpirationDate();
   }
 
   public toView = async (ignoreExpiration = false) => {
-    const user = await this.getUser(ignoreExpiration);
+    if (!ignoreExpiration && this.expired) {
+      throw new Errors.TokenExpiredError(this.expiresAt);
+    }
     return {
       token: this.token,
-      user: user.toView(),
+      user: this.user.toView(),
       permissions: this.permissions,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

@@ -2,6 +2,7 @@
 
 import User from "../models/user";
 import Session from "../models/session";
+import { Context } from "koa";
 
 // tslint:disable:max-classes-per-file
 export class ApiError extends Error {
@@ -37,9 +38,11 @@ export class InternalServerError extends ApiError {
   }
 }
 export class AuthenticationNotFoundError extends ApiError {
-  constructor() {
+  constructor(ctx: Context, expected?: string) {
     super("AUTHENTICATION_NOT_FOUND", 401);
-    // TODO: auto respond WWW-Authenticate header
+    if (expected) {
+      ctx.set("WWW-Authenticate", expected);
+    }
   }
 }
 export class CorruptedAuthorizationHeaderError extends ApiError {
@@ -47,10 +50,24 @@ export class CorruptedAuthorizationHeaderError extends ApiError {
     super("CORRUPTED_AUTHORIZATION_HEADER", 400);
   }
 }
-export class UserNotFoundError extends ApiError {
+export class UserNotFound403Error extends ApiError {
   public readonly email: string;
   constructor(email: string) {
     super("USER_NOT_FOUND", 403);
+    this.email = email;
+  }
+}
+export class UserNotFoundByIdError extends ApiError {
+  public readonly id: string;
+  constructor(id: string) {
+    super("USER_NOT_FOUND", 404);
+    this.id = id;
+  }
+}
+export class UserNotFoundByEmailError extends ApiError {
+  public readonly email: string;
+  constructor(email: string) {
+    super("USER_NOT_FOUND", 404);
     this.email = email;
   }
 }
@@ -64,9 +81,9 @@ export class PasswordMismatchError extends ApiError {
   }
 }
 export class InvalidAuthenticationTypeError extends ApiError {
-  public readonly wrong: string;
+  public readonly wrong?: string;
   public readonly right: string;
-  constructor(wrong: string, right: string) {
+  constructor(right: string, wrong?: string) {
     super("INVALID_AUTHENTICATION_TYPE", 401);
     // TODO: auto respond WWW-Authenticate header
     this.wrong = wrong;
@@ -94,5 +111,41 @@ export class InsufficientPermissionError extends ApiError {
     super("INSUFFICIENT_PERMISSION", 403);
     this.session = session;
     this.permission = permission;
+  }
+}
+export class BadRequestError extends ApiError {
+  public readonly context: Context;
+  constructor(context: Context) {
+    super("BAD_REQUEST", 400);
+    this.context = context;
+  }
+}
+export class DuplicateEmailError extends ApiError {
+  public readonly email: string;
+  constructor(email: string) {
+    super("DUPLICATED_EMAIL", 303);
+    this.email = email;
+  }
+}
+export class ConfirmationNotFoundError extends ApiError {
+  public readonly confirmationCode: string;
+  constructor(code: string) {
+    super("CONFIRMATION_NOT_FOUND", 404);
+    this.confirmationCode = code;
+  }
+}
+export class NewEmailOrPasswordNotSuppliedError extends ApiError {
+  constructor() {
+    super("NEW_EMAIL_OR_PASSWORD_NOT_SUPPLIED", 400);
+  }
+}
+export class PasswordNotSuppliedError extends ApiError {
+  constructor() {
+    super("PASSWORD_NOT_SUPPLIED", 400);
+  }
+}
+export class EmailNotSuppliedError extends ApiError {
+  constructor() {
+    super("EMAIL_NOT_SUPPLIED", 400);
   }
 }

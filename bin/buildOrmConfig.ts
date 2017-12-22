@@ -7,10 +7,7 @@ under certain conditions.
 For more information, see "${__dirname}/../LICENSE.md".
 `);
 
-import { start } from "../server";
+import { config } from "../lib/db";
+import { writeFileSync } from "fs";
 
-start()
-  .catch((err: any) => {
-    console.error(err);
-    process.exit(1);
-  });
+writeFileSync(`${__dirname}/../ormconfig.json`, JSON.stringify(config));

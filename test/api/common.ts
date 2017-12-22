@@ -1,8 +1,6 @@
 "use strict";
 
-import User from "../../models/user";
 import { expect } from "chai";
-import config from "../../lib/config";
 import * as request from "request-promise-native";
 
 const baseUrl = "http://127.0.0.1:3000";
