@@ -31,8 +31,8 @@ export default () => {
       assert.match(messageVS.subscription, UuidRegExp, "subscription");
       assert.typeOf(messageVS.title, "string", "title");
       assert.typeOf(messageVS.abstract, "string", "abstract");
-      assert.instanceOf(messageVS.createdAt, Date, "createdAt");
-      assert.instanceOf(messageVS.updatedAt, Date, "updatedAt");
+      assert.typeOf(messageVS.createdAt, "string", "createdAt");
+      assert.typeOf(messageVS.updatedAt, "string", "updatedAt");
     });
   });
   describe("#toView", () => {
@@ -54,14 +54,6 @@ export default () => {
       messageV = message.toView();
     });
     it("ok", () => {
-      assert.match(messageV.id, UuidRegExp, "id");
-      assert.equal(messageV.readed, false, "readed");
-      assert.match(messageV.owner, UuidRegExp, "owner");
-      assert.match(messageV.subscription, UuidRegExp, "subscription");
-      assert.typeOf(messageV.title, "string", "title");
-      assert.typeOf(messageV.abstract, "string", "abstract");
-      assert.instanceOf(messageV.createdAt, Date, "createdAt");
-      assert.instanceOf(messageV.updatedAt, Date, "updatedAt");
       assert.typeOf(messageV.content.type, "string", "content.type");
       assert.typeOf(messageV.content.data, "string", "content.data");
     });

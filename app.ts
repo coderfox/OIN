@@ -19,7 +19,7 @@ app.use(async (ctx, next) => {
   try {
     await next();
     if (!ctx.body) {
-      throw new Errors.NotFoundError();
+      throw new Errors.ApiEndpointNotFoundError();
     }
   } catch (error) {
     if (!(error instanceof Errors.ApiError)) {
@@ -44,7 +44,7 @@ app
   .use(router.allowedMethods({
     throw: true,
     notImplemented: () => new Errors.NotImplementedError(),
-    methodNotAllowed: () => new Errors.NotFoundError(),
+    methodNotAllowed: () => new Errors.ApiEndpointNotFoundError(),
   }));
 
 export default app;

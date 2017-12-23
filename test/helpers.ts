@@ -1,6 +1,6 @@
 "use strict";
 
-import { expect } from "chai";
+import { expect, assert } from "chai";
 import { Message, User, Session, Confirmation } from "../models";
 import { getRepository } from "typeorm";
 import * as requestO from "request-promise-native";
@@ -34,16 +34,9 @@ export const request = async (dest: string, validate: string, op?: {
   const indexOfSpaceInValidate = validate.indexOf(" ");
   const status = +validate.substr(0, indexOfSpaceInValidate);
   const code = validate.substr(indexOfSpaceInValidate + 1);
-  if (status >= 200 && status < 300) {
-    expect(result.statusCode).eql(status);
-  } else {
-    expect({
-      status: result.statusCode,
-      code: result.body.code,
-    }).to.eql({
-      status,
-      code,
-    });
+  assert.equal(result.statusCode, status, "HTTP status code");
+  if (!(status >= 200 && status < 300)) {
+    assert.equal(result.body.code, code, "error code");
   }
   return result.body;
 };

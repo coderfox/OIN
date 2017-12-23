@@ -20,7 +20,7 @@ export class InvalidRequestBodyError extends ApiError {
     super("INVALID_REQUEST_BODY_TYPE", 400);
   }
 }
-export class NotFoundError extends ApiError {
+export class ApiEndpointNotFoundError extends ApiError {
   constructor() {
     super("API_ENDPOINT_NOT_FOUND", 404);
   }
@@ -147,5 +147,12 @@ export class PasswordNotSuppliedError extends ApiError {
 export class EmailNotSuppliedError extends ApiError {
   constructor() {
     super("EMAIL_NOT_SUPPLIED", 400);
+  }
+}
+export class MessageNotExistsError extends ApiError {
+  public readonly id: string;
+  constructor(id: string) {
+    super("MESSAGE_NOT_EXISTS", 404);
+    this.id = id;
   }
 }

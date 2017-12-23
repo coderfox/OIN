@@ -30,7 +30,10 @@ export default class Message extends BaseEntity {
   public id: string;
   @Column()
   public readed: boolean = false;
-  @ManyToOne(() => User, (user) => user.messages)
+  @ManyToOne(() => User, (user) => user.messages, {
+    eager: true,
+    cascadeUpdate: true,
+  })
   @JoinColumn({ name: "owner_id" })
   public owner: User;
   @Column({ type: "uuid" })
@@ -55,8 +58,8 @@ export default class Message extends BaseEntity {
     subscription: this.subscription,
     title: this.title,
     abstract: this.abstract,
-    createdAt: this.createdAt,
-    updatedAt: this.updatedAt,
+    createdAt: this.createdAt.toJSON(),
+    updatedAt: this.updatedAt.toJSON(),
   })
   public toView = () => ({
     ...this.toViewSimplified(),
