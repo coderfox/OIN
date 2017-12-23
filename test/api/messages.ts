@@ -39,7 +39,7 @@ export default () => {
     });
     it("200 OK", async () => {
       const result = await request(
-        "/me/messages",
+        "GET /me/messages",
         "200 OK",
         { auth: { bearer: token } },
       );
@@ -57,5 +57,44 @@ export default () => {
         assert.equal(message.owner, user.id);
       }
     });
+  });
+  describe("GET /messages/:id", () => {
+    let message: Message;
+    let token: string;
+    let tokenB: string;
+    beforeEach(async () => {
+      const { session: s, messages: m } = await prepareDb();
+      token = s.token;
+      message = m[0];
+      const userB = new User("another@example.com");
+      await userB.setPassword("b");
+      await userB.save();
+      const sessionB = new Session(userB);
+      await sessionB.save();
+      tokenB = sessionB.token;
+    });
+    it("200 OK", async () => {
+      const result = await request(
+        `GET /messages/${message.id}`,
+        "200 OK",
+        { auth: { bearer: token } },
+      );
+      for (const field in message.toViewSimplified()) {
+        if (field in message.toViewSimplified() && field in result) {
+          const view: any = message.toViewSimplified();
+          assert.equal(result[field], view[field], field);
+        }
+      }
+    });
+    it("404 MESSAGE_NOT_EXISTS", () => request(
+      `GET /messages/${uuid()}`,
+      "404 MESSAGE_NOT_EXISTS",
+      { auth: { bearer: token } },
+    ));
+    it("403 INSUFFICIENT_PERMISSION", () => request(
+      `GET /messages/${message.id}`,
+      "403 INSUFFICIENT_PERMISSION",
+      { auth: { bearer: tokenB } },
+    ));
   });
 };

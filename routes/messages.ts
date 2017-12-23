@@ -20,7 +20,7 @@ router.get("/messages/:id", async (ctx) => {
   if (!message) {
     throw new Errors.MessageNotExistsError(ctx.params.id);
   } else {
-    if (message.owner !== session.user && !session.permissions.admin) {
+    if (message.owner.id !== session.user.id && !session.permissions.admin) {
       throw new Errors.InsufficientPermissionError(session, "admin");
     } else {
       ctx.body = message.toView();
