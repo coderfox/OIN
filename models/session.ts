@@ -50,17 +50,17 @@ export default class Session extends BaseEntity {
     eager: true,
     cascadeUpdate: true,
   })
-  @JoinColumn()
+  @JoinColumn({ name: "user_id" })
   public user: User;
   @PrimaryGeneratedColumn("uuid")
   public token: string;
   @Column({ type: "jsonb" })
   public permissions: IPermission = { admin: false };
-  @CreateDateColumn()
+  @CreateDateColumn({ name: "created_at" })
   public createdAt: Date;
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: "updated_at" })
   public updatedAt: Date;
-  @Column({ type: "timestamp without time zone" })
+  @Column({ name: "expires_at" })
   public expiresAt: Date = this.getNewExpirationDate();
   public get expired() {
     return this.expiresAt <= new Date(Date.now()) || !!this.user.deleteToken;

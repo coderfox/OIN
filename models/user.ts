@@ -11,6 +11,7 @@ import IPermission from "./IPermission";
 import * as uuid from "uuid/v4";
 import { serialize, Serialize } from "cerialize";
 import Session from "./session";
+import Message from "./message";
 
 @Entity()
 @Index("email_unique_with_deletion", ["email", "deleteToken"], { unique: true })
@@ -39,10 +40,12 @@ export default class User extends BaseEntity {
   public permissions: IPermission = { admin: false };
   @OneToMany(() => Session, (session) => session.user)
   public sessions: Promise<Session[]>;
-  @CreateDateColumn()
+  @OneToMany(() => Message, (message) => message.owner)
+  public messages: Promise<Message[]>;
+  @CreateDateColumn({ name: "created_at" })
   @serialize
   public createdAt: Date;
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: "updated_at" })
   @serialize
   public updatedAt: Date;
   @Column({ name: "delete_token", type: "uuid", nullable: true })
