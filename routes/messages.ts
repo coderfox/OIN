@@ -8,9 +8,15 @@ import * as Errors from "../lib/errors";
 
 router.get("/me/messages", async (ctx) => {
   const session = await authBearer(ctx);
-  const messages = await session.user.messages;
+  const messages = await Message.find({
+    where: {
+      owner: session.user.id,
+      readed: ctx.request.query.filter === "all" ? undefined : true,
+    },
+    skip: ctx.request.header["x-page-skip"] || ctx.request.query.skip || 0,
+    take: ctx.request.header["x-page-limit"] || ctx.request.query.take || 50,
+  });
   ctx.body = messages.map((value) => {
-    value.owner = session.user;
     return value.toViewSimplified();
   });
 });

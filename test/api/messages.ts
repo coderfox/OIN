@@ -57,6 +57,7 @@ export default () => {
         assert.equal(message.owner, user.id);
       }
     });
+    it("200 OK #pagination");
   });
   describe("GET /messages/:id", () => {
     let message: Message;
