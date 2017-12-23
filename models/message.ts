@@ -6,17 +6,30 @@ import {
   ManyToOne,
   JoinColumn,
 } from "typeorm";
-import { serialize, Serialize } from "cerialize";
 import User from "./user";
 
 @Entity()
 export default class Message extends BaseEntity {
+  constructor(
+    owner: User,
+    subscription: string,
+    title: string,
+    abstract: string,
+    contentType: string,
+    content: string,
+  ) {
+    super();
+    this.owner = owner;
+    this.subscription = subscription;
+    this.title = title;
+    this.abstract = abstract;
+    this.contentType = contentType;
+    this.content = content;
+  }
   @PrimaryGeneratedColumn("uuid")
-  @serialize
   public id: string;
   @Column()
-  @serialize
-  public readed: boolean;
+  public readed: boolean = false;
   @ManyToOne(() => User, (user) => user.messages)
   @JoinColumn({ name: "owner_id" })
   public owner: User;
@@ -31,11 +44,25 @@ export default class Message extends BaseEntity {
   @Column({ type: "text" })
   public content: string;
   @CreateDateColumn({ name: "created_at" })
-  @serialize
   public createdAt: Date;
   @UpdateDateColumn({ name: "updated_at" })
-  @serialize
   public updatedAt: Date;
 
-  public toView = () => Serialize(this);
+  public toViewSimplified = () => ({
+    id: this.id,
+    readed: this.readed,
+    owner: this.owner.id,
+    subscription: this.subscription,
+    title: this.title,
+    abstract: this.abstract,
+    createdAt: this.createdAt,
+    updatedAt: this.updatedAt,
+  })
+  public toView = () => ({
+    ...this.toViewSimplified(),
+    content: {
+      type: this.contentType,
+      data: this.content,
+    },
+  })
 }

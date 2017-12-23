@@ -1,12 +1,12 @@
 "use strict";
 
 import { expect } from "chai";
-import { User, Session, Confirmation } from "../models";
+import { Message, User, Session, Confirmation } from "../models";
 import { getRepository } from "typeorm";
 import * as requestO from "request-promise-native";
 
 export const clearDb = async () => {
-  for (const schema of [Session, User, Confirmation]) {
+  for (const schema of [Message, Session, User, Confirmation]) {
     const repo = getRepository(schema);
     await repo.remove(await repo.find());
   }
@@ -47,3 +47,4 @@ export const request = async (dest: string, validate: string, op?: {
   }
   return result.body;
 };
+export const UuidRegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
