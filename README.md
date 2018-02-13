@@ -3,7 +3,7 @@
 [![Build Status](https://img.shields.io/travis/SANDRAProject/backend-api.svg?style=flat-square)](https://travis-ci.org/SANDRAProject/backend-api)
 [![Coveralls](https://img.shields.io/coveralls/SANDRAProject/backend-api.svg?style=flat-square)](https://coveralls.io/github/SANDRAProject/backend-api)
 [![license](https://img.shields.io/github/license/SANDRAProject/backend-api.svg?style=flat-square)](https://github.com/SANDRAProject/backend-api/blob/master/LICENSE.md)
-[![TypeScript](https://img.shields.io/badge/TypeScript-v2.3.4-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-v2.6.1-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
 
 API provider for [Sandra](https://github.com/SANDRAProject).
 
@@ -19,6 +19,7 @@ The server is configured via environmental variables:
 | TOKEN_EXPIRES        |             | 7d                                  |
 | LOG_LEVEL            |             | info                                |
 | CONFIRMATION_EXPIRES |             | 2h                                  |
+| DEPLOY_TOKEN         |             | 1b26f5e2fd217297a50e5a31aeedc48a    |
 
 ## Start
 
