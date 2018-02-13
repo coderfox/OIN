@@ -6,6 +6,7 @@ const router = new Router();
 import session from "./session";
 import users from "./users";
 import confirmations from "./confirmation";
+import messages from "./messages";
 router.use(
   session.routes(),
   session.allowedMethods(),
@@ -17,6 +18,10 @@ router.use(
 router.use(
   confirmations.routes(),
   confirmations.allowedMethods(),
+);
+router.use(
+  messages.routes(),
+  messages.allowedMethods(),
 );
 
 export default router;

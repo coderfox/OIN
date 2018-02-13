@@ -47,11 +47,11 @@ export default class Cofirmation extends BaseEntity {
   public operation: number;
   @Column({ type: "json", nullable: false })
   public data: IRegisterData | IUpdateEmailData | IPasswordRecoveryData;
-  @CreateDateColumn()
+  @CreateDateColumn({ name: "created_at" })
   public createdAt: Date;
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: "updated_at" })
   public updatedAt: Date;
-  @Column({ type: "timestamp without time zone" })
+  @Column({ name: "expires_at" })
   public expiresAt: Date = this.getNewExpirationDate();
   public get expired() {
     return this.expiresAt <= new Date();

@@ -1,12 +1,12 @@
 "use strict";
 
-import { expect } from "chai";
-import { User, Session, Confirmation } from "../models";
+import { expect, assert } from "chai";
+import { Message, User, Session, Confirmation } from "../models";
 import { getRepository } from "typeorm";
 import * as requestO from "request-promise-native";
 
 export const clearDb = async () => {
-  for (const schema of [Session, User, Confirmation]) {
+  for (const schema of [Message, Session, User, Confirmation]) {
     const repo = getRepository(schema);
     await repo.remove(await repo.find());
   }
@@ -34,16 +34,10 @@ export const request = async (dest: string, validate: string, op?: {
   const indexOfSpaceInValidate = validate.indexOf(" ");
   const status = +validate.substr(0, indexOfSpaceInValidate);
   const code = validate.substr(indexOfSpaceInValidate + 1);
-  if (status >= 200 && status < 300) {
-    expect(result.statusCode).eql(status);
-  } else {
-    expect({
-      status: result.statusCode,
-      code: result.body.code,
-    }).to.eql({
-      status,
-      code,
-    });
+  assert.equal(result.statusCode, status, "HTTP status code");
+  if (!(status >= 200 && status < 300)) {
+    assert.equal(result.body.code, code, "error code");
   }
   return result.body;
 };
+export const UuidRegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
