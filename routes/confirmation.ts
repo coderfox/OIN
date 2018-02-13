@@ -2,10 +2,10 @@
 
 import Router = require("koa-router");
 const router = new Router();
-import * as Errors from "../lib/errors";
-import { Confirmation, User } from "../models";
+import { User, Confirmation } from "../models";
 import { Operations as ConfirmationOperations } from "../models/confirmation";
 import * as ConfirmationTypes from "../models/confirmation";
+import * as Errors from "../lib/errors";
 
 router.post("/confirmations/password_recovery", async (ctx) => {
   if (!ctx.request.body.email) {

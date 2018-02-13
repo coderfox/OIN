@@ -1,9 +1,9 @@
 "use strict";
 
 import common from "./common";
-import messages from "./messages";
 import session from "./session";
 import users from "./users";
+import messages from "./messages";
 
 export default async () => {
   describe("common", common);

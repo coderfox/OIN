@@ -3,8 +3,8 @@
 import { expect } from "chai";
 import * as request from "request-promise-native";
 import { getRepository } from "typeorm";
-import Session from "../../models/session";
 import User from "../../models/user";
+import Session from "../../models/session";
 import { clearDb } from "../helpers";
 
 const baseUrl = "http://127.0.0.1:3000";

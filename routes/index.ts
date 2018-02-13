@@ -3,10 +3,10 @@
 import Router = require("koa-router");
 const router = new Router();
 
-import confirmations from "./confirmation";
-import messages from "./messages";
 import session from "./session";
 import users from "./users";
+import confirmations from "./confirmation";
+import messages from "./messages";
 router.use(
   session.routes(),
   session.allowedMethods(),

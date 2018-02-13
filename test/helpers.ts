@@ -1,9 +1,9 @@
 "use strict";
 
-import { assert, expect } from "chai";
-import * as requestO from "request-promise-native";
+import { expect, assert } from "chai";
+import { Message, User, Session, Confirmation } from "../models";
 import { getRepository } from "typeorm";
-import { Confirmation, Message, Session, User } from "../models";
+import * as requestO from "request-promise-native";
 
 export const clearDb = async () => {
   for (const schema of [Message, Session, User, Confirmation]) {

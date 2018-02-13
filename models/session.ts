@@ -1,14 +1,14 @@
 "use strict";
 
-import ms = require("ms");
 import {
-  BaseEntity, Column,
-  CreateDateColumn, Entity, JoinColumn, ManyToOne,
-  PrimaryGeneratedColumn, UpdateDateColumn,
+  Entity, BaseEntity,
+  Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  ManyToOne, JoinColumn,
 } from "typeorm";
 import { token_expires } from "../lib/config";
-import IPermission from "./IPermission";
 import User from "./user";
+import ms = require("ms");
+import IPermission from "./IPermission";
 
 // tslint:disable:max-classes-per-file
 // tslint:disable-next-line:no-namespace

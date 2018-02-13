@@ -3,8 +3,8 @@
 import Router = require("koa-router");
 const router = new Router();
 import { authBearer } from "../lib/auth";
-import * as Errors from "../lib/errors";
 import Message from "../models/message";
+import * as Errors from "../lib/errors";
 
 router.get("/me/messages", async (ctx) => {
   const session = await authBearer(ctx);
@@ -16,7 +16,9 @@ router.get("/me/messages", async (ctx) => {
     skip: ctx.request.header["x-page-skip"] || ctx.request.query.skip || 0,
     take: ctx.request.header["x-page-limit"] || ctx.request.query.take || 50,
   });
-  ctx.body = messages.map(value => value.toViewSimplified());
+  ctx.body = messages.map((value) => {
+    return value.toViewSimplified();
+  });
 });
 router.get("/messages/:id", async (ctx) => {
   const session = await authBearer(ctx);

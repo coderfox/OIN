@@ -1,12 +1,12 @@
 "use strict";
 
 import { assert } from "chai";
-import { getManager } from "typeorm";
-import * as uuid from "uuid/v4";
-import Message from "../../models/message";
-import Session from "../../models/session";
-import User from "../../models/user";
 import { clearDb, request } from "../helpers";
+import User from "../../models/user";
+import Message from "../../models/message";
+import * as uuid from "uuid/v4";
+import { getManager } from "typeorm";
+import Session from "../../models/session";
 
 const prepareDb = async () => {
   await clearDb();

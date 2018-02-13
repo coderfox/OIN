@@ -2,11 +2,11 @@
 
 import Router = require("koa-router");
 const router = new Router();
-import { Serialize } from "cerialize";
-import { authBasic, authBearer } from "../lib/auth";
-import * as Errors from "../lib/errors";
-import { Confirmation, User } from "../models";
+import { User, Confirmation } from "../models";
 import { Operations as ConfirmationOperations } from "../models/confirmation";
+import * as Errors from "../lib/errors";
+import { authBasic, authBearer } from "../lib/auth";
+import { Serialize } from "cerialize";
 
 router.get("/users", async (ctx) => {
   const session = await authBearer(ctx);

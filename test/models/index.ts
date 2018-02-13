@@ -1,7 +1,7 @@
 "use strict";
 
-import message from "./message";
 import user from "./user";
+import message from "./message";
 
 export default () => {
   describe("user", user);

@@ -1,10 +1,10 @@
 "use strict";
 
 import {
-  BaseEntity, Column,
-  CreateDateColumn, Entity, JoinColumn, ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  Entity, BaseEntity,
+  Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
 import User from "./user";
 

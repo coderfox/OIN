@@ -1,11 +1,11 @@
 "use strict";
 
-import { createServer } from "http";
-import { getConnection } from "typeorm";
 import app from "./app";
-import { db_url, port } from "./lib/config";
 import initDb from "./lib/db";
+import { getConnection } from "typeorm";
+import { port, db_url } from "./lib/config";
 import log from "./lib/log";
+import * as http from "http";
 
 switch (process.env.NODE_ENV) {
   case "test": {
@@ -26,7 +26,7 @@ switch (process.env.NODE_ENV) {
   }
 }
 
-export const server = createServer(app.callback());
+export const server = http.createServer(app.callback());
 
 export const start = async () => {
   await initDb();

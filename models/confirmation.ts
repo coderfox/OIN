@@ -1,12 +1,12 @@
 "use strict";
 
-import ms = require("ms");
 import {
-  BaseEntity, Column,
-  CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn,
+  Entity, BaseEntity,
+  Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn,
 } from "typeorm";
-import * as uuid from "uuid/v4";
 import { confirmation_expires } from "../lib/config";
+import * as uuid from "uuid/v4";
+import ms = require("ms");
 
 type op = { operation: Operations.Register, data: IRegisterData } |
   { operation: Operations.UpdateEmail, data: IUpdateEmailData } |

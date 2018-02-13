@@ -1,10 +1,10 @@
 "use strict";
 
 import { Context } from "koa";
-import * as Errors from "../lib/errors";
-import Session from "../models/session";
-import { Errors as SessionErrors } from "../models/session";
 import User from "../models/user";
+import Session from "../models/session";
+import * as Errors from "../lib/errors";
+import { Errors as SessionErrors } from "../models/session";
 
 const UuidRegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 

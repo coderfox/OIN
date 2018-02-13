@@ -1,17 +1,17 @@
 "use strict";
 
-import * as bcrypt from "bcrypt";
-import { serialize, Serialize } from "cerialize";
 import {
-  BaseEntity, Column, CreateDateColumn,
-  Entity, Index, OneToMany, PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  Entity, BaseEntity, Index,
+  Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  OneToMany,
 } from "typeorm";
-import * as uuid from "uuid/v4";
+import * as bcrypt from "bcrypt";
 import { password_hash_rounds } from "../lib/config";
 import IPermission from "./IPermission";
-import Message from "./message";
+import * as uuid from "uuid/v4";
+import { serialize, Serialize } from "cerialize";
 import Session from "./session";
+import Message from "./message";
 
 @Entity()
 @Index("email_unique_with_deletion", ["email", "deleteToken"], { unique: true })

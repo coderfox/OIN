@@ -3,10 +3,10 @@
 
 import { expect } from "chai";
 import * as requestO from "request-promise-native";
-import { getManager, getRepository } from "typeorm";
-import * as uuid from "uuid/v4";
-import { Confirmation, ConfirmationOperations, Session, User } from "../../models";
 import { clearDb, expectDateEquals, request } from "../helpers";
+import { User, Session, Confirmation, ConfirmationOperations } from "../../models";
+import * as uuid from "uuid/v4";
+import { getRepository, getManager } from "typeorm";
 
 const baseUrl = "http://127.0.0.1:3000";
 

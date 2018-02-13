@@ -1,6 +1,6 @@
 "use strict";
 
-import { ConnectionOptions, createConnection } from "typeorm";
+import { createConnection, ConnectionOptions } from "typeorm";
 import { db_url } from "../lib/config";
 
 export const config: ConnectionOptions = {
