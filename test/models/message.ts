@@ -1,8 +1,8 @@
 "use strict";
 
 import { assert } from "chai";
-import { Message, User } from "../../models";
 import * as uuid from "uuid/v4";
+import { Message, User } from "../../models";
 import { clearDb, UuidRegExp } from "../helpers";
 
 export default () => {

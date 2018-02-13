@@ -1,8 +1,8 @@
 "use strict";
 
-import User from "../models/user";
-import Session from "../models/session";
 import { Context } from "koa";
+import Session from "../models/session";
+import User from "../models/user";
 
 // tslint:disable:max-classes-per-file
 export class ApiError extends Error {

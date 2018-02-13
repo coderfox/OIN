@@ -1,7 +1,7 @@
 "use strict";
 
-import User from "../../models/user";
 import { expect } from "chai";
+import User from "../../models/user";
 
 export default () => {
   describe("#setPassword", () => {

@@ -1,8 +1,8 @@
 "use strict";
 
 import { expect } from "chai";
-import { CorruptedAuthorizationHeaderError, TokenInvalidError, InvalidAuthenticationTypeError } from "../../lib/errors";
-import { parseBasic, parseBearer, parseAuth } from "../../lib/auth";
+import { parseAuth, parseBasic, parseBearer } from "../../lib/auth";
+import { CorruptedAuthorizationHeaderError, InvalidAuthenticationTypeError, TokenInvalidError } from "../../lib/errors";
 
 export default () => {
   describe("parseBasic", () => {

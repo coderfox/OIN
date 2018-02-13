@@ -1,11 +1,11 @@
 "use strict";
 
 process.env.NODE_ENV = "test";
+import log from "../lib/log";
 import { start, stop } from "../server";
-import models from "./models";
 import api from "./api";
 import lib from "./lib";
-import log from "../lib/log";
+import models from "./models";
 
 before(async () => {
   try {
