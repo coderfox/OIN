@@ -98,4 +98,79 @@ export default () => {
       { auth: { bearer: tokenB } },
     ));
   });
+  describe("POST /messages/:id", () => {
+    let message: Message;
+    let token: string;
+    let tokenB: string;
+    beforeEach(async () => {
+      const { session: s, messages: m } = await prepareDb();
+      token = s.token;
+      message = m[0];
+      const userB = new User("another@example.com");
+      await userB.setPassword("b");
+      await userB.save();
+      const sessionB = new Session(userB);
+      await sessionB.save();
+      tokenB = sessionB.token;
+    });
+    it("206 Partial Content #string-true", async () => {
+      const result = await request(
+        `POST /messages/${message.id}`,
+        "206 Partial Content",
+        {
+          auth: { bearer: token },
+          body: { readed: "true" },
+        },
+      );
+      assert.equal(result.readed, true);
+    });
+    it("206 Partial Content #boolean-true", async () => {
+      const result = await request(
+        `POST /messages/${message.id}`,
+        "206 Partial Content",
+        {
+          auth: { bearer: token },
+          body: { readed: true },
+        },
+      );
+      assert.equal(result.readed, true);
+    });
+    it("206 Partial Content #string-false", async () => {
+      const result = await request(
+        `POST /messages/${message.id}`,
+        "206 Partial Content",
+        {
+          auth: { bearer: token },
+          body: { readed: "false" },
+        },
+      );
+      assert.equal(result.readed, false);
+    });
+    it("206 Partial Content #boolean-false", async () => {
+      const result = await request(
+        `POST /messages/${message.id}`,
+        "206 Partial Content",
+        {
+          auth: { bearer: token },
+          body: { readed: false },
+        },
+      );
+      assert.equal(result.readed, false);
+    });
+    it("400 BAD_REQUEST", () => request(
+      `POST /messages/${message.id}`,
+      "400 BAD_REQUEST",
+      { auth: { bearer: token } },
+    ));
+    it("404 MESSAGE_NOT_EXISTS", () => request(
+      `POST /messages/${uuid()}`,
+      "404 MESSAGE_NOT_EXISTS",
+      { auth: { bearer: token } },
+    ));
+    it("403 INSUFFICIENT_PERMISSION", () => request(
+      `POST /messages/${message.id}`,
+      "403 INSUFFICIENT_PERMISSION",
+      { auth: { bearer: tokenB } },
+    ));
+  });
 };
