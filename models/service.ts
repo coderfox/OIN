@@ -3,7 +3,7 @@
 import {
   Entity, BaseEntity,
   Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
-  Generated,
+  Generated
 } from "typeorm";
 import { serialize as Serialize, Serialize as serialize } from "cerialize";
 
@@ -15,12 +15,12 @@ export default class Service extends BaseEntity {
   @Column({ type: "varchar", length: 50, nullable: false })
   @Serialize
   public name: string;
-  @Column()
+  @Column({ unique: true })
   @Generated("uuid")
   public token: string;
-  @Column()
+  @Column({ nullable: true })
   @Serialize
-  public description: string;
+  public description?: string;
   @CreateDateColumn({ name: "created_at" })
   @Serialize
   public createdAt: Date;

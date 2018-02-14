@@ -156,3 +156,18 @@ export class MessageNotExistsError extends ApiError {
     this.id = id;
   }
 }
+export class RpcError extends ApiError {
+  constructor(code: string) {
+    super(code, 500);
+  }
+}
+export class RpcInvalidParametersError extends RpcError {
+  constructor() {
+    super("INVALID_PARAMETERS");
+  }
+}
+export class RpcInsufficientPermissionError extends RpcError {
+  constructor() {
+    super("INSUFFICIENT_PERMISSION");
+  }
+}

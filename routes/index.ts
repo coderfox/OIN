@@ -7,6 +7,8 @@ import session from "./session";
 import users from "./users";
 import confirmations from "./confirmation";
 import messages from "./messages";
+import rpc from "./rpc";
+
 router.use(
   session.routes(),
   session.allowedMethods(),
@@ -22,6 +24,10 @@ router.use(
 router.use(
   messages.routes(),
   messages.allowedMethods(),
+);
+router.use(
+  rpc.routes(),
+  rpc.allowedMethods(),
 );
 
 export default router;
