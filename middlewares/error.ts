@@ -1,6 +1,7 @@
 import { ExceptionFilter, Catch, NotFoundException } from "@nestjs/common";
 import log from "../lib/log";
 import * as Errors from "../lib/errors";
+import { debug } from "../lib/config";
 
 // tslint:disable:max-classes-per-file
 @Catch(NotFoundException)
@@ -28,7 +29,7 @@ export class GenericErrorFilter implements ExceptionFilter {
       .status(error.status)
       .json({
         code: error.code,
-        debug: error.baseError ? {
+        debug: (debug && error.baseError) ? {
           message: error.baseError.message,
           stack: error.baseError.stack,
           ...error.baseError,

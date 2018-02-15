@@ -1,5 +1,3 @@
-"use strict";
-
 import {
   Entity, BaseEntity,
   Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
@@ -9,6 +7,10 @@ import { token_expires } from "../lib/config";
 import User from "./user";
 import ms = require("ms");
 import { Permission } from "../lib/permission";
+
+import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
+import { Observable } from "rxjs/Observable";
+import "rxjs/add/operator/map";
 
 // tslint:disable:max-classes-per-file
 // tslint:disable-next-line:no-namespace
@@ -68,24 +70,33 @@ export default class Session extends BaseEntity {
   @Column({ name: "expires_at" })
   public expiresAt: Date = this.getNewExpirationDate();
   public get expired() {
-    return this.expiresAt <= new Date(Date.now()) || !!this.user.deleteToken;
+    return (this.expiresAt <= new Date()) || !!this.user.deleteToken;
   }
 
   public renew = () => {
     this.expiresAt = this.getNewExpirationDate();
   }
-
-  public toView = async (ignoreExpiration = false) => {
-    if (!ignoreExpiration && this.expired) {
-      throw new Errors.TokenExpiredError(this.expiresAt);
-    }
+  public toView = () => {
     return {
       token: this.token,
       user: this.user.toView(),
-      permissions: this.permission,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      expiresAt: this.expiresAt,
+      permissions: this.permission.roles,
+      created_at: this.createdAt,
+      updated_at: this.updatedAt,
+      expires_at: this.expiresAt,
     };
+  }
+}
+
+@Interceptor()
+export class SessionInterceptor implements NestInterceptor {
+  public intercept(_: any, __: ExecutionContext, stream$: Observable<any>): Observable<any> {
+    return stream$.map((value) => {
+      if (value instanceof Session) {
+        return value.toView();
+      } else {
+        return value;
+      }
+    });
   }
 }

@@ -8,3 +8,4 @@ export const token_expires = process.env.TOKEN_EXPIRES || "7d";
 export const log_level = process.env.LOG_LEVEL || "info";
 export const confirmation_expires = process.env.CONFIRMATION_EXPIRES || "2h";
 export const deploy_token = process.env.DEPLOY_TOKEN || "1b26f5e2fd217297a50e5a31aeedc48a";
+export const debug = process.env.NODE_ENV === "dev";

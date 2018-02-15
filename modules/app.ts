@@ -3,6 +3,8 @@ import { NestFactory } from "@nestjs/core";
 
 import SessionController from "../controllers/session";
 import { GenericErrorFilter, NotFoundExceptionFilter } from "../middlewares/error";
+import { SessionInterceptor } from "../models/session";
+import { UserInterceptor } from "../models/user";
 
 @Module({
   imports: [],
@@ -17,6 +19,10 @@ export const buildApplication = async () => {
   app.useGlobalFilters(
     new NotFoundExceptionFilter(),
     new GenericErrorFilter(),
+  );
+  app.useGlobalInterceptors(
+    new SessionInterceptor(),
+    new UserInterceptor(),
   );
   return app;
 };

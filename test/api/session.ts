@@ -46,12 +46,12 @@ export default () => {
         expect(us.id).to.eql(uv.id);
         expect(us.email).to.eql(uv.email);
         expect(us.permissions).to.eql(uv.permissions);
-        expect(handleDate(us.createdAt)).to.eql(handleDate(uv.createdAt));
-        expect(handleDate(us.updatedAt)).to.eql(handleDate(uv.updatedAt));
+        expect(handleDate(us.created_at)).to.eql(handleDate(uv.updated_at.toJSON()));
+        expect(handleDate(us.updated_at)).to.eql(handleDate(uv.updated_at.toJSON()));
       }
-      expect(result.body.permissions.admin).to.be.false;
-      expect(result.body.createdAt).to.match(dateRegExp);
-      expect(result.body.updatedAt).to.match(dateRegExp);
+      expect(result.body.permissions).to.eql(["admin"]);
+      expect(result.body.created_at).to.match(dateRegExp);
+      expect(result.body.updated_at).to.match(dateRegExp);
       expect(result.body.expiresAt).to.match(dateRegExp);
     });
     it("return 401 for unauthorized request", async () => {
@@ -155,7 +155,7 @@ export default () => {
           },
         });
         expect(result.statusCode).eql(200);
-        expect(result.body.permissions.admin).to.be.false;
+        expect(result.body.permissions).to.eql([]);
       });
       it("handles permission parameter correctly", async () => {
         const result = await request({
@@ -175,7 +175,7 @@ export default () => {
           },
         });
         expect(result.statusCode).eql(200);
-        expect(result.body.permissions.admin).to.be.false;
+        expect(result.body.permissions).to.eql([]);
       });
       it("handles permission parameter correctly", async () => {
         const result = await request({
@@ -195,7 +195,7 @@ export default () => {
           },
         });
         expect(result.statusCode).eql(200);
-        expect(result.body.permissions.admin).to.be.true;
+        expect(result.body.permissions).to.eql(["admin"]);
       });
     });
   });
@@ -233,12 +233,12 @@ export default () => {
         expect(us.id).to.eql(uv.id);
         expect(us.email).to.eql(uv.email);
         expect(us.permissions).to.eql(uv.permissions);
-        expect(handleDate(us.createdAt)).to.eql(handleDate(uv.createdAt));
-        expect(handleDate(us.updatedAt)).to.eql(handleDate(uv.updatedAt));
+        expect(handleDate(us.created_at)).to.eql(handleDate(uv.updated_at.toJSON()));
+        expect(handleDate(us.updated_at)).to.eql(handleDate(uv.updated_at.toJSON()));
       }
-      expect(result.body.permissions.admin).to.be.false;
-      expect(result.body.createdAt).to.match(dateRegExp);
-      expect(result.body.updatedAt).to.match(dateRegExp);
+      expect(result.body.permissions).to.eql([]);
+      expect(result.body.created_at).to.match(dateRegExp);
+      expect(result.body.updated_at).to.match(dateRegExp);
       expect(result.body.expiresAt).to.match(dateRegExp);
     });
     it("403 EXPIRED_TOKEN", async () => {
@@ -341,12 +341,12 @@ export default () => {
         expect(us.id).to.eql(uv.id);
         expect(us.email).to.eql(uv.email);
         expect(us.permissions).to.eql(uv.permissions);
-        expect(handleDate(us.createdAt)).to.eql(handleDate(uv.createdAt));
-        expect(handleDate(us.updatedAt)).to.eql(handleDate(uv.updatedAt));
+        expect(handleDate(us.created_at)).to.eql(handleDate(uv.updated_at.toJSON()));
+        expect(handleDate(us.updated_at)).to.eql(handleDate(uv.updated_at.toJSON()));
       }
-      expect(result.body.permissions.admin).to.be.false;
-      expect(result.body.createdAt).to.match(dateRegExp);
-      expect(result.body.updatedAt).to.match(dateRegExp);
+      expect(result.body.permissions).to.eql([]);
+      expect(result.body.created_at).to.match(dateRegExp);
+      expect(result.body.updated_at).to.match(dateRegExp);
       expect(result.body.expiresAt).to.match(dateRegExp);
       const errResult = await request({
         method: "GET",

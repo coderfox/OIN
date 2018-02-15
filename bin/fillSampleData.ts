@@ -12,7 +12,7 @@ import { User, Session } from "../models";
 import { getManager } from "typeorm";
 
 (async () => {
-  await dbInit;
+  await dbInit();
   const admin = new User("admin@example.com");
   const user = new User("user@example.com");
   const adminSession = new Session(admin);
