@@ -1,6 +1,5 @@
 "use strict";
 
-import { NestFactory } from "@nestjs/core";
 import { INestApplication } from "@nestjs/common/interfaces";
 
 import "dotenv/config";
@@ -9,14 +8,11 @@ import { getConnection } from "typeorm";
 import { port, db_url } from "./lib/config";
 import log from "./lib/log";
 
-import legacyApp from "./modules/legacy";
-import ApplicationModule from "./modules/app";
+import { buildApplication } from "./modules/app";
 
 let server: INestApplication;
 export const start = async () => {
-  server = await NestFactory.create(ApplicationModule);
-  // TODO: gradually remove legacyApp
-  server.use(legacyApp.callback());
+  server = await buildApplication();
   await initDb();
   log.info(`database connected to ${db_url}`);
   await server.listenAsync(port);

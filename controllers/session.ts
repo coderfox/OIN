@@ -1,10 +1,14 @@
-import { Get, Controller, Query } from "@nestjs/common";
+import { Get, Controller } from "@nestjs/common";
 
-@Controller()
+@Controller("session")
 class SessionController {
   @Get()
-  public root( @Query("sample") sample: string): string {
-    return "Hello World!" + sample;
+  public root(): string {
+    return "Hello World!";
+  }
+  @Get("500")
+  public error() {
+    throw new Error();
   }
 }
 
