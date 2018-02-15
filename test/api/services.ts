@@ -5,8 +5,8 @@ import { clearDb, request } from "../helpers";
 import * as uuid from "uuid/v4";
 import Service from "../../models/service";
 
-const prepareDb = async () => Promise.all([1, 2, 3].map(value =>
-  new Service(uuid(), `Service ${value}`).save()
+const prepareDb = async () => Promise.all([1, 2, 3].map((value) =>
+  new Service(uuid(), `Service ${value}`).save(),
 ));
 
 export default () => {

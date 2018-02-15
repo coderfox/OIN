@@ -11,19 +11,19 @@ export default () => {
     it("200 OK", async () => {
       const result = await requestRpc(
         "register_service",
-        { deploy_token, metadata: { id: uuid(), name: "Hello World!" } }
+        { deploy_token, metadata: { id: uuid(), name: "Hello World!" } },
       );
       assert.match(result, UuidRegExp);
     });
     it("INVALID_PARAMETERS", () => requestRpc(
       "register_service",
       { deploy_token },
-      "INVALID_PARAMETERS"
+      "INVALID_PARAMETERS",
     ));
     it("INSUFFICIENT_PERMISSION", () => requestRpc(
       "register_service",
       { deploy_token: deploy_token + "INVALID", metadata: { id: uuid(), name: "Hello World!" } },
-      "INSUFFICIENT_PERMISSION"
+      "INSUFFICIENT_PERMISSION",
     ));
   });
 };

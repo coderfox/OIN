@@ -1,7 +1,7 @@
 "use strict";
 
-import { NestFactory } from '@nestjs/core';
-import { INestApplication } from '@nestjs/common/interfaces';
+import { NestFactory } from "@nestjs/core";
+import { INestApplication } from "@nestjs/common/interfaces";
 
 import "dotenv/config";
 import initDb from "./lib/db";

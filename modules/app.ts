@@ -1,8 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module } from "@nestjs/common";
+
+import SessionController from "../controllers/session";
 
 @Module({
   imports: [],
-  controllers: [],
+  controllers: [SessionController],
   components: [],
 })
 class ApplicationModule { }

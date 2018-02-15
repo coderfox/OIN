@@ -17,5 +17,13 @@
         "isDefault": true
       },
     },
+    {
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": {
+        "base": "$tslint5",
+        "fileLocation": "absolute",
+      }
+    }
   ]
 }

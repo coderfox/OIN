@@ -55,4 +55,4 @@ export const requestRpc = async (fn: string, params: any, error?: string) => {
     assert.equal(result.body.code, error, "error code");
   }
   return result.body.result;
-}
+};

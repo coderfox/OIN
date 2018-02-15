@@ -3,12 +3,12 @@
 import {
   Entity, BaseEntity,
   Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn,
-  Generated
+  Generated,
 } from "typeorm";
 import {
   serialize as Serialize,
   serializeAs as SerializeAs,
-  Serialize as serialize
+  Serialize as serialize,
 } from "cerialize";
 
 @Entity()

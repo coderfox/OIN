@@ -56,14 +56,14 @@
     "tslint-eslint-rules": "^4.1.1"
   },
   "scripts": {
-    "compile": "tsc && tslint -p . -e node_modules/**.* && node bin/buildOrmConfig",
+    "compile": "tsc && tslint -p . && node bin/buildOrmConfig",
     "test": "nyc -r html mocha test/index",
     "test-cov": "nyc -r lcovonly -r html mocha test/index",
     "postinstall": "tsc",
-    "pretest": "tsc&& tslint -p . -e node_modules/**.*",
+    "pretest": "tsc&& tslint -p .",
     "dev": "supervisor -i coverage bin/run | pino",
     "start": "node ./bin/run",
-    "lint": "tslint -p . -e node_modules/**.*",
+    "lint": "tslint -p .",
     "test-nocompile": "nyc -r html mocha test/index",
     "db:migrate": "node bin/buildOrmConfig && typeorm migrations:run",
     "db:revert": "node bin/buildOrmConfig && typeorm migrations:revert"
