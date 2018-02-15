@@ -37,10 +37,7 @@ router.post("/register_service", async (ctx) => {
     return service.token;
   } else {
     log.info("registering new service", metadata);
-    const newService = new Service();
-    newService.id = id;
-    newService.name = name;
-    newService.description = description;
+    const newService = new Service(id, name, description);
     await newService.save();
     ctx.body = newService.token;
   }

@@ -2,18 +2,28 @@
 
 import {
   Entity, BaseEntity,
-  Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn,
   Generated
 } from "typeorm";
-import { serialize as Serialize, Serialize as serialize } from "cerialize";
+import {
+  serialize as Serialize,
+  serializeAs as SerializeAs,
+  Serialize as serialize
+} from "cerialize";
 
 @Entity()
 export default class Service extends BaseEntity {
-  @PrimaryGeneratedColumn("uuid")
+  constructor(id: string, name: string, description?: string) {
+    super();
+    this.id = id;
+    this.name = name;
+    this.description = description;
+  }
+  @PrimaryColumn("uuid")
   @Serialize
   public id: string;
   @Column({ type: "varchar", length: 50, nullable: false })
-  @Serialize
+  @SerializeAs("title")
   public name: string;
   @Column({ unique: true })
   @Generated("uuid")

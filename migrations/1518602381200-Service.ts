@@ -4,7 +4,7 @@ export class Service1518602381200 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<any> {
         await queryRunner.query(`CREATE TABLE "service" (
-            "id" uuid NOT NULL DEFAULT uuid_generate_v4(), 
+            "id" uuid NOT NULL, 
             "name" character varying(50) NOT NULL, 
             "token" uuid NOT NULL DEFAULT uuid_generate_v4(), 
             "description" character varying, 
