@@ -1,14 +1,12 @@
 "use strict";
 
-import "dotenv/config";
-import "./lib/db";
 import * as Koa from "koa";
 import * as bodyParser from "koa-bodyparser";
 import "reflect-metadata";
 import * as koaJson from "koa-json";
-import router from "./routes";
-import log from "./lib/log";
-import * as Errors from "./lib/errors";
+import router from "../routes";
+import log from "../lib/log";
+import * as Errors from "../lib/errors";
 
 const app = new Koa();
 

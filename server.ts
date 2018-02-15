@@ -1,42 +1,30 @@
 "use strict";
 
-import app from "./app";
+import { NestFactory } from '@nestjs/core';
+import { INestApplication } from '@nestjs/common/interfaces';
+
+import "dotenv/config";
 import initDb from "./lib/db";
 import { getConnection } from "typeorm";
 import { port, db_url } from "./lib/config";
 import log from "./lib/log";
-import * as http from "http";
 
-switch (process.env.NODE_ENV) {
-  case "test": {
-    log.level = "warn";
-    break;
-  }
-  case "dev":
-  case "develop":
-  case "development": {
-    log.level = "trace";
-    break;
-  }
-  case "prod":
-  case "production":
-  default: {
-    log.level = "info";
-    break;
-  }
-}
+import legacyApp from "./modules/legacy";
+import ApplicationModule from "./modules/app";
 
-export const server = http.createServer(app.callback());
-
+let server: INestApplication;
 export const start = async () => {
+  server = await NestFactory.create(ApplicationModule);
+  // TODO: gradually remove legacyApp
+  server.use(legacyApp.callback());
   await initDb();
   log.info(`database connected to ${db_url}`);
-  server.listen(port);
+  await server.listenAsync(port);
   log.info(`server listening on port ${port}`);
 };
-export const stop = (signal?: Signals) => {
+export const stop = async (signal?: Signals) => {
   log.info(`shutting down server gracefully on ${signal || "demand"}`);
-  getConnection().close();
+  await getConnection().close();
   log.info("database disconnected");
   server.close();
   log.info("server closed");
