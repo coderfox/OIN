@@ -26,10 +26,10 @@ export class Init1513827534850 implements MigrationInterface {
             "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
             "delete_token" uuid, PRIMARY KEY("id"))`);
         await queryRunner.query(`CREATE UNIQUE INDEX "email_unique_with_deletion"
-        ON "user"("email","delete_token")`);
+            ON "user"("email","delete_token")`);
         await queryRunner.query(`ALTER TABLE "session"
-        ADD CONSTRAINT "fk_befa332be8da6956e9e44a3e39a"
-        FOREIGN KEY ("userId") REFERENCES "user"("id")`);
+            ADD CONSTRAINT "fk_befa332be8da6956e9e44a3e39a"
+            FOREIGN KEY ("userId") REFERENCES "user"("id")`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<any> {

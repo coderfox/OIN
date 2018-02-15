@@ -1,4 +1,5 @@
 {
+  "compileOnSave": true,
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
@@ -10,13 +11,15 @@
     "noFallthroughCasesInSwitch": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "plugins": [{
-      "name": "tslint-language-service",
-      "alwaysShowRuleFailuresAsWarnings": true,
-      "configFile": "./tslint.json",
-      "exclude": "${workspaceRoot}/node_modules/*",
-      "autoFixOnSave": true
-    }]
+    "plugins": [
+      {
+        "name": "tslint-language-service",
+        "alwaysShowRuleFailuresAsWarnings": true,
+        "configFile": "${workspaceRoot}/tslint.json",
+        "exclude": "${workspaceRoot}/node_modules/*",
+        "autoFixOnSave": true
+      }
+    ]
   },
   "exclude": [
     ".vscode",

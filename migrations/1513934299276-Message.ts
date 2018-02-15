@@ -16,9 +16,9 @@ export class Message1513934299276 implements MigrationInterface {
             "ownerId" uuid,
             PRIMARY KEY("id"))`);
         await queryRunner.query(`ALTER TABLE "message"
-        ADD CONSTRAINT "fk_c39f3f3b187c194fe5a05161da2"
-        FOREIGN KEY ("ownerId")
-        REFERENCES "user"("id")`);
+            ADD CONSTRAINT "fk_c39f3f3b187c194fe5a05161da2"
+            FOREIGN KEY ("ownerId")
+            REFERENCES "user"("id")`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<any> {

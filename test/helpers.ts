@@ -41,3 +41,18 @@ export const request = async (dest: string, validate: string, op?: {
   return result.body;
 };
 export const UuidRegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export const requestRpc = async (fn: string, params: any, error?: string) => {
+  const result = await requestO({
+    method: "POST",
+    url: `${baseUrl}/${fn}`,
+    simple: false,
+    resolveWithFullResponse: true,
+    json: true,
+    body: params,
+  });
+  assert.equal(result.statusCode, error ? 500 : 200, "HTTP status code");
+  if (error) {
+    assert.equal(result.body.code, error, "error code");
+  }
+  return result.body.result;
+}
