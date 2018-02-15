@@ -38,11 +38,8 @@ export class InternalServerError extends ApiError {
   }
 }
 export class AuthenticationNotFoundError extends ApiError {
-  constructor(ctx: Context, expected?: string) {
+  constructor(public readonly expected?: string) {
     super("AUTHENTICATION_NOT_FOUND", 401);
-    if (expected) {
-      ctx.set("WWW-Authenticate", expected);
-    }
   }
 }
 export class CorruptedAuthorizationHeaderError extends ApiError {
@@ -81,13 +78,8 @@ export class PasswordMismatchError extends ApiError {
   }
 }
 export class InvalidAuthenticationTypeError extends ApiError {
-  public readonly wrong?: string;
-  public readonly right: string;
-  constructor(right: string, wrong?: string) {
+  constructor(public readonly right: string, public readonly wrong: string) {
     super("INVALID_AUTHENTICATION_TYPE", 401);
-    // TODO: auto respond WWW-Authenticate header
-    this.wrong = wrong;
-    this.right = right;
   }
 }
 export class TokenExpiredError extends ApiError {

@@ -51,7 +51,7 @@ export const parseBearer = (authorization: string) => {
 
 export const authBasic = async (ctx: Context) => {
   if (!ctx.headers.authorization) {
-    throw new Errors.AuthenticationNotFoundError(ctx, "Basic");
+    throw new Errors.AuthenticationNotFoundError("Basic");
   }
   const result = parseBasic(ctx.headers.authorization);
   const user = await User.findOne({
@@ -69,7 +69,7 @@ export const authBasic = async (ctx: Context) => {
 };
 export const authBearer = async (ctx: Context) => {
   if (!ctx.headers.authorization) {
-    throw new Errors.AuthenticationNotFoundError(ctx, "Bearer");
+    throw new Errors.AuthenticationNotFoundError("Bearer");
   }
   const token = parseBearer(ctx.headers.authorization);
   const session = await Session.findOneById(token);

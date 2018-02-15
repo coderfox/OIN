@@ -14,6 +14,9 @@ class ApplicationModule { }
 export default ApplicationModule;
 export const buildApplication = async () => {
   const app = await NestFactory.create(ApplicationModule);
-  app.useGlobalFilters(new NotFoundExceptionFilter(), new GenericErrorFilter());
+  app.useGlobalFilters(
+    new NotFoundExceptionFilter(),
+    new GenericErrorFilter(),
+  );
   return app;
 };

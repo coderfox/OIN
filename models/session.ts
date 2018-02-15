@@ -8,7 +8,7 @@ import {
 import { token_expires } from "../lib/config";
 import User from "./user";
 import ms = require("ms");
-import IPermission from "./IPermission";
+import { Permission } from "../lib/permission";
 
 // tslint:disable:max-classes-per-file
 // tslint:disable-next-line:no-namespace
@@ -54,8 +54,13 @@ export default class Session extends BaseEntity {
   public user: User;
   @PrimaryGeneratedColumn("uuid")
   public token: string;
-  @Column({ type: "jsonb" })
-  public permissions: IPermission = { admin: false };
+  @Column("varchar", {
+    isArray: true, transformer: {
+      to: (roles: Permission) => roles.roles,
+      from: (value) => new Permission(value),
+    },
+  })
+  public permission: Permission = new Permission();
   @CreateDateColumn({ name: "created_at" })
   public createdAt: Date;
   @UpdateDateColumn({ name: "updated_at" })
@@ -77,7 +82,7 @@ export default class Session extends BaseEntity {
     return {
       token: this.token,
       user: this.user.toView(),
-      permissions: this.permissions,
+      permissions: this.permission,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       expiresAt: this.expiresAt,

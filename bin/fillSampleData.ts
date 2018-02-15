@@ -19,7 +19,7 @@ import { getManager } from "typeorm";
   const adminSessionWithoutPermission = new Session(admin);
   const userSession = new Session(user);
   await admin.setPassword("admin");
-  adminSession.permissions.admin = true;
+  adminSession.permission.grant("admin");
   await user.setPassword("user");
   await getManager().save([admin, user, adminSession, adminSessionWithoutPermission, userSession]);
 })();

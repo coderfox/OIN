@@ -3151,13 +3151,14 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-typeorm@^0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/typeorm/-/typeorm-0.1.3.tgz#b8ae44bc7fbebbedde1350bd3bb72fc4c99833a1"
+typeorm@^0.1.12:
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/typeorm/-/typeorm-0.1.12.tgz#adcd45f302d21ab4d5b02671bfa8c07cea044af7"
   dependencies:
     app-root-path "^2.0.1"
     chalk "^2.0.1"
     cli-highlight "^1.1.4"
+    debug "^3.1.0"
     dotenv "^4.0.0"
     glob "^7.1.2"
     js-yaml "^3.8.4"

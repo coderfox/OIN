@@ -19,12 +19,12 @@ export default () => {
       await clearDb();
       user = new User("admin@example.com");
       await user.setPassword("123456");
-      user.permissions.admin = true;
+      user.permission.grant("admin");
       await user.save();
       session = new Session(user);
-      session.permissions.admin = false;
+      session.permission.revoke("admin");
       sessionAdmin = new Session(user);
-      sessionAdmin.permissions.admin = true;
+      sessionAdmin.permission.grant("admin");
       await getRepository(Session).save([session, sessionAdmin]);
     });
     after(clearDb);
@@ -195,7 +195,7 @@ export default () => {
       admin = new User("admin@example.com");
       await admin.setPassword("admin");
       adminSession = new Session(admin);
-      adminSession.permissions.admin = true;
+      adminSession.permission.grant("admin");
       adminSessionWithoutPermission = new Session(admin);
       user = new User("user@example.com");
       await user.setPassword("user");
@@ -279,7 +279,7 @@ export default () => {
       admin = new User("admin@example.com");
       await admin.setPassword("admin");
       adminSession = new Session(admin);
-      adminSession.permissions.admin = true;
+      adminSession.permission.grant("admin");
       adminSessionWithoutPermission = new Session(admin);
       user = new User("user@example.com");
       await user.setPassword("user");
@@ -445,7 +445,7 @@ export default () => {
       admin = new User("admin@example.com");
       await admin.setPassword("admin");
       adminSession = new Session(admin);
-      adminSession.permissions.admin = true;
+      adminSession.permission.grant("admin");
       adminSessionWithoutPermission = new Session(admin);
       user = new User("user@example.com");
       await user.setPassword("user");

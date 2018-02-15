@@ -7,11 +7,11 @@ import {
 } from "typeorm";
 import * as bcrypt from "bcrypt";
 import { password_hash_rounds } from "../lib/config";
-import IPermission from "./IPermission";
 import * as uuid from "uuid/v4";
 import { serialize, Serialize } from "cerialize";
 import Session from "./session";
 import Message from "./message";
+import { Permission } from "../lib/permission";
 
 @Entity()
 @Index("email_unique_with_deletion", ["email", "deleteToken"], { unique: true })
@@ -35,9 +35,13 @@ export default class User extends BaseEntity {
   }
   public checkPassword = async (password: string) =>
     bcrypt.compare(password, this.hashedPassword)
-  @Column({ type: "jsonb" })
-  @serialize
-  public permissions: IPermission = { admin: false };
+  @Column("varchar", {
+    isArray: true, transformer: {
+      to: (roles: Permission) => roles.roles,
+      from: (value) => new Permission(value),
+    },
+  })
+  public permission: Permission = new Permission();
   @OneToMany(() => Session, (session) => session.user)
   public sessions: Promise<Session[]>;
   @OneToMany(() => Message, (message) => message.owner)

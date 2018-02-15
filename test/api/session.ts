@@ -113,7 +113,7 @@ export default () => {
     });
     describe("without admin permissions", () => {
       before(async () => {
-        user.permissions.admin = false;
+        user.permission.revoke("admin");
         await getRepository(User).save(user);
       });
       it("throws 403 on insufficient permissions", async () => {
@@ -139,7 +139,7 @@ export default () => {
     });
     describe("with admin permission", () => {
       before(async () => {
-        user.permissions.admin = true;
+        user.permission.grant("admin");
         await getRepository(User).save(user);
       });
       it("defaults to false", async () => {

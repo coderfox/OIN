@@ -2,13 +2,13 @@ import { ExceptionFilter, Catch, NotFoundException } from "@nestjs/common";
 import log from "../lib/log";
 import * as Errors from "../lib/errors";
 
+// tslint:disable:max-classes-per-file
 @Catch(NotFoundException)
 export class NotFoundExceptionFilter implements ExceptionFilter {
   public catch() {
     throw new Errors.ApiEndpointNotFoundError();
   }
 }
-// tslint:disable-next-line:max-classes-per-file
 @Catch()
 export class GenericErrorFilter implements ExceptionFilter {
   public catch(error: any, response: any) {
@@ -17,6 +17,12 @@ export class GenericErrorFilter implements ExceptionFilter {
       error = new Errors.InternalServerError(error);
     } else {
       log.info(error, "handled server error");
+      if (error instanceof Errors.AuthenticationNotFoundError) {
+        response.set("WWW-Authenticate", error.expected);
+      }
+      if (error instanceof Errors.InvalidAuthenticationTypeError) {
+        response.set("WWW-Authenticate", error.right);
+      }
     }
     response
       .status(error.status)
