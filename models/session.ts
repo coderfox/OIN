@@ -94,6 +94,8 @@ export class SessionInterceptor implements NestInterceptor {
     return stream$.map((value) => {
       if (value instanceof Session) {
         return value.toView();
+      } else if (Array.isArray(value)) {
+        return value.map((session) => session instanceof Session ? session.toView() : session);
       } else {
         return value;
       }

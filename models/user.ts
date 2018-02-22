@@ -73,6 +73,8 @@ export class UserInterceptor implements NestInterceptor {
     return stream$.map((value) => {
       if (value instanceof User) {
         return value.toView();
+      } else if (Array.isArray(value)) {
+        return value.map((user) => user instanceof User ? user.toView() : user);
       } else {
         return value;
       }

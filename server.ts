@@ -8,7 +8,7 @@ import { getConnection } from "typeorm";
 import { port, db_url, debug } from "./lib/config";
 import log from "./lib/log";
 
-import { buildApplication } from "./modules/app";
+import { buildApplication } from "./app";
 import User from "./models/user";
 import Session from "./models/session";
 

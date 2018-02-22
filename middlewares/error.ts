@@ -29,7 +29,8 @@ export class GenericErrorFilter implements ExceptionFilter {
       .status(error.status)
       .json({
         code: error.code,
-        debug: (debug && error.baseError) ? {
+        api_error: debug && error,
+        base_error: (debug && error.baseError) ? {
           message: error.baseError.message,
           stack: error.baseError.stack,
           ...error.baseError,

@@ -14,6 +14,5 @@ export const config: ConnectionOptions = {
     "./migrations/*.js",
   ],
   synchronize: false,
-  migrationsRun: true,
 };
 export default () => createConnection(config);

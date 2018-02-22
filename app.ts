@@ -1,14 +1,19 @@
 import { Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
-import SessionController from "../controllers/session";
-import { GenericErrorFilter, NotFoundExceptionFilter } from "../middlewares/error";
-import { SessionInterceptor } from "../models/session";
-import { UserInterceptor } from "../models/user";
+import SessionController from "./controllers/session";
+import UserController from "./controllers/user";
+
+import { GenericErrorFilter, NotFoundExceptionFilter } from "./middlewares/error";
+import { SessionInterceptor } from "./models/session";
+import { UserInterceptor } from "./models/user";
 
 @Module({
   imports: [],
-  controllers: [SessionController],
+  controllers: [
+    SessionController,
+    UserController,
+  ],
   components: [],
 })
 class ApplicationModule { }
