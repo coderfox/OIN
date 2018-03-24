@@ -3,6 +3,7 @@ import createBrowserHistory from 'history/createBrowserHistory';
 import { Provider } from 'mobx-react';
 import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
 import { Router, Route, Switch } from 'react-router-dom';
+import SessionState from './lib/state/Session';
 
 import { Row, Col } from 'antd';
 
@@ -13,6 +14,7 @@ const routingStore = new RouterStore();
 
 const stores = {
   routing: routingStore,
+  session: new SessionState(),
 };
 
 const history = syncHistoryWithStore(browserHistory, routingStore);
@@ -23,6 +25,7 @@ class App extends React.Component {
       <Provider {...stores}>
         <Router history={history}>
           <Switch>
+            <Route path="/" exact={true} component={Pages.Index} />
             <Route path="/reg" component={Pages.Reg} />
             <Route path="/login" component={Pages.Login} />
           </Switch>

@@ -3,6 +3,7 @@ import { inject, observer } from 'mobx-react';
 
 import { Form, Input, Icon, Button, message } from 'antd';
 import { FormComponentProps } from 'antd/lib/form/Form';
+import { Link } from 'react-router-dom';
 
 import ApiClient from '../lib/client';
 import { RouterStore } from 'mobx-react-router';
@@ -88,6 +89,7 @@ class RegForm extends React.Component<Props, States> {
             注册
           </Button>
         </Form.Item>
+        <Link to="/login" >已有账号，登入</Link>
       </Form>
     );
   }

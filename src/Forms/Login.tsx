@@ -3,9 +3,11 @@ import { inject, observer } from 'mobx-react';
 
 import { Form, Input, Icon, Button, message } from 'antd';
 import { FormComponentProps } from 'antd/lib/form/Form';
+import { Link } from 'react-router-dom';
 
 import ApiClient from '../lib/client';
 import { RouterStore } from 'mobx-react-router';
+import SessionState from '../lib/state/Session';
 
 const FORM_FIELDS = {
   EMAIL: 'email',
@@ -14,12 +16,13 @@ const FORM_FIELDS = {
 
 interface Props extends FormComponentProps {
   routing?: RouterStore;
+  session?: SessionState;
 }
 interface States {
   loading: boolean;
 }
 
-@inject('routing')
+@inject('routing', 'session')
 @observer
 class LoginForm extends React.Component<Props, States> {
   state = { loading: false };
@@ -30,9 +33,9 @@ class LoginForm extends React.Component<Props, States> {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        ApiClient.login(values[FORM_FIELDS.EMAIL], values[FORM_FIELDS.PASSWORD])
-          .then((session) => {
-            message.info(<p>登入成功，token {session.token}。</p>);
+        this.props.session!.login(values[FORM_FIELDS.EMAIL], values[FORM_FIELDS.PASSWORD])
+          .then((token) => {
+            message.info(<p>登入成功，token {token}。</p>);
           })
           .catch((ex) => {
             message.error(<p>{ex.message} - {ex.response && ex.response.data && ex.response.data.code}</p>);
@@ -85,6 +88,7 @@ class LoginForm extends React.Component<Props, States> {
             登入
           </Button>
         </Form.Item>
+        <Link to="/reg">没有账号，马上注册</Link>
       </Form>
     );
   }
