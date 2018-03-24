@@ -21,8 +21,10 @@ interface States {
 
 @inject('routing')
 @observer
-class LoginForm extends React.Component<Props, States> {
-  state = { loading: false };
+class RegForm extends React.Component<Props, States> {
+  state = {
+    loading: false
+  };
 
   handleSubmit: React.FormEventHandler<void> = (e) => {
     const { push } = this.props.routing!;
@@ -30,9 +32,10 @@ class LoginForm extends React.Component<Props, States> {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        ApiClient.login(values[FORM_FIELDS.EMAIL], values[FORM_FIELDS.PASSWORD])
-          .then((session) => {
-            message.info(<p>登入成功，token {session.token}。</p>);
+        ApiClient.register(values[FORM_FIELDS.EMAIL], values[FORM_FIELDS.PASSWORD])
+          .then((user) => {
+            message.info(<p>注册成功，用户 id {user.id}。</p>);
+            push('/login');
           })
           .catch((ex) => {
             message.error(<p>{ex.message} - {ex.response && ex.response.data && ex.response.data.code}</p>);
@@ -45,8 +48,8 @@ class LoginForm extends React.Component<Props, States> {
     const { getFieldDecorator, getFieldsError, isFieldTouched } = this.props.form;
     const fieldsError = getFieldsError();
     return (
-      <Form onSubmit={this.handleSubmit}>
-        <h2>登入</h2>
+      <Form onSubmit={this.handleSubmit} >
+        <h2>注册</h2>
         <Form.Item>
           {getFieldDecorator(FORM_FIELDS.EMAIL, {
             rules: [
@@ -82,13 +85,13 @@ class LoginForm extends React.Component<Props, States> {
             }
             loading={this.state.loading}
           >
-            登入
+            注册
           </Button>
         </Form.Item>
       </Form>
     );
   }
 }
-const DecoratedLoginForm = Form.create()(LoginForm);
+const DecoratedRegForm = Form.create()(RegForm);
 
-export default DecoratedLoginForm;
+export default DecoratedRegForm;

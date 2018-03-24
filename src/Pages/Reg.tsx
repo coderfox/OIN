@@ -9,16 +9,16 @@ interface Props {
 interface States {
 }
 
-class LoginPage extends React.Component<Props, States> {
+class RegPage extends React.Component<Props, States> {
   render() {
     return (
       <Row style={{ height: '100%' }} type="flex" justify="space-around" align="middle">
         <Col md={12} xs={24}>
-          <Forms.Login />
+          <Forms.Reg />
         </Col>
       </Row>
     );
   }
 }
 
-export default LoginPage;
+export default RegPage;
