@@ -6,13 +6,13 @@ import SessionState from '../lib/state/Session';
 
 @inject('session')
 @observer
-export default class ProtectedRoute extends React.Component<{
+export default class EnsureAnonymous extends React.Component<{
   session?: SessionState,
   // tslint:disable-next-line:no-any
 } & any> {
   render() {
     const { session, ...restProps } = this.props;
-    if (session!.authenticated) { return <Route {...restProps} />; }
-    return <Redirect to="/login" />;
+    if (session!.authenticated) { return <Redirect to="/dashboard" />; }
+    return <div />;
   }
 }
