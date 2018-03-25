@@ -5,12 +5,15 @@ import SessionState from '../lib/state/Session';
 import * as Interfaces from '../lib/api_interfaces';
 const ColorHash = require('color-hash');
 const color = new ColorHash();
+import Timeage from 'timeago.js';
+var timeago = Timeage();
 
 import * as Forms from '../Forms';
 import * as Components from '../Components';
 
-import { Card, Icon, Avatar, Button, message } from 'antd';
+import { Card, Icon, Avatar, Button, Collapse, Spin, message } from 'antd';
 const { Meta } = Card;
+const Panel = Collapse.Panel;
 
 interface Props {
   session?: SessionState;
@@ -54,7 +57,9 @@ class Message extends React.Component<Props, States> {
   }
 
   markAsRead = async () => {
+    this.setState({ loading: true });
     await this.props.session!.markAsReaded(this.props.id);
+    this.setState({ loading: false });
     message.info('已标记为已读');
   }
   loadContent = async () => {
@@ -74,34 +79,38 @@ class Message extends React.Component<Props, States> {
 
   render() {
     return (
-      <Card
-        loading={this.state.loading}
-        title={this.state.message && this.state.message.title}
-        extra={[
-          (<Button icon="check" onClick={this.markAsRead} />),
-          (<Button icon="plus-square" onClick={this.loadContent} />)
-        ]}
-      >
-        <Meta
-          avatar={<Avatar
-            style={{ backgroundColor: color.hex(this.state.message && this.state.message.subscription) }}
-            icon="fork"
-          />}
-          title={this.state.subscription && this.state.subscription.id}
-          description={
-            this.state.service && this.state.message &&
-            `${this.state.service.name} 于 ${
-            new Date(this.state.message.created_at).toString()}`
-          }
-        />
-        <div>{this.state.message && (!this.state.message.content) && this.state.message.abstract}</div>
-        <div
-          dangerouslySetInnerHTML={{
-            __html: this.state.message &&
-              this.state.message.content && this.state.message.content.data || ''
-          }}
-        />
-      </Card>
+      <Spin spinning={this.state.loading}>
+        <Collapse bordered={false}>
+          <Panel
+            key={this.props.id}
+            header={this.state.message && this.state.message.title}
+          >
+            <Meta
+              avatar={<Avatar
+                style={{ backgroundColor: color.hex(this.state.message && this.state.message.subscription) }}
+                icon="fork"
+              />}
+              title={this.state.subscription && this.state.subscription.id}
+              description={
+                this.state.service && this.state.message &&
+                `${this.state.service.name} 于 ${
+                timeago.format(this.state.message.created_at, 'zh_CN')}`
+              }
+            />
+            <div style={{ marginTop: '12px', marginBottom: '8px' }}>
+              <Button icon="check" onClick={this.markAsRead}>标为已读</Button>
+              <Button icon="plus-square" onClick={this.loadContent}>加载详情</Button>
+            </div>
+            <div>{this.state.message && (!this.state.message.content) && this.state.message.abstract}</div>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: this.state.message &&
+                  this.state.message.content && this.state.message.content.data || ''
+              }}
+            />
+          </Panel>
+        </Collapse>
+      </Spin>
     );
   }
 }

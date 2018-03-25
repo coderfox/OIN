@@ -6,7 +6,7 @@ import * as Interfaces from '../lib/api_interfaces';
 
 import * as Forms from '../Forms';
 import * as Components from '../Components';
-import { Row, Col, Button, message } from 'antd';
+import { Row, Col, Button, Collapse, message } from 'antd';
 
 interface Props {
   session?: SessionState;
@@ -28,20 +28,29 @@ class Dashboard extends React.Component<Props, States> {
     }
   }
   render() {
-    const { messages } = this.props.session!;
+    const { messages, subscriptions } = this.props.session!;
     return (
-      <Row>
-        <Col span={18}>
-          <p>{this.props.session!.session!.token}</p>
-          <Button onClick={e => { this.props.session!.removeToken(); }} >登出</Button>
-          {
-            messages.map(value =>
-              (<Row><Components.Message id={value.id} /></Row>))
-          }
-        </Col>
-        <Col span={6}>
-          <Row>
-            <Components.UserCard />
+      <Row style={{ height: '100%' }} type="flex" justify="space-around" align="top">
+        <Col span={20}>
+          <h1>Sandra</h1>
+          <Row gutter={8}>
+            <Col span={15}>
+              {
+                messages.length !== 0 ?
+                  messages.map(value =>
+                    (<Components.Message id={value.id} />)) :
+                  <p>您的消息已经全部处理完毕！</p>
+              }
+            </Col>
+            <Col span={9}>
+              <Row>
+                <Components.UserCard />
+                {
+                  subscriptions.map(value =>
+                    (<Components.Subscription id={value.id} />))
+                }
+              </Row>
+            </Col>
           </Row>
         </Col>
       </Row>
