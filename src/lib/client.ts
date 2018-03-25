@@ -62,6 +62,28 @@ class ApiClient {
     );
     return result.data;
   }
+
+  constructor(private token: string) {
+  }
+  public get = async <T>(url: string): Promise<T> =>
+    ApiClient.get<T>(url, this.token)
+  public post = async <TRes, TReq>(url: string, data: TReq): Promise<TRes> =>
+    ApiClient.post<TRes, TReq>(url, data, this.token)
+  public put = async <TRes, TReq>(url: string, data: TReq): Promise<TRes> =>
+    ApiClient.put<TRes, TReq>(url, data, this.token)
+  public delete = async <T>(url: string): Promise<T> =>
+    ApiClient.delete<T>(url, this.token)
+
+  public getMessage = (id: string) =>
+    this.get<Interfaces.Message>('/messages/'.concat(id))
+  public getMessages = () =>
+    this.get<Interfaces.Message[]>('/messages/mine')
+  public getServices = () =>
+    this.get<Interfaces.Service[]>('/services')
+  public getSubscriptions = () =>
+    this.get<Interfaces.Subscription[]>('/subscriptions/mine')
+  public markAsReaded = (id: string) =>
+    this.post<{ readed: boolean }, { readed: true }>('/messages/'.concat(id), { readed: true })
 }
 
 export default ApiClient;
