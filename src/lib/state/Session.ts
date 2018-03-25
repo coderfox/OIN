@@ -6,18 +6,15 @@ import { message } from 'antd';
 const store = require('store');
 
 const TOKEN_KEY = 'token';
-const EXPIRES_KEY = 'token_expires';
 
 export default class SessionState {
-  @observable public token: string | null = null;
-  @observable public expires?: Date;
   @observable public messages: Interfaces.Message[] = [];
   @observable public subscriptions: Interfaces.Subscription[] = [];
   @observable public services: Interfaces.Service[] = [];
+  @observable public session?: Interfaces.Session;
   @computed public get authenticated() {
-    if (!this.expires) { return false; }
-    if (this.token === null) { return false; }
-    if (this.expires < new Date()) { return false; }
+    if (!this.session) { return false; }
+    if (Date.parse(this.session.expires_at) < Date.now()) { return false; }
     return true;
   }
 
@@ -25,28 +22,24 @@ export default class SessionState {
 
   constructor() {
     const savedToken = store.get(TOKEN_KEY);
-    const expiresAt = store.get(EXPIRES_KEY);
-    this.setToken(savedToken === undefined ? null : savedToken, expiresAt);
+    if (savedToken) { this.setToken(savedToken); }
   }
 
-  @action setToken(token: string, expires?: Date) {
-    this.client = new ApiClient(token);
-    store.set(TOKEN_KEY, token);
-    store.set(EXPIRES_KEY, expires);
-    this.token = token;
-    this.expires = expires;
+  @action setToken(session: Interfaces.Session) {
+    this.client = new ApiClient(session.token);
+    store.set(TOKEN_KEY, session);
+    this.session = session;
   }
   @action removeToken() {
     store.remove(TOKEN_KEY);
-    store.remove(EXPIRES_KEY);
-    this.token = null;
     this.messages = [];
     this.subscriptions = [];
     this.services = [];
+    this.session = undefined;
   }
   @action async login(email: string, password: string) {
     const session = await ApiClient.login(email, password);
-    this.setToken(session.token, new Date(Date.parse(session.expires_at)));
+    this.setToken(session);
     return session.token;
   }
 
@@ -81,6 +74,11 @@ export default class SessionState {
       this.messages.splice(this.messages.findIndex(value => value.id === id), 1);
     } catch (ex) {
       message.error('标记已读失败' + ex.message);
+    }
+  }
+  @action loadSession = async () => {
+    if (this.authenticated && !this.session) {
+      this.session = await this.client!.getSession();
     }
   }
 }

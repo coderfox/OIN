@@ -6,7 +6,7 @@ import * as Interfaces from '../lib/api_interfaces';
 
 import * as Forms from '../Forms';
 import * as Components from '../Components';
-import { Button, message } from 'antd';
+import { Row, Col, Button, message } from 'antd';
 
 interface Props {
   session?: SessionState;
@@ -19,6 +19,7 @@ interface States {
 class Dashboard extends React.Component<Props, States> {
   async componentWillMount() {
     try {
+      await this.props.session!.loadSession();
       await this.props.session!.refreshServices();
       await this.props.session!.refreshSubscriptions();
       await this.props.session!.refreshMessages();
@@ -29,14 +30,21 @@ class Dashboard extends React.Component<Props, States> {
   render() {
     const { messages } = this.props.session!;
     return (
-      <div>
-        <p>{this.props.session!.token}</p>
-        <Button onClick={e => { this.props.session!.removeToken(); }} >登出</Button>
-        {
-          messages.map(value =>
-            (<Components.Message id={value.id} />))
-        }
-      </div>
+      <Row>
+        <Col span={18}>
+          <p>{this.props.session!.session!.token}</p>
+          <Button onClick={e => { this.props.session!.removeToken(); }} >登出</Button>
+          {
+            messages.map(value =>
+              (<Row><Components.Message id={value.id} /></Row>))
+          }
+        </Col>
+        <Col span={6}>
+          <Row>
+            <Components.UserCard />
+          </Row>
+        </Col>
+      </Row>
     );
   }
 }

@@ -6,7 +6,7 @@ import { Router, Route, Switch } from 'react-router-dom';
 import ProtectedRoute from './Routes/ProtectedRoute';
 import SessionState from './lib/state/Session';
 
-import { Row, Col } from 'antd';
+import { Row, Col, message } from 'antd';
 
 import * as Pages from './Pages';
 

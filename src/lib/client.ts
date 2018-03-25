@@ -84,6 +84,8 @@ class ApiClient {
     this.get<Interfaces.Subscription[]>('/subscriptions/mine')
   public markAsReaded = (id: string) =>
     this.post<{ readed: boolean }, { readed: true }>('/messages/'.concat(id), { readed: true })
+  public getSession = () =>
+    this.get<Interfaces.Session>('/session')
 }
 
 export default ApiClient;

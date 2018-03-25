@@ -87,12 +87,20 @@ class Message extends React.Component<Props, States> {
             style={{ backgroundColor: color.hex(this.state.message && this.state.message.subscription) }}
             icon="fork"
           />}
-          title={this.state.service && this.state.service.name}
-          description={this.state.service && this.state.service.description}
+          title={this.state.subscription && this.state.subscription.id}
+          description={
+            this.state.service && this.state.message &&
+            `${this.state.service.name} 于 ${
+            new Date(this.state.message.created_at).toString()}`
+          }
         />
-        <p>{this.state.subscription && this.state.subscription.id}</p>
-        <p>{this.state.message && this.state.message.abstract}</p>
-        <div>{this.state.message && this.state.message.content && this.state.message.content.data}</div>
+        <div>{this.state.message && (!this.state.message.content) && this.state.message.abstract}</div>
+        <div
+          dangerouslySetInnerHTML={{
+            __html: this.state.message &&
+              this.state.message.content && this.state.message.content.data || ''
+          }}
+        />
       </Card>
     );
   }
