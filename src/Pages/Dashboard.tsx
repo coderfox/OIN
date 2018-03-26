@@ -23,6 +23,7 @@ class Dashboard extends React.Component<Props, States> {
   async componentWillMount() {
     try {
       await this.props.session!.loadSession();
+      await this.props.session!.retrieveLatestData();
     } catch (ex) {
       message.error(<p>{ex.message} - {ex.response && ex.response.data && ex.response.data.code}</p>);
     }
@@ -31,27 +32,31 @@ class Dashboard extends React.Component<Props, States> {
     const { messages, subscriptions } = this.props.session!;
     return (
       <Row style={{ height: '100%' }} type="flex" justify="space-around" align="top">
-        <Col span={18}>
-          <h1>Sandra</h1>
-          <Menu
-            mode="horizontal"
-            selectedKeys={[this.props.routing!.location!.pathname]}
-          >
-            <Menu.Item key="/dashboard">
-              <Link to="/dashboard">首页</Link>
-            </Menu.Item>
-            <Menu.Item key="/dashboard/subscriptions">
-              <Link to="/dashboard/subscriptions">订阅</Link>
-            </Menu.Item>
-          </Menu>
-          <Row gutter={24}>
-            <Col span={15}>
+        <Col xl={18} lg={22} xs={24}>
+          <h1 style={{ marginTop: '16px', marginBottom: '16px' }}>Sandra</h1>
+          <Row>
+            <Col md={15} xs={24}>
+              <Menu
+                mode="horizontal"
+                selectedKeys={[this.props.routing!.location!.pathname]}
+              >
+                <Menu.Item key="/dashboard">
+                  <Link to="/dashboard">首页</Link>
+                </Menu.Item>
+                <Menu.Item key="/dashboard/subscriptions">
+                  <Link to="/dashboard/subscriptions">订阅</Link>
+                </Menu.Item>
+              </Menu>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={15} xs={24}>
               <Switch>
                 <Route path="/dashboard" exact={true} component={DashboardComponents.Messages} />
                 <Route path="/dashboard/subscriptions" component={DashboardComponents.Subscriptions} />
               </Switch>
             </Col>
-            <Col span={9}>
+            <Col md={9} xs={24}>
               <Row>
                 <Components.UserCard />
               </Row>

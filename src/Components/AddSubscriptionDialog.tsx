@@ -7,7 +7,7 @@ import * as Interfaces from '../lib/api_interfaces';
 import * as Forms from '../Forms';
 import * as Components from '../Components';
 
-import { Form, Input, Button, Modal, AutoComplete, message } from 'antd';
+import { Form, Input, Button, Modal, AutoComplete, Spin, message } from 'antd';
 import { FormComponentProps } from 'antd/lib/form/Form';
 
 export const FORM_FIELDS = {
@@ -23,6 +23,7 @@ interface Props extends OwnProps, FormComponentProps {
 interface States {
   visible: boolean;
   loading: boolean;
+  refreshing: boolean;
 }
 
 @inject('session')
@@ -31,10 +32,14 @@ class SubscriptionCreateForm extends React.Component<Props, States> {
   state = {
     visible: false,
     loading: false,
+    refreshing: false,
   };
 
-  showModal = () =>
-    this.setState({ visible: true })
+  showModal = async () => {
+    this.setState({ visible: true, refreshing: true });
+    await this.props.session!.retrieveServices(true);
+    this.setState({ refreshing: false });
+  }
   closeModal = () => {
     this.props.form.resetFields();
     this.setState({ visible: false });
@@ -43,6 +48,7 @@ class SubscriptionCreateForm extends React.Component<Props, States> {
     this.setState({ loading: true });
     this.props.form.validateFields((err, values) => {
       if (err) {
+        this.setState({ loading: false });
         return;
       }
       this.props.session!.client!.createSubscription(values[FORM_FIELDS.SERVICE_ID], values[FORM_FIELDS.CONFIG])
@@ -73,21 +79,23 @@ class SubscriptionCreateForm extends React.Component<Props, States> {
           onOk={this.onCreate}
           confirmLoading={this.state.loading}
         >
-          <Form layout="vertical">
-            <Form.Item label="服务 ID">
-              {getFieldDecorator(FORM_FIELDS.SERVICE_ID, {
-                rules: [{ required: true, message: '请输入服务 ID' }],
-              })(
-                <AutoComplete
-                  dataSource={
-                    this.props.session!.services.map(value => ({ value: value.id, text: value.name }))}
-                />
-              )}
-            </Form.Item>
-            <Form.Item label="配置">
-              {getFieldDecorator(FORM_FIELDS.CONFIG)(<Input.TextArea autosize={true} />)}
-            </Form.Item>
-          </Form>
+          <Spin spinning={this.state.refreshing}>
+            <Form layout="vertical">
+              <Form.Item label="服务 ID">
+                {getFieldDecorator(FORM_FIELDS.SERVICE_ID, {
+                  rules: [{ required: true, message: '请输入服务 ID' }],
+                })(
+                  <AutoComplete
+                    dataSource={
+                      this.props.session!.services.map(value => ({ value: value.id, text: value.name }))}
+                  />
+                )}
+              </Form.Item>
+              <Form.Item label="配置">
+                {getFieldDecorator(FORM_FIELDS.CONFIG)(<Input.TextArea autosize={true} />)}
+              </Form.Item>
+            </Form>
+          </Spin>
         </Modal>
       </div>
     );

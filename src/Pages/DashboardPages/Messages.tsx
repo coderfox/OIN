@@ -17,15 +17,6 @@ interface States {
 @inject('session')
 @observer
 class Messages extends React.Component<Props, States> {
-  async componentWillMount() {
-    try {
-      await this.props.session!.refreshServices();
-      await this.props.session!.refreshSubscriptions();
-      await this.props.session!.refreshMessages();
-    } catch (ex) {
-      message.error(<p>{ex.message} - {ex.response && ex.response.data && ex.response.data.code}</p>);
-    }
-  }
   render() {
     const { messages } = this.props.session!;
     return (

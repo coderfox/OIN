@@ -34,7 +34,7 @@ class User extends React.Component<Props, States> {
         <Meta
           avatar={<Avatar
             style={{ backgroundColor: color.hex(session.user.id) }}
-            icon="fork"
+            icon="user"
           />}
           title={session.user.email}
         />

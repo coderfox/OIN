@@ -7,6 +7,8 @@ const store = require('store');
 
 const TOKEN_KEY = 'token';
 
+const compare = (a: { created_at: string }, b: { created_at: string }) =>
+  Date.parse(b.created_at) - Date.parse(a.created_at);
 export default class SessionState {
   @observable public messages: Interfaces.Message[] = [];
   @observable public subscriptions: Interfaces.Subscription[] = [];
@@ -43,24 +45,27 @@ export default class SessionState {
     return session.token;
   }
 
-  @action refreshMessages = async () => {
+  @action retrieveMessages = async (forced = false) => {
     if (!this.authenticated) { return; }
+    if (!forced && this.messages.length > 0) { return; }
     try {
-      this.messages = await this.client!.getMessages();
+      this.messages = (await this.client!.getMessages()).sort(compare);
     } catch (ex) {
       message.error('加载消息失败 - '.concat(ex.message));
     }
   }
-  @action refreshSubscriptions = async () => {
+  @action retrieveSubscriptions = async (forced = false) => {
     if (!this.authenticated) { return; }
+    if (!forced && this.subscriptions.length > 0) { return; }
     try {
-      this.subscriptions = await this.client!.getSubscriptions();
+      this.subscriptions = (await this.client!.getSubscriptions()).sort(compare);
     } catch (ex) {
       message.error('加载订阅列表失败 - '.concat(ex.message));
     }
   }
-  @action refreshServices = async () => {
+  @action retrieveServices = async (forced = false) => {
     if (!this.authenticated) { return; }
+    if (!forced && this.services.length > 0) { return; }
     try {
       this.services = await this.client!.getServices();
     } catch (ex) {
@@ -80,5 +85,13 @@ export default class SessionState {
     if (this.authenticated && !this.session) {
       this.session = await this.client!.getSession();
     }
+  }
+  @action retrieveLatestData = async () => {
+    await this.retrieveServices(true);
+    await this.retrieveSubscriptions(true);
+    await this.retrieveMessages(true);
+  }
+  @action retrieveLatestServices = async () => {
+    await this.retrieveServices(true);
   }
 }
