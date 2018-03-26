@@ -37,7 +37,7 @@ export default class SessionState {
     this.services = [];
     this.session = undefined;
   }
-  @action async login(email: string, password: string) {
+  @action login = async (email: string, password: string) => {
     const session = await ApiClient.login(email, password);
     this.setToken(session);
     return session.token;

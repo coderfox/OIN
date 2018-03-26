@@ -78,7 +78,10 @@ class SubscriptionCreateForm extends React.Component<Props, States> {
               {getFieldDecorator(FORM_FIELDS.SERVICE_ID, {
                 rules: [{ required: true, message: '请输入服务 ID' }],
               })(
-                <AutoComplete dataSource={this.props.session!.services.map(value => value.id)} />
+                <AutoComplete
+                  dataSource={
+                    this.props.session!.services.map(value => ({ value: value.id, text: value.name }))}
+                />
               )}
             </Form.Item>
             <Form.Item label="配置">

@@ -1,28 +1,28 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Redirect } from 'react-router-dom';
+import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
+import { Router, Route, Switch, Redirect, Link } from 'react-router-dom';
 import SessionState from '../lib/state/Session';
 import * as Interfaces from '../lib/api_interfaces';
 
 import * as Forms from '../Forms';
 import * as Components from '../Components';
-import { Row, Col, Button, Collapse, message } from 'antd';
+import * as DashboardComponents from './DashboardPages';
+import { Row, Col, Button, Collapse, Menu, Icon, message } from 'antd';
 
 interface Props {
+  routing?: RouterStore;
   session?: SessionState;
 }
 interface States {
 }
 
-@inject('session')
+@inject('session', 'routing')
 @observer
 class Dashboard extends React.Component<Props, States> {
   async componentWillMount() {
     try {
       await this.props.session!.loadSession();
-      await this.props.session!.refreshServices();
-      await this.props.session!.refreshSubscriptions();
-      await this.props.session!.refreshMessages();
     } catch (ex) {
       message.error(<p>{ex.message} - {ex.response && ex.response.data && ex.response.data.code}</p>);
     }
@@ -31,25 +31,29 @@ class Dashboard extends React.Component<Props, States> {
     const { messages, subscriptions } = this.props.session!;
     return (
       <Row style={{ height: '100%' }} type="flex" justify="space-around" align="top">
-        <Col span={20}>
+        <Col span={18}>
           <h1>Sandra</h1>
-          <Row gutter={8}>
+          <Menu
+            mode="horizontal"
+            selectedKeys={[this.props.routing!.location!.pathname]}
+          >
+            <Menu.Item key="/dashboard">
+              <Link to="/dashboard">首页</Link>
+            </Menu.Item>
+            <Menu.Item key="/dashboard/subscriptions">
+              <Link to="/dashboard/subscriptions">订阅</Link>
+            </Menu.Item>
+          </Menu>
+          <Row gutter={24}>
             <Col span={15}>
-              {
-                messages.length !== 0 ?
-                  messages.map(value =>
-                    (<Components.Message id={value.id} key={value.id} />)) :
-                  <p>您的消息已经全部处理完毕！</p>
-              }
+              <Switch>
+                <Route path="/dashboard" exact={true} component={DashboardComponents.Messages} />
+                <Route path="/dashboard/subscriptions" component={DashboardComponents.Subscriptions} />
+              </Switch>
             </Col>
             <Col span={9}>
               <Row>
                 <Components.UserCard />
-                <Components.AddSubscriptionDialog />
-                {
-                  subscriptions.map(value =>
-                    (<Components.Subscription id={value.id} key={value.id} />))
-                }
               </Row>
             </Col>
           </Row>
