@@ -3,11 +3,13 @@ import { inject, observer } from 'mobx-react';
 import { Redirect } from 'react-router-dom';
 import SessionState from '../lib/state/Session';
 import * as Interfaces from '../lib/api_interfaces';
+const ColorHash = require('color-hash');
+const color = new ColorHash();
 
 import * as Forms from '../Forms';
 import * as Components from '../Components';
 
-import { Form, Input, Button, Modal, AutoComplete, Spin, message } from 'antd';
+import { Form, Input, Button, Modal, AutoComplete, Spin, Card, Avatar, message } from 'antd';
 import { FormComponentProps } from 'antd/lib/form/Form';
 
 export const FORM_FIELDS = {
@@ -24,6 +26,7 @@ interface States {
   visible: boolean;
   loading: boolean;
   refreshing: boolean;
+  acdata: { value: string, text: string }[];
 }
 
 @inject('session')
@@ -33,12 +36,14 @@ class SubscriptionCreateForm extends React.Component<Props, States> {
     visible: false,
     loading: false,
     refreshing: false,
+    acdata: [],
   };
+  static mapAc = (value: Interfaces.Service) => ({ value: value.id, text: value.name });
 
   showModal = async () => {
     this.setState({ visible: true, refreshing: true });
     await this.props.session!.retrieveServices(true);
-    this.setState({ refreshing: false });
+    this.setState({ refreshing: false, acdata: this.props.session!.services.map(SubscriptionCreateForm.mapAc) });
   }
   closeModal = () => {
     this.props.form.resetFields();
@@ -63,11 +68,20 @@ class SubscriptionCreateForm extends React.Component<Props, States> {
         .then(() => this.setState({ loading: false }));
     });
   }
+  onSearch = (search: string) => {
+    const filtered = this.props.session!.services.filter((value) =>
+      value.id.toLowerCase().startsWith(search.toLowerCase()) ||
+      value.name.toLowerCase().startsWith(search.toLowerCase()));
+    this.setState({
+      acdata: (filtered.length === 0 ? this.props.session!.services : filtered).map(SubscriptionCreateForm.mapAc)
+    });
+  }
 
   render() {
     const { form } = this.props;
     const { visible } = this.state;
-    const { getFieldDecorator } = form;
+    const { getFieldDecorator, getFieldValue } = form;
+    const service = this.props.session!.services.find(value => value.id === getFieldValue(FORM_FIELDS.SERVICE_ID));
     return (
       <div>
         <Button type="primary" onClick={this.showModal}>创建订阅</Button>
@@ -86,10 +100,22 @@ class SubscriptionCreateForm extends React.Component<Props, States> {
                   rules: [{ required: true, message: '请输入服务 ID' }],
                 })(
                   <AutoComplete
-                    dataSource={
-                      this.props.session!.services.map(value => ({ value: value.id, text: value.name }))}
+                    dataSource={this.state.acdata}
+                    onSearch={this.onSearch}
                   />
                 )}
+              </Form.Item>
+              <Form.Item>
+                <Card>
+                  <Card.Meta
+                    avatar={<Avatar
+                      style={{ backgroundColor: color.hex(service && service.id) }}
+                      icon="fork"
+                    />}
+                    title={service && service.id}
+                    description={service && service.description}
+                  />
+                </Card>
               </Form.Item>
               <Form.Item label="配置">
                 {getFieldDecorator(FORM_FIELDS.CONFIG)(<Input.TextArea autosize={true} />)}
@@ -97,7 +123,7 @@ class SubscriptionCreateForm extends React.Component<Props, States> {
             </Form>
           </Spin>
         </Modal>
-      </div>
+      </div >
     );
   }
 }

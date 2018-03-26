@@ -10,7 +10,8 @@ import { RouterStore } from 'mobx-react-router';
 
 const FORM_FIELDS = {
   EMAIL: 'email',
-  PASSWORD: 'password'
+  PASSWORD: 'password',
+  PASSWORD_AGAIN: 'password2'
 };
 
 interface Props extends FormComponentProps {
@@ -45,6 +46,15 @@ class RegForm extends React.Component<Props, States> {
       }
     });
   }
+  // tslint:disable-next-line:no-any
+  compareToFirstPassword = (rule: any, value: any, callback: any) => {
+    const form = this.props.form;
+    if (value && value !== form.getFieldValue(FORM_FIELDS.PASSWORD)) {
+      callback('两次输入的密码不一致');
+    } else {
+      callback();
+    }
+  }
   render() {
     const { getFieldDecorator, getFieldsError, isFieldTouched } = this.props.form;
     const fieldsError = getFieldsError();
@@ -73,6 +83,20 @@ class RegForm extends React.Component<Props, States> {
               prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
               type="password"
               placeholder="密码"
+            />
+          )}
+        </Form.Item>
+        <Form.Item>
+          {getFieldDecorator(FORM_FIELDS.PASSWORD_AGAIN, {
+            rules: [
+              { required: true, message: '请再次输入密码' },
+              { validator: this.compareToFirstPassword }
+            ],
+          })(
+            <Input
+              prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              type="password"
+              placeholder="确认密码"
             />
           )}
         </Form.Item>

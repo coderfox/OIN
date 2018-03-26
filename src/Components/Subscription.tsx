@@ -67,9 +67,8 @@ class Subscription extends React.Component<Props, States> {
             <Input.TextArea
               placeholder="配置"
               autosize={{ minRows: 2 }}
-            >
-              {subscription && subscription.config}
-            </Input.TextArea>
+              value={subscription && subscription.config}
+            />
           </p>
           <p><Button type="primary" disabled={true}>修改</Button></p>
           <p>创建于：{subscription && timeago.format(subscription.created_at, 'zh_CN')}</p>
