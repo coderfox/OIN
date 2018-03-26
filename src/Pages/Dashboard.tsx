@@ -38,16 +38,17 @@ class Dashboard extends React.Component<Props, States> {
               {
                 messages.length !== 0 ?
                   messages.map(value =>
-                    (<Components.Message id={value.id} />)) :
+                    (<Components.Message id={value.id} key={value.id} />)) :
                   <p>您的消息已经全部处理完毕！</p>
               }
             </Col>
             <Col span={9}>
               <Row>
                 <Components.UserCard />
+                <Components.AddSubscriptionDialog />
                 {
                   subscriptions.map(value =>
-                    (<Components.Subscription id={value.id} />))
+                    (<Components.Subscription id={value.id} key={value.id} />))
                 }
               </Row>
             </Col>

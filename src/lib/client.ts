@@ -86,6 +86,11 @@ class ApiClient {
     this.post<{ readed: boolean }, { readed: true }>('/messages/'.concat(id), { readed: true })
   public getSession = () =>
     this.get<Interfaces.Session>('/session')
+  public createSubscription = (service: string, config: string) =>
+    this.post<Interfaces.Subscription, {
+      service: string,
+      config: string
+    }>('/subscriptions', { service, config })
 }
 
 export default ApiClient;
