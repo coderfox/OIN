@@ -1,16 +1,18 @@
 # Backend REST APIs
 
-[TOC]
+Version: `0.3-draft`
 
 ## Basic Conventions
 
+The verbs MUST, MUST NOT, SHOULD, SHOULD NOT, MAY and other requirement indications obey [RFC 2119](https://www.ietf.org/rfc/rfc2119.txt).
+
 ### Request and Response
 
-The request can be in `application/x-www-form-urlencoded`, `application/json` or `multipart/form-data`, and charset should be `utf8`. However, when a complex data struct is defined in the API document, the request must be in `application/json`. The reaction to other request data types is undefined, but most times the server will throw a `400 Bad Request - INVALID_REQUEST_BODY_TYPE` error.
+The client SHOULD send request body in `application/json`, and MAY use `application/x-www-form-urlencoded` or `multipart/form-data`, but MUST NOT use other request body formats. The charset MUST be `utf8`, and the client SHOULD specify charset when `utf8` is not the default charset of the content type. However, when a complex data struct is defined in the API document, the request MUST be in `application/json`. The server SHOULD throw a `400 Bad Request - INVALID_REQUEST_BODY_TYPE` error on unexpected request body types.
 
-The server will always give a response body of `application/json` in `utf8`. The response JSON string can be either beautified or not.
+The response body MUST be in `application/json` in `utf8`. The response JSON string MAY be either beautified or not.
 
-When the HTTP response code ranges over `400`, it means there is an error. When an error occurs, the server will omit response in the following format:
+When the HTTP response code ranges over `400`, it means there is an error. When an error occurs, the server MUST omit response in the following format:
 
 | Name  | Type   | Description |
 | ----- | ------ | ----------- |
@@ -20,23 +22,23 @@ For example:
 
 ```json
 {
-    "code": "INTERNAL_SERVER_ERROR"
+  "code": "API_ENDPOINT_NOT_FOUND"
 }
 ```
 
-Any request or responses beyond the conventions or the documents should be regarded as an error of the opposite side. For client side, the APP should indicate the user that the server encountered errors; for server side, a `400 Bad Request` should be thrown as each API describes below.
+Any request or responses beyond the conventions or the documents MUST be regarded as an error of the opposite side. For client side, the APP SHOULD indicate the user that the server encountered errors; for server side, a `400 Bad Request` SHOULD be thrown as each API describes below.
 
 ### Authentication
 
-There are two types of authentication used by REST API: `Basic` and `Bearer`. Unless specified explicitly, all API calls should be authenticated by *Bearer Authentication*.
+There are two types of authentication used by REST API: `Basic` and `Bearer`. Unless specified explicitly, all API calls MUST be authenticated by *Bearer Authentication*.
 
-When calling an API requiring authentication without providing either types, the server will throw `401 Unauthorized - AUTHENTICATION_NOT_FOUND` with header `WWW-Authenticate: TYPE`, where `TYPE` is the required authentication type.
+When calling an API requiring authentication without providing either types, the server MUST throw `401 Unauthorized - NOT_AUTNENTICATED` with header `WWW-Authenticate: TYPE`, where `TYPE` is the required authentication type.
 
 When an authorization header does not match [RFC 6750](https://tools.ietf.org/html/rfc6750) or [RFC 7617](https://tools.ietf.org/html/rfc7617), the server will throw a `400 Bad Request - CORRUPTED_AUTHORIZATION_HEADER` error.
 
 #### Basic
 
-The client should provide email as username and unhashed password as password. The detailed specifications can be found at [RFC 7617](https://tools.ietf.org/html/rfc7617).
+The client MUST provide email as username and unhashed password as password. The detailed specifications can be found at [RFC 7617](https://tools.ietf.org/html/rfc7617).
 
 Example:
 
@@ -76,7 +78,7 @@ When calling an API endpoint which does not support *Basic Authentication* (requ
 
 ### Time
 
-All times are of `string` type in JavaScript `Date#toJSON` returning value format. The timezone will be UTC, and the client should convert it to the users' timezone.
+All times are of `string` type in ISO 8601 format. The timezone will be UTC, and the client should convert it to the users' timezone.
 
 Example:
 
@@ -86,126 +88,56 @@ Example:
 
 See:
 
-[Date.prototype.toJSON()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toJSON)
+[ISO 8601 standard](http://en.wikipedia.org/wiki/ISO_8601), [Date.prototype.toJSON()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toJSON)
+
+### Permissions
+
+| name  | description      |
+| ----- | ---------------- |
+| admin | admin permission |
 
 ### Errors
 
 Here are some common errors for the API server:
 
-| HTTP Code | Error Code             | Description |
-| --------- | ---------------------- | ----------- |
-| 404       | API_ENDPOINT_NOT_FOUND |             |
-| 500       | INTERNAL_SERVER_ERROR  |             |
-| 501       | NOT_IMPLEMENTED        |             |
+| HTTP Code | Error Code                | Description                                   |
+| --------- | ------------------------- | --------------------------------------------- |
+| 404       | API_ENDPOINT_NOT_FOUND    |                                               |
+| 500       | INTERNAL_SERVER_ERROR     |                                               |
+| 501       | NOT_IMPLEMENTED           |                                               |
+| 400       | BAD_REQUEST               | some of the required parameters is not passed |
+| 406       | NOT_ACCEPTABLE            | the `Accept` header cannot be fulfilled       |
+| 400       | INVALID_REQUEST_BODY_TYPE |                                               |
 
 ## User
 
 ### Describing User
 
-| Path               | Type    | Description                              |
-| ------------------ | ------- | ---------------------------------------- |
-| /id                | number  | user id                                  |
-| /email             | string  |                                          |
-| /permissions       | object  |                                          |
-| /permissions/admin | boolean |                                          |
-| /createdAt         | string  | time of creation, in conventional time format |
-| /updatedAt         | string  | time of last update, in conventional time format |
+| Path         | Type     | Description                                      |
+| ------------ | -------- | ------------------------------------------------ |
+| /id          | string   | user id in UUID                                  |
+| /email       | string   |                                                  |
+| /permissions | string[] |                                                  |
+| /created_at  | string   | time of creation, in conventional time format    |
+| /updated_at  | string   | time of last update, in conventional time format |
 
 Example:
 
 ```json
 {
-    "id": 42,
-    "email": "user@example.com",
-    "permissions": {
-        "admin": false
-    },
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z"
+  "id": "fb19a446-363c-443a-be93-72f4150a6841",
+  "email": "i@xfox.me",
+  "created_at": "2018-02-24T10:06:21.9851850Z",
+  "updated_at": "2018-02-24T10:06:21.9851850Z",
+  "permissions": []
 }
 ```
 
-### List Users
-
-`GET` /users
-
-#### Authentication
-
-*admin permission* required.
-
-#### Request
-
-**URL Params**
-
-| Name  | Description              |
-| ----- | ------------------------ |
-| limit | optional, defaults to 50 |
-| skip  | optional, defaults to 0  |
-
-**Header**
-
-| Name         | Description              |
-| ------------ | ------------------------ |
-| X-Page-Limit | optional, defaults to 50 |
-| X-Page-Skip  | optional, defaults to 0  |
-
-The variables in header is prior to those in URL params.
-
-#### Response
-
-**Code:** 200 OK
-
-**Header:** nothing
-
-**Content:** array of conventional user object
-
-#### Errors
-
-There are error codes defined in *Conventions*.
-
-#### Example
-
-**Request**
-
-```http
-GET /users HTTP/1.1
-Authorization: Bearer 8fceef49-f673-4670-bf73-2dc7bb35634a
-```
-
-**Response**
-
-```http
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-[
-    {
-        "id": 42,
-        "email": "user@example.com",
-        "permissions": {
-            "admin": false
-        },
-        "createdAt": "2017-06-22T07:16:52.669Z",
-        "updatedAt": "2017-06-22T07:16:52.669Z"
-    }, {
-        "id": 43,
-        "email": "userb@example.com",
-        "permissions": {
-            "admin": true
-        },
-        "createdAt": "2017-06-22T07:16:52.669Z",
-        "updatedAt": "2017-06-22T07:16:52.669Z"
-    }
-]
-```
-
-### Create User - Step 1
+### Create User
 
 `POST` /users
 
 #### Authentication
-
-Performing such operation requires *confirm code* from current email address, and this API just sends an email of *confirm code* to current email address.
 
 This API does not require any authentication.
 
@@ -224,7 +156,7 @@ This API does not require any authentication.
 
 #### Response
 
-**Code:** 202 Accepted
+**Code:** 201 Created
 
 **Header:** nothing
 
@@ -232,12 +164,10 @@ This API does not require any authentication.
 
 #### Errors
 
-| HTTP Code | Error Code            | Description                              |
-| --------- | --------------------- | ---------------------------------------- |
-| 303       | DUPLICATED_EMAIL      | email exists                             |
-| 303       | PENDING_EMAIL_CONFIRM | a confirm email has already been sent to the address |
-| 400       | INVALID_PASSWORD      | password limit exceeded; the password is either too short, or too long, or not secure enough |
-| 400       | INVALID_EMAIL         |                                          |
+| HTTP Code | Error Code       | Description                               |
+| --------- | ---------------- | ----------------------------------------- |
+| 303       | DUPLICATED_EMAIL | email exists                              |
+| 400       | BAD_REQUEST      | either `email` or `password` is not valid |
 
 #### Example
 
@@ -246,80 +176,18 @@ This API does not require any authentication.
 ```http
 POST /users HTTP/1.1
 Content-Type: application/x-www-form-urlencoded; charset=utf-8
+Content-Length: 31
 
-email=test%40example.com&password=123456
-```
-
-**Response**
-
-```http
-HTTP/1.1 202 Accepted
-Content-Type: application/json
-
-{}
-```
-
-### Create User - Step 2
-
-`POST` /users/confirmations
-
-#### Authentication
-
-It is required to use *Bearer Authentication*, where the token is the *confirm code*.
-
-#### Request
-
-**URL Params:** nothing
-
-**Body:** nothing
-
-**Header:** nothing
-
-#### Response
-
-**Code:** 200 OK
-
-**Header**
-
-| Name     | Description              |
-| -------- | ------------------------ |
-| Location | link to the created user |
-
-**Content:** conventional user object
-
-#### Errors
-
-| HTTP Code | Error Code             | Description |
-| --------- | ---------------------- | ----------- |
-| 403       | CONFIRMATION_CODE_USED |             |
-
-There are error codes defined in *Conventions*.
-
-#### Example
-
-**Request**
-
-```http
-POST /users/confirmations HTTP/1.1
-Authorization: Bearer 4c0de676-5289-4c74-ab96-2a246d4fe636
+email=i%40xfox.me&password=test
 ```
 
 **Response**
 
 ```http
 HTTP/1.1 201 Created
-Content-Type: application/json
-Location: /users/42
+Content-Type: application/json; charset=utf-8
 
-{
-    "id": 42,
-    "email": "user@example.com",
-    "permissions": {
-        "admin": false
-    },
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z"
-}
+{"id":"fb19a446-363c-443a-be93-72f4150a6841","email":"i@xfox.me","created_at":"2018-02-24T10:06:21.9851850Z","updated_at":"2018-02-24T10:06:21.9851850Z","permissions":[]}
 ```
 
 ### Lookup User
@@ -328,9 +196,7 @@ Location: /users/42
 
 #### Authentication
 
-When logged in as normal user, only the user according to the token can be shown.
-
-Only when logged in as an admin, can all users be shown.
+Only the user according to the token can be shown.
 
 #### Request
 
@@ -359,329 +225,50 @@ There are error codes defined in *Conventions*.
 **Request**
 
 ```http
-GET /users/42 HTTP/1.1
-Authorization: Bearer 8fceef49-f673-4670-bf73-2dc7bb35634a
+GET /users/fb19a446-363c-443a-be93-72f4150a6841 HTTP/1.1
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 ```
 
 **Response**
 
 ```http
 HTTP/1.1 200 OK
-Content-Type: application/json
+Content-Type: application/json; charset=utf-8
 
-{
-    "id": 42,
-    "email": "user@example.com",
-    "permissions": {
-        "admin": false
-    },
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z"
-}
-```
-
-### Update User Email or Password by Current Password
-
-`PUT` /users/:id/(email|password)
-
-#### Authentication
-
-When logged in as an admin, can all users be changed, and it should be authenticated with *Bearer Authentication*.
-
-For normal users, it should be authenticated with *Basic Authentication*.
-
-#### Request
-
-**URL Params:** nothing
-
-**Body**
-
-| Path | Type   | Description               |
-| ---- | ------ | ------------------------- |
-| /    | string | new email or new password |
-
-The body is expected to be `application/json`.
-
-**Header:** nothing
-
-#### Response
-
-**Code:** 200 OK
-
-**Header:** nothing
-
-**Content:**
-
-When updating email:
-
-| Path | Type   | Description |
-| ---- | ------ | ----------- |
-| /    | string | new email   |
-
-When updating password:
-
-| Path | Type   | Description  |
-| ---- | ------ | ------------ |
-| /    | string | empty string |
-
-#### Errors
-
-| HTTP Code | Error Code                         | Description    |
-| --------- | ---------------------------------- | -------------- |
-| 404       | USER_NOT_FOUND                     | user not found |
-| 400       | NEW_EMAIL_OR_PASSWORD_NOT_SUPPLIED |                |
-| 400       | INVALID_NEW_EMAIL                  |                |
-
-There are error codes defined in *Conventions*.
-
-#### Example
-
-**Request**
-
-```http
-PUT /users/42/email HTTP/1.1
-Authorization: Basic dXNlckBleGFtcGxlLmNvbToxMjM0NTY=
-
-"new@example.com"
-```
-
-**Response**
-
-```http
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-"new@example.com"
-```
-
-### Update User Email or Password by Email Confirmation - Step 1
-
-`PUT` /users/:id/(email|password)/confirmation
-
-#### Authentication
-
-Performing such operation requires *confirm code* from current email address, and this API just sends an email of *confirm code* to current email address.
-
-no authentication required
-
-#### Request
-
-**URL Params:** nothing
-
-**Body**
-
-| Name     | Description        |
-| -------- | ------------------ |
-| email    | email, optional    |
-| password | password, optional |
-| status   | exactly `started`  |
-
-Either `email` or `password` should be supplied according to the url.
-
-**Header:** nothing
-
-#### Response
-
-**Code:** 202 Accepted
-
-**Header:** nothing
-
-**Content:** current email
-
-#### Errors
-
-| HTTP Code | Error Code                     | Description                              |
-| --------- | ------------------------------ | ---------------------------------------- |
-| 404       | USER_NOT_FOUND                 | user not found                           |
-| 401       | EMAIL_OR_PASSWORD_NOT_SUPPLIED |                                          |
-| 400       | REQUEST_BODY_MISMATCH_URL      | parameters supplied in request body mismatches url |
-| 400       | INVALID_STATUS                 | `status` is not `started`                |
-
-There are error codes defined in *Conventions*.
-
-#### Example
-
-**Request**
-
-```http
-POST /users/42/email/confirmation HTTP/1.1
-
-email=new%40example.com&status=started
-```
-
-**Response**
-
-```http
-HTTP/1.1 202 Accepted
-Content-Type: application/json
-
-"user@example.com"
-```
-
-### Update User Email or Password by Email Confirmation - Step 2
-
-`PUT` /users/:id/(email|password)/confirmation
-
-#### Authentication
-
-It is required to use token auth, where the token is the *confirm code*.
-
-#### Request
-
-**URL Params:** nothing
-
-**Body:**
-
-| Name   | Description         |
-| ------ | ------------------- |
-| status | exactly `confirmed` |
-
-**Header:** nothing
-
-#### Response
-
-**Code:** 200 OK
-
-**Header:** nothing
-
-**Content:**
-
-When updating email:
-
-| Path | Type   | Description |
-| ---- | ------ | ----------- |
-| /    | string | new email   |
-
-When updating password:
-
-| Path | Type   | Description  |
-| ---- | ------ | ------------ |
-| /    | string | empty string |
-
-#### Errors
-
-| HTTP Code | Error Code     | Description                              |
-| --------- | -------------- | ---------------------------------------- |
-| 404       | USER_NOT_FOUND |                                          |
-| 401       | NOT_STARTED    | step 1 API has not been called           |
-| 401       | USER_MISMATCH  | the id provided in url mismatches the id of the *confirm code* |
-
-There are error codes defined in *Conventions*.
-
-#### Example
-
-**Request**
-
-```http
-PUT /users/42/email/confirmation HTTP/1.1
-Authorization: Bearer 8fceef49-f673-4670-bf73-2dc7bb35634a
-
-status=confirmed
-```
-
-**Response**
-
-```http
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-"new@example.com"
-```
-
-### Delete User
-
-`DELETE` /users/:id
-
-#### Authentication
-
-When logged in as normal user, only the user according to the token can be deleted, and *Basic Authentication* is required.
-
-Only when logged in as an admin, can all users be deleted.
-
-#### Request
-
-**URL Params:** nothing
-
-**Header:** nothing
-
-#### Response
-
-**Code:** 200 OK
-
-**Header:** nothing
-
-**Content:** conventional user object
-
-#### Errors
-
-| HTTP Code | Error Code              | Description             |
-| --------- | ----------------------- | ----------------------- |
-| 404       | USER_NOT_FOUND          | user not found          |
-| 403       | INSUFFICIENT_PERMISSION | insufficient permission |
-
-There are error codes defined in *Conventions*.
-
-#### Example
-
-**Request**
-
-```http
-DELETE /users/42 HTTP/1.1
-```
-
-**Response**
-
-```http
-HTTP/1.1 200 OK
-Authorization: Bearer 8fceef49-f673-4670-bf73-2dc7bb35634a
-Content-Type: application/json
-
-{
-    "id": 42,
-    "email": "user@example.com",
-    "permissions": {
-        "admin": false
-    },
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z"
-}
+{"id":"fb19a446-363c-443a-be93-72f4150a6841","email":"i@xfox.me","created_at":"2018-02-24T10:06:21.9851850Z","updated_at":"2018-02-24T10:06:21.9851850Z","permissions":[]}
 ```
 
 ## Authentication
 
 ### Describing Session
 
-| Path               | Type    | Description                              |
-| ------------------ | ------- | ---------------------------------------- |
-| /id                | number  | session id                               |
-| /token             | string  | *token*                                  |
-| /user              | object  | user object                              |
-| /permissions       | object  |                                          |
-| /permissions/admin | boolean |                                          |
-| /createdAt         | string  | time of creation, in conventional time format |
-| /updatedAt         | string  | time of last refresh, in conventional time format |
-| /expiresAt         | string  | time of expiration, in conventional time format |
+| Path               | Type     | Description                                       |
+| ------------------ | -------- | ------------------------------------------------- |
+| /id                | number   | session id                                        |
+| /token             | string   | *token*                                           |
+| /user              | object   | user object                                       |
+| /permissions       | string[] |                                                   |
+| /permissions/admin | boolean  |                                                   |
+| /created_at        | string   | time of creation, in conventional time format     |
+| /updated_at        | string   | time of last refresh, in conventional time format |
+| /expires_at        | string   | time of expiration, in conventional time format   |
 
 Example:
 
 ```json
 {
-    "token": "8fceef49-f673-4670-bf73-2dc7bb35634a",
-    "user": {
-        "id": 42,
-        "email": "user@example.com",
-        "permissions": {
-            "admin": false
-        },
-        "createdAt": "2017-06-22T07:16:52.669Z",
-        "updatedAt": "2017-06-22T07:16:52.669Z"
-    },
-    "permissions": {
-        "admin": false
-    },
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z",
-    "expiresAt": "2017-06-23T07:16:52.669Z"
+  "token": "8725a638-0346-4303-8227-ecd089a04878",
+  "user": {
+    "id": "fb19a446-363c-443a-be93-72f4150a6841",
+    "email": "i@xfox.me",
+    "created_at": "2018-02-24T10:06:21.9851850Z",
+    "updated_at": "2018-02-24T10:06:21.9851850Z",
+    "permissions": []
+  },
+  "created_at": "2018-02-24T10:08:33.6095940Z",
+  "updated_at": "2018-02-24T10:08:33.6095940Z",
+  "expires_at": "2018-03-03T10:08:33.3517152Z",
+  "permissions": []
 }
 ```
 
@@ -703,10 +290,9 @@ Conventional *Basic Authentication*.
 
 Request **Body**
 
-| Path               | Type    | Description |
-| ------------------ | ------- | ----------- |
-| /permissions       | object  | optional    |
-| /permissions/admin | boolean | optional    |
+| Path         | Type      | Description |
+| ------------ | --------- | ----------- |
+| /permissions | string[]? | optional    |
 
 **Header:** nothing
 
@@ -732,33 +318,16 @@ There are error codes defined in *Conventions*.
 
 ```http
 PUT /session HTTP/1.1
-Authorization: Basic dXNlckBleGFtcGxlLmNvbTpwYXNzd29yZA==
+Authorization: Basic aUB4Zm94Lm1lOnRlc3Q=
 ```
 
 **Response**
 
 ```http
 HTTP/1.1 200 OK
-Content-Type: application/json
+Content-Type: application/json; charset=utf-8
 
-{
-    "token": "8fceef49-f673-4670-bf73-2dc7bb35634a",
-    "user": {
-        "id": 42,
-        "email": "user@example.com",
-        "permissions": {
-            "admin": false
-        },
-        "createdAt": "2017-06-22T07:16:52.669Z",
-        "updatedAt": "2017-06-22T07:16:52.669Z"
-    },
-    "permissions": {
-        "admin": false
-    },
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z",
-    "expiresAt": "2017-06-23T07:16:52.669Z"
-}
+{"token":"8725a638-0346-4303-8227-ecd089a04878","user":{"id":"fb19a446-363c-443a-be93-72f4150a6841","email":"i@xfox.me","created_at":"2018-02-24T10:06:21.9851850Z","updated_at":"2018-02-24T10:06:21.9851850Z","permissions":[]},"created_at":"2018-02-24T10:08:33.6095940Z","updated_at":"2018-02-24T10:08:33.6095940Z","expires_at":"2018-03-03T10:08:33.3517152Z","permissions":[]}
 ```
 
 ### Get Session Detail
@@ -793,7 +362,7 @@ There are error codes defined in *Conventions*.
 
 ```http
 GET /session HTTP/1.1
-Authorization: Bearer 8fceef49-f673-4670-bf73-2dc7bb35634a
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 ```
 
 **Response**
@@ -803,22 +372,18 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-    "token": "8fceef49-f673-4670-bf73-2dc7bb35634a",
-    "user": {
-        "id": 42,
-        "email": "user@example.com",
-        "permissions": {
-            "admin": false
-        },
-        "createdAt": "2017-06-22T07:16:52.669Z",
-        "updatedAt": "2017-06-22T07:16:52.669Z"
-    },
-    "permissions": {
-        "admin": false
-    },
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z",
-    "expiresAt": "2017-06-23T07:16:52.669Z"
+  "token": "8725a638-0346-4303-8227-ecd089a04878",
+  "user": {
+    "id": "fb19a446-363c-443a-be93-72f4150a6841",
+    "email": "i@xfox.me",
+    "created_at": "2018-02-24T10:06:21.9851850Z",
+    "updated_at": "2018-02-24T10:06:21.9851850Z",
+    "permissions": []
+  },
+  "created_at": "2018-02-24T10:08:33.6095940Z",
+  "updated_at": "2018-02-24T10:08:33.6095940Z",
+  "expires_at": "2018-03-03T10:08:33.3517150Z",
+  "permissions": []
 }
 ```
 
@@ -856,7 +421,7 @@ There are error codes defined in *Conventions*.
 
 ```http
 DELETE /session HTTP/1.1
-Authorization: Bearer 8fceef49-f673-4670-bf73-2dc7bb35634a
+Authorization: Bearer 60f69553-4011-410e-a605-7e739b48f4d9
 ```
 
 **Response**
@@ -866,22 +431,18 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-    "token": "8fceef49-f673-4670-bf73-2dc7bb35634a",
-    "user": {
-        "id": 42,
-        "email": "user@example.com",
-        "permissions": {
-            "admin": false
-        },
-        "createdAt": "2017-06-22T07:16:52.669Z",
-        "updatedAt": "2017-06-22T07:16:52.669Z"
-    },
-    "permissions": {
-        "admin": false
-    },
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z",
-    "expiresAt": "2017-06-22T09:23:52.669Z"
+  "token": "60f69553-4011-410e-a605-7e739b48f4d9",
+  "user": {
+    "id": "10b44e16-7384-4edb-a77f-8e2f79de3995",
+    "email": "i@xfox.me",
+    "created_at": "2018-02-23T02:42:42.6433150Z",
+    "updated_at": "2018-02-23T02:42:42.6433150Z",
+    "permissions": []
+  },
+  "created_at": "2018-02-23T15:49:44.5461110Z",
+  "updated_at": "2018-02-23T15:49:44.5461110Z",
+  "expires_at": "2018-02-23T23:49:45.6704470Z",
+  "permissions": []
 }
 ```
 ## Message
@@ -890,10 +451,10 @@ Content-Type: application/json
 
 | Path          | Type    | Description                              |
 | ------------- | ------- | ---------------------------------------- |
-| /id           | number  | message id, unique at website level      |
+| /id           | string  | message id in UUID, unique at website level |
 | /readed       | boolean |                                          |
-| /owner        | number  | owner user id                            |
-| /subscription | number  | subscription id                          |
+| /owner        | string  | owner user id in UUID                    |
+| /subscription | string  | subscription id in UUID                  |
 | /title        | string  | message title                            |
 | /abstract     | string  | biref introduction to the message        |
 | /content      | object  | message content                          |
@@ -906,24 +467,24 @@ Example:
 
 ```json
 {
-    "id": 12,
-  	"readed": false,
-    "owner": 42,
-  	"subscription": 13,
-  	"title": "Update of Instagram User @jktedko",
-  	"abstract": "new picture uploaded",
-  	"content": {
-      	"type": "text/html",
-      	"data": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius id libero non malesuada. Suspendisse a dapibus ligula, quis pellentesque mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis metus lacus, suscipit sed feugiat ut, consequat ut nisl. Phasellus pharetra nulla vel tortor suscipit, a placerat urna fringilla. In suscipit ac odio a suscipit. Vivamus sed libero eu lectus vulputate commodo at ac nisl. Etiam pretium vel velit nec porta. Praesent et ullamcorper mauris. Quisque diam erat, tempus a rhoncus id, aliquam eu velit. Vestibulum tristique porttitor ex non pretium."
-  	},
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z"
+  "id": "bf7e78d7-43dc-44ad-9f95-9dd4f4c28c61",
+  "readed": true,
+  "owner": "10b44e16-7384-4edb-a77f-8e2f79de3995",
+  "subscription": "ef192845-ac6a-468d-93d8-fa0a4559f646",
+  "title": "title",
+  "abstract": "ABS",
+  "content": {
+    "type": "text/plain",
+    "data": "Hello World!"
+  },
+  "created_at": "2018-02-24T00:54:42.8845480Z",
+  "updated_at": "2018-02-24T00:54:42.8845480Z"
 }
 ```
 
 ### List Personal Messages
 
-`GET` /users/me/messages
+`GET` /messages/mine(/unread|/readed|/all)
 
 #### Authentication
 
@@ -931,23 +492,9 @@ only messages belonging to the current user is displayed
 
 #### Request
 
-**URL Params**
+**URL Params**: None
 
-| Name   | Description                              |
-| ------ | ---------------------------------------- |
-| limit  | optional, defaults to 50                 |
-| skip   | optional, defaults to 0                  |
-| filter | can be `unread` or `all`, optional, defaults to `unread` |
-
-**Header**
-
-| Name            | Description                              |
-| --------------- | ---------------------------------------- |
-| X-Page-Limit    | optional, defaults to 50                 |
-| X-Page-Skip     | optional, defaults to 0                  |
-| Accept-Language | falls back to zh_CN, see: [RFC 7231 # 5.3.5](https://tools.ietf.org/html/rfc7231#section-5.3.5) |
-
-The variables in header is prior to those in URL params.
+**Header**: None
 
 #### Response
 
@@ -968,8 +515,8 @@ There are error codes defined in *Conventions*.
 **Request**
 
 ```http
-GET /users/me/messages HTTP/1.1
-Accept-Language: en, zh; q=0.8
+GET /messages/mine HTTP/1.1
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 ```
 
 **Response**
@@ -978,112 +525,7 @@ Accept-Language: en, zh; q=0.8
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-[
-    {
-        "id": 12,
-        "readed": false,
-        "owner": 42,
-        "subscription": 13,
-        "title": "Update of Instagram User @jktedko",
-        "abstract": "new picture uploaded",
-        "createdAt": "2017-06-22T07:16:52.669Z",
-        "updatedAt": "2017-06-22T07:16:52.669Z"
-    }, {
-        "id": 13,
-        "readed": false,
-        "owner": 42,
-        "subscription": 13,
-        "title": "Update of Instagram User @jktedko",
-        "abstract": "new picture uploaded",
-        "createdAt": "2017-06-22T07:16:52.669Z",
-        "updatedAt": "2017-06-22T07:16:52.669Z"
-    }
-]
-```
-
-### Create a Message
-
-`POST` /messages
-
-#### Authentication
-
-This API should be authenticated with the token of a subscription (*Bearer Authentication*).
-
-#### Request
-
-**URL Params:** nothing
-
-**Header**
-
-| Name            | Description                              |
-| --------------- | ---------------------------------------- |
-| Accept-Language | falls back to zh_CN, see: [RFC 7231 # 5.3.5](https://tools.ietf.org/html/rfc7231#section-5.3.5) |
-
-The variables in header is prior to those in URL params.
-
-#### Response
-
-**Code:** 200 OK
-
-**Body**
-
-| Name         | Description                              |
-| ------------ | ---------------------------------------- |
-| title        |                                          |
-| content      |                                          |
-| content_type | content MIME type, can be `text/plain` or `text/html` |
-| abstract     | optional                                 |
-
-**Header:**
-
-| Name     | Description                     |
-| -------- | ------------------------------- |
-| Location | location of the created message |
-
-**Content:** conventional message object
-
-#### Errors
-
-| HTTP Code | Error Code              | Description |
-| --------- | ----------------------- | ----------- |
-| 404       | SUBSCRIPTION_NOT_EXISTS |             |
-| 400       | INVALID_CONTENT_TYPE    |             |
-
-There are error codes defined in *Conventions*.
-
-#### Example
-
-**Request**
-
-```http
-POST /messages HTTP/1.1
-Accept-Language: en, zh; q=0.8
-Authorization: Bearer 0835cc2d-b098-42b6-ab28-d38b242902a6
-
-title=An+update+on+twitter+%40Rakukoo&content=An+update+on+twitter+%40Rakukoo&content_type=text%2Fplain&abstract=An+update+on+twitter+%40Rakukoo
-```
-
-**Response**
-
-```http
-HTTP/1.1 200 OK
-Content-Type: application/json
-Location: /messages/12
-
-{
-    "id": 12,
-    "readed": false,
-    "owner": 42,
-    "subscription": 13,
-    "title": "Update of Instagram User @jktedko",
-    "abstract": "new picture uploaded",
-    "content": {
-      	"type": "text/html",
-      	"data": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius id libero non malesuada. Suspendisse a dapibus ligula, quis pellentesque mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis metus lacus, suscipit sed feugiat ut, consequat ut nisl. Phasellus pharetra nulla vel tortor suscipit, a placerat urna fringilla. In suscipit ac odio a suscipit. Vivamus sed libero eu lectus vulputate commodo at ac nisl. Etiam pretium vel velit nec porta. Praesent et ullamcorper mauris. Quisque diam erat, tempus a rhoncus id, aliquam eu velit. Vestibulum tristique porttitor ex non pretium."
-  	},
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z"
-}
+[{"id":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","readed":false,"owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","subscription":"ef192845-ac6a-468d-93d8-fa0a4559f646","title":"title","abstract":"ABS","created_at":"2018-02-24T00:54:45.0933280Z","updated_at":"2018-02-24T00:54:45.0933280Z"},{"id":"83101da4-5bc3-41d1-8da9-8d2d8eae0189","readed":false,"owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","subscription":"ef192845-ac6a-468d-93d8-fa0a4559f646","title":"title","abstract":"ABS","created_at":"2018-02-24T00:54:46.3594670Z","updated_at":"2018-02-24T00:54:46.3594670Z"}]
 ```
 
 ### Get Details of a Message
@@ -1094,19 +536,13 @@ This API will **not** automatically mark a message as readed.
 
 #### Authentication
 
-only messages belonging to the current user can be displayed, unless `admin` permission granted
+only messages belonging to the current user can be displayed
 
 #### Request
 
 **URL Params:** nothing
 
-**Header**
-
-| Name            | Description                              |
-| --------------- | ---------------------------------------- |
-| Accept-Language | falls back to zh_CN, see: [RFC 7231 # 5.3.5](https://tools.ietf.org/html/rfc7231#section-5.3.5) |
-
-The variables in header is prior to those in URL params.
+**Header**: nothing
 
 #### Response
 
@@ -1116,7 +552,7 @@ The variables in header is prior to those in URL params.
 
 **Content**
 
-array of conventional message object
+conventional message object
 
 #### Errors
 
@@ -1131,8 +567,8 @@ There are error codes defined in *Conventions*.
 **Request**
 
 ```http
-GET /messages/12 HTTP/1.1
-Accept-Language: en, zh; q=0.8
+GET /messages/4afd65ae-d58b-4d36-b28a-202b0bf46f98 HTTP/1.1
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 ```
 
 **Response**
@@ -1142,28 +578,28 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-    "id": 12,
-    "readed": false,
-    "owner": 42,
-    "subscription": 13,
-    "title": "Update of Instagram User @jktedko",
-    "abstract": "new picture uploaded",
-    "content": {
-      	"type": "text/html",
-      	"data": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius id libero non malesuada. Suspendisse a dapibus ligula, quis pellentesque mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis metus lacus, suscipit sed feugiat ut, consequat ut nisl. Phasellus pharetra nulla vel tortor suscipit, a placerat urna fringilla. In suscipit ac odio a suscipit. Vivamus sed libero eu lectus vulputate commodo at ac nisl. Etiam pretium vel velit nec porta. Praesent et ullamcorper mauris. Quisque diam erat, tempus a rhoncus id, aliquam eu velit. Vestibulum tristique porttitor ex non pretium."
-  	},
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z"
+  "id": "bf7e78d7-43dc-44ad-9f95-9dd4f4c28c61",
+  "readed": true,
+  "owner": "10b44e16-7384-4edb-a77f-8e2f79de3995",
+  "subscription": "ef192845-ac6a-468d-93d8-fa0a4559f646",
+  "title": "title",
+  "abstract": "ABS",
+  "content": {
+    "type": "text/plain",
+    "data": "Hello World!"
+  },
+  "created_at": "2018-02-24T00:54:42.8845480Z",
+  "updated_at": "2018-02-24T00:54:42.8845480Z"
 }
 ```
 
 ### Mark Message Readed or Not
 
-`PUT` /messages/:id/readed
+`POST` /messages/:id
 
 #### Authentication
 
-only messages belonging to the current user can be modified, unless `admin` permission granted
+ONLY messages belonging to the current user can be modified.
 
 #### Request
 
@@ -1171,11 +607,9 @@ only messages belonging to the current user can be modified, unless `admin` perm
 
 **Body**
 
-| Path | Type    | Description      |
-| ---- | ------- | ---------------- |
-| /    | boolean | *reading* status |
-
-In this consequence, the request body is required to be `application/json`.
+| Path   | Type           | Description      |
+| ------ | -------------- | ---------------- |
+| readed | boolean/string | *reading* status |
 
 **Header**
 
@@ -1187,7 +621,7 @@ The variables in header is prior to those in URL params.
 
 #### Response
 
-**Code:** 200 OK
+**Code:** 206 Partial Content
 
 **Header:** nothing
 
@@ -1206,30 +640,32 @@ There are error codes defined in *Conventions*.
 **Request**
 
 ```http
-PUT /messages/13/readed HTTP/1.1
-Accept-Language: en, zh; q=0.8
+POST /messages/4afd65ae-d58b-4d36-b28a-202b0bf46f98 HTTP/1.1
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
+Content-Type: application/x-www-form-urlencoded; charset=utf-8
+Content-Length: 11
 
-true
+readed=true
 ```
 
 **Response**
 
 ```http
 HTTP/1.1 200 OK
-Content-Type: application/json
+Content-Type: application/json; charset=utf-8
 
-true
+{"readed":true}
 ```
 
 ## Services
 
 ### Describing Service
 
-| Path         | Type   | Description                              |
-| ------------ | ------ | ---------------------------------------- |
-| /id          | string | service id, unique at website level, in form of uuid |
-| /title       | string |                                          |
-| /description | string |                                          |
+| Path         | Type    | Description                                          |
+| ------------ | ------- | ---------------------------------------------------- |
+| /id          | string  | service id, unique at website level, in form of uuid |
+| /title       | string  |                                                      |
+| /description | string? |                                                      |
 
 Example:
 
@@ -1299,7 +735,7 @@ Content-Type: application/json
         "title": "Facebook",
         "description": "Subscribe to a Facebook user."
     }, {
-        "id": "9eceeaca-28d0-4891-b322-cac5a0e1d570",
+        "id": "2d19176f-e9bc-4131-bd97-6e73182db2dc",
         "title": "Twitter",
         "description": "Subscribe to a Twitter user."
     }
@@ -1310,34 +746,33 @@ Content-Type: application/json
 
 ### Describing Subscription
 
-| Path       | Type   | Description                              |
-| ---------- | ------ | ---------------------------------------- |
-| /id        | number | subscription id, unique at website level |
-| /token     | string | subscription token, never returned on REST APIs |
-| /service   | string | service id                               |
-| /owner     | number | owner user                               |
-| /settings  | object | settings, varies by service              |
-| /createdAt | string | time of creation, in conventional time format |
-| /updatedAt | string | time of last update, in conventional time format |
+| Path        | Type    | Description                                      |
+| ----------- | ------- | ------------------------------------------------ |
+| /id         | string  | subscription id, unique at website level         |
+| /service    | string  | service id                                       |
+| /owner      | string  | owner user id                                    |
+| /config     | string  | settings, varies by service                      |
+| /created_at | string  | time of creation, in conventional time format    |
+| /updated_at | string  | time of last update, in conventional time format |
+| /deleted    | boolean |                                                  |
 
 Example:
 
 ```json
 {
-    "id": 25,
-    "service": "9eceeaca-28d0-4891-b322-cac5a0e1d570",
-    "owner": 42,
-  	"settings": {
-      	"user": "eason.chai.7"
-  	},
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z"
+  "id": "ef192845-ac6a-468d-93d8-fa0a4559f646",
+  "owner": "10b44e16-7384-4edb-a77f-8e2f79de3995",
+  "service": "89ee9095-60e2-4ddd-a0ec-e431131a768a",
+  "config": "nothing",
+  "deleted": false,
+  "created_at": "2018-02-24T08:52:06.4191790",
+  "updated_at": "2018-02-24T00:52:06.4191790Z"
 }
 ```
 
 ### List Personal Subscriptions
 
-`GET` /users/me/subscriptions
+`GET` /subscriptions/mine
 
 #### Authentication
 
@@ -1345,22 +780,9 @@ only subscriptions belonging to the current user is displayed
 
 #### Request
 
-**URL Params**
+**URL Params**: nothing
 
-| Name  | Description              |
-| ----- | ------------------------ |
-| limit | optional, defaults to 50 |
-| skip  | optional, defaults to 0  |
-
-**Header**
-
-| Name            | Description                              |
-| --------------- | ---------------------------------------- |
-| X-Page-Limit    | optional, defaults to 50                 |
-| X-Page-Skip     | optional, defaults to 0                  |
-| Accept-Language | falls back to zh_CN, see: [RFC 7231 # 5.3.5](https://tools.ietf.org/html/rfc7231#section-5.3.5) |
-
-The variables in header is prior to those in URL params.
+**Header**: nothing
 
 #### Response
 
@@ -1381,37 +803,17 @@ There are error codes defined in *Conventions*.
 **Request**
 
 ```http
-GET /users/me/subscriptions HTTP/1.1
-Accept-Language: en, zh; q=0.8
+GET /subscriptions/mine HTTP/1.1
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 ```
 
 **Response**
 
 ```http
 HTTP/1.1 200 OK
-Content-Type: application/json
+Content-Type: application/json; charset=utf-8
 
-[
-    {
-        "id": 25,
-        "service": "9eceeaca-28d0-4891-b322-cac5a0e1d570",
-        "owner": 42,
-        "settings": {
-            "user": "eason.chai.7"
-        },
-        "createdAt": "2017-06-22T07:16:52.669Z",
-        "updatedAt": "2017-06-22T07:16:52.669Z"
-    }, {
-        "id": 26,
-        "service": "5d8625c7-9b90-488e-9109-18d40837dd44",
-        "owner": 42,
-        "settings": {
-            "user": "rakukoo"
-        },
-        "createdAt": "2017-06-22T07:16:52.669Z",
-        "updatedAt": "2017-06-22T07:16:52.669Z"
-    }
-]
+[{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"nothing","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z"}]
 ```
 
 ### Create a Subscription
@@ -1428,20 +830,12 @@ Content-Type: application/json
 
 **Body**
 
-| Path      | Type   | Description                              |
-| --------- | ------ | ---------------------------------------- |
-| /service  | string | service id                               |
-| /settings | object | subscription settings, varies by service |
+| Path     | Type   | Description                              |
+| -------- | ------ | ---------------------------------------- |
+| /service | string | service id                               |
+| /config  | string | subscription settings, varies by service |
 
-In this consequence, the request body is required to be `application/json`.
-
-**Header**
-
-| Name            | Description                              |
-| --------------- | ---------------------------------------- |
-| Accept-Language | falls back to zh_CN, see: [RFC 7231 # 5.3.5](https://tools.ietf.org/html/rfc7231#section-5.3.5) |
-
-The variables in header is prior to those in URL params.
+**Header**: nothing
 
 #### Response
 
@@ -1470,97 +864,19 @@ There are error codes defined in *Conventions*.
 
 ```http
 POST /subscriptions HTTP/1.1
-Content-Type: application/json
-Accept-Language: en, zh; q=0.8
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
+Content-Type: application/x-www-form-urlencoded; charset=utf-8
+Content-Length: 59
 
-{
-  "service": "5d8625c7-9b90-488e-9109-18d40837dd44",
-  "settings": {
-    "user": "eason.chai.7"
-  }
-}
+service=89ee9095-60e2-4ddd-a0ec-e431131a768a&config=nothing
 ```
 
 **Response**
 
 ```http
-HTTP/1.1 200 OK
+HTTP/1.1 201 Created
 Content-Type: application/json
-Location:/subscriptions/25
+Location: /subscriptions/ef192845-ac6a-468d-93d8-fa0a4559f646
 
-{
-    "id": 25,
-    "service": "5d8625c7-9b90-488e-9109-18d40837dd44",
-    "owner": 42,
-    "settings": {
-        "user": "eason.chai.7"
-    },
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z"
-}
-```
-
-### Delete a Subscription
-
-`DELETE` /subscriptions/:id
-
-#### Authentication
-
-*Bearer Authentication*, only the settings of a subscription belonging to the user can be deleted; when being an admin, all subscriptions can be deleted
-
-#### Request
-
-**URL Params:** nothing
-
-**Body:** nothing
-
-**Header**
-
-| Name            | Description                              |
-| --------------- | ---------------------------------------- |
-| Accept-Language | falls back to zh_CN, see: [RFC 7231 # 5.3.5](https://tools.ietf.org/html/rfc7231#section-5.3.5) |
-
-The variables in header is prior to those in URL params.
-
-#### Response
-
-**Code:** 200 OK
-
-**Header:** nothing
-
-**Content:** the deleted subscription
-
-#### Errors
-
-| HTTP Code | Error Code              | Description                 |
-| --------- | ----------------------- | --------------------------- |
-| 404       | SUBSCRIPTION_NOT_EXISTS | subscription does not exist |
-
-There are error codes defined in *Conventions*.
-
-#### Example
-
-**Request**
-
-```http
-DELETE /subscriptions/25 HTTP/1.1
-Accept-Language: en, zh; q=0.8
-```
-
-**Response**
-
-```http
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-    "id": 25,
-    "service": 12,
-    "owner": 42,
-    "settings": {
-        "user": "eason.chai.7"
-    },
-    "createdAt": "2017-06-22T07:16:52.669Z",
-    "updatedAt": "2017-06-22T07:16:52.669Z"
-}
+{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"nothing","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z"}
 ```
