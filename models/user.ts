@@ -24,33 +24,33 @@ export default class User extends BaseEntity {
     this.email = email;
   }
   @PrimaryGeneratedColumn("uuid")
-  public id: string;
+  public id!: string;
   @Column({ type: "varchar", length: 50, nullable: false })
   public email: string;
   @Column({ name: "password", type: "varchar" })
-  public hashedPassword: string;
+  public hashedPassword?: string;
   public static hashPassword = (password: string) =>
     bcrypt.hash(password, password_hash_rounds)
   public setPassword = async (password: string) => {
     this.hashedPassword = await User.hashPassword(password);
   }
   public checkPassword = async (password: string) =>
-    bcrypt.compare(password, this.hashedPassword)
+    this.hashedPassword ? bcrypt.compare(password, this.hashedPassword) : false
   @Column("varchar", {
-    isArray: true, transformer: {
+    array: true, transformer: {
       to: (roles: Permission) => roles.roles,
       from: (value) => new Permission(value),
     },
   })
   public permission: Permission = new Permission();
   @OneToMany(() => Session, (session) => session.user)
-  public sessions: Promise<Session[]>;
+  public sessions!: Promise<Session[]>;
   @OneToMany(() => Message, (message) => message.owner)
-  public messages: Promise<Message[]>;
+  public messages!: Promise<Message[]>;
   @CreateDateColumn({ name: "created_at" })
-  public createdAt: Date;
+  public createdAt!: Date;
   @UpdateDateColumn({ name: "updated_at" })
-  public updatedAt: Date;
+  public updatedAt!: Date;
   @Column({ name: "delete_token", type: "uuid", nullable: true })
   public deleteToken?: string;
 

@@ -27,12 +27,11 @@ export default class Message extends BaseEntity {
     this.content = content;
   }
   @PrimaryGeneratedColumn("uuid")
-  public id: string;
+  public id!: string;
   @Column()
   public readed: boolean = false;
   @ManyToOne(() => User, (user) => user.messages, {
     eager: true,
-    cascadeUpdate: true,
   })
   @JoinColumn({ name: "owner_id" })
   public owner: User;
@@ -47,9 +46,9 @@ export default class Message extends BaseEntity {
   @Column({ type: "text" })
   public content: string;
   @CreateDateColumn({ name: "created_at" })
-  public createdAt: Date;
+  public createdAt!: Date;
   @UpdateDateColumn({ name: "updated_at" })
-  public updatedAt: Date;
+  public updatedAt!: Date;
 
   public toViewSimplified = () => ({
     id: this.id,

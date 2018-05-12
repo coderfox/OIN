@@ -32,8 +32,8 @@ export interface IPasswordRecoveryData {
 export default class Cofirmation extends BaseEntity {
   constructor(opData: op) {
     super();
-    this.id = uuid();
     if (opData) {
+      this.id = uuid();
       this.operation = opData.operation;
       this.data = opData.data;
     }
@@ -42,15 +42,15 @@ export default class Cofirmation extends BaseEntity {
     new Date(Date.now() + ms(confirmation_expires))
 
   @PrimaryColumn({ type: "uuid" })
-  public id: string;
+  public id!: string;
   @Column({ type: "int", nullable: false })
-  public operation: number;
+  public operation!: number;
   @Column({ type: "json", nullable: false })
-  public data: IRegisterData | IUpdateEmailData | IPasswordRecoveryData;
+  public data!: IRegisterData | IUpdateEmailData | IPasswordRecoveryData;
   @CreateDateColumn({ name: "created_at" })
-  public createdAt: Date;
+  public createdAt!: Date;
   @UpdateDateColumn({ name: "updated_at" })
-  public updatedAt: Date;
+  public updatedAt!: Date;
   @Column({ name: "expires_at" })
   public expiresAt: Date = this.getNewExpirationDate();
   public get expired() {
