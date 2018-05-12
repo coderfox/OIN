@@ -1,8 +1,9 @@
 "use strict";
 
 import user from "./user";
+import message from "./message";
 
 export default () => {
-  // TODO: use await import('./utils/create-zip-file') on TS2.4
   describe("user", user);
+  describe("message", message);
 };

@@ -23,8 +23,6 @@
     }
   },
   "typescript.tsdk": "node_modules/typescript/lib",
-  "tslint.exclude": "${workspaceRoot}/node_modules/*",
   "tslint.autoFixOnSave": true,
-  "tslint.configFile": "tslint.json",
   "tslint.alwaysShowRuleFailuresAsWarnings": true
 }

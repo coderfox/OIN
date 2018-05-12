@@ -1,24 +1,24 @@
 language: node_js
 node_js:
+  - 9
   - 8
   - 7
 before_install: yarn global add greenkeeper-lockfile@1
 before_script:
-  - mysql -e 'CREATE DATABASE sandra;'
+  - psql -c 'create database sandra;' -U postgres
   - greenkeeper-lockfile-update
 script: yarn run test-cov
 after_script:
   - greenkeeper-lockfile-upload
   - cat ./coverage/lcov.info | ./node_modules/.bin/coveralls && rm -rf ./coverage
 env:
-  - CXX=g++-4.8 SANDRA_BACKEND_CONFIG=./config/config.travis.yaml
+  - CXX=g++-4.8 PASSWORD_HASH_ROUNDS=1 LOG_LEVEL=silent
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
     packages:
       - g++-4.8
-services:
-  - mysql
+  postgresql: "9.4"
 notifications:
   webhooks: https://hooks.pubu.im/services/2kl96xxbd6xnigg
