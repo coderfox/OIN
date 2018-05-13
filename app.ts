@@ -33,6 +33,10 @@ export const buildApplication = async () => {
     new SessionInterceptor(),
     new UserInterceptor(),
   );
+  app.use(((_: any, res: any, next: any) => {
+    res.set("Server", "sandra.server.api.rest/0.2.0 (REST/0.4)");
+    next();
+  }));
   app.enableCors({
     origin: true,
     credentials: true,

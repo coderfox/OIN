@@ -1,12 +1,13 @@
 {
-  "name": "clover",
+  "name": "sandra.server.api.rest",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "bin/run",
   "dependencies": {
     "@nestjs/common": "^4.6.0",
     "@nestjs/core": "^4.6.0",
     "@nestjs/testing": "^4.5.5",
+    "@types/validator": "^9.4.1",
     "ava": "^0.25.0",
     "bcrypt": "^2.0.1",
     "class-validator": "^0.8.1",
@@ -21,7 +22,8 @@
     "tslint-language-service": "^0.9.8",
     "typeorm": "^0.2.5",
     "typescript": "^2.6.1",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "validator": "^10.2.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^2.0.0",
