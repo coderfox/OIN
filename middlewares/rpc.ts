@@ -1,10 +1,10 @@
-import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
+import { Injectable, NestInterceptor, ExecutionContext } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { map, catchError } from "rxjs/operators";
 import { RpcInternalServerError, RpcError } from "../lib/errors";
 
 // tslint:disable:max-classes-per-file
-@Interceptor()
+@Injectable()
 class RpcInterceptor implements NestInterceptor {
   public intercept(
     // tslint:disable-next-line:variable-name
@@ -15,7 +15,7 @@ class RpcInterceptor implements NestInterceptor {
   }
 }
 
-@Interceptor()
+@Injectable()
 export class RpcErrorInterceptor implements NestInterceptor {
   public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
     return call$.pipe(catchError(err => {

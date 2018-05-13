@@ -7,7 +7,7 @@ import {
   JoinColumn,
 } from "typeorm";
 import User from "./user";
-import { Interceptor, ExecutionContext, NestInterceptor } from "@nestjs/common";
+import { Injectable, ExecutionContext, NestInterceptor } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import Subscription from "./subscription";
@@ -42,11 +42,11 @@ export default class Message extends BaseEntity {
   })
   @JoinColumn({ name: "subscription_id" })
   public subscription: Subscription;
-  @Column({ length: 150 })
+  @Column("text")
   public title: string;
-  @Column({ type: "text" })
+  @Column("text")
   public summary: string;
-  @Column({ type: "text" })
+  @Column("text")
   public content: string;
   @CreateDateColumn({ name: "created_at" })
   public createdAt!: Date;
@@ -70,7 +70,7 @@ export default class Message extends BaseEntity {
 }
 
 // tslint:disable-next-line:max-classes-per-file
-@Interceptor()
+@Injectable()
 export class MessageInterceptor implements NestInterceptor {
   public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
     return call$.pipe(map(value => {

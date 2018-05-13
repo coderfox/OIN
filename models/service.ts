@@ -7,7 +7,7 @@ import {
   OneToMany,
 } from "typeorm";
 import Subscription from "./subscription";
-import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
+import { Injectable, NestInterceptor, ExecutionContext } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 
@@ -44,7 +44,7 @@ export default class Service extends BaseEntity {
 }
 
 // tslint:disable-next-line:max-classes-per-file
-@Interceptor()
+@Injectable()
 export class ServiceInterceptor implements NestInterceptor {
   public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
     return call$.pipe(map(value => {

@@ -1,5 +1,3 @@
-"use strict";
-
 import { createConnection, ConnectionOptions } from "typeorm";
 import { db_url } from "../lib/config";
 

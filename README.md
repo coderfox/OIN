@@ -20,6 +20,7 @@ The server is configured via environmental variables:
 | LOG_LEVEL            |             | info                                |
 | CONFIRMATION_EXPIRES |             | 2h                                  |
 | DEPLOY_TOKEN         |             | 1b26f5e2fd217297a50e5a31aeedc48a    |
+| SENTRY_DSN           |             |                                     |
 
 ## Start
 

@@ -13,7 +13,7 @@ import Message from "./message";
 import Subscription from "./subscription";
 import { Permission } from "../lib/permission";
 
-import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
+import { Injectable, NestInterceptor, ExecutionContext } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import "rxjs/add/operator/map";
@@ -72,7 +72,7 @@ export default class User extends BaseEntity {
 }
 
 // tslint:disable-next-line:max-classes-per-file
-@Interceptor()
+@Injectable()
 export class UserInterceptor implements NestInterceptor {
   public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
     return call$.pipe(map(value => {

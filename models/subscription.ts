@@ -5,7 +5,7 @@ import {
   JoinColumn,
 } from "typeorm";
 import User from "./user";
-import { Interceptor, ExecutionContext, NestInterceptor } from "@nestjs/common";
+import { Injectable, ExecutionContext, NestInterceptor } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import Service from "./service";
@@ -59,7 +59,7 @@ export default class Subscription extends BaseEntity {
 }
 
 // tslint:disable-next-line:max-classes-per-file
-@Interceptor()
+@Injectable()
 export class SubscriptionInterceptor implements NestInterceptor {
   public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
     return call$.pipe(map(value => {

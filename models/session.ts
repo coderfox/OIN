@@ -5,10 +5,10 @@ import {
 } from "typeorm";
 import { token_expires } from "../lib/config";
 import User from "./user";
-import ms = require("ms");
+import ms from "ms";
 import { Permission } from "../lib/permission";
 
-import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
+import { Injectable, NestInterceptor, ExecutionContext } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import "rxjs/add/operator/map";
@@ -89,7 +89,7 @@ export default class Session extends BaseEntity {
   }
 }
 
-@Interceptor()
+@Injectable()
 export class SessionInterceptor implements NestInterceptor {
   public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
     return call$.pipe(map(value => {
