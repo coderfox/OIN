@@ -1,9 +1,11 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "target": "es2016",
+    "target": "es2018",
     "module": "commonjs",
-    "sourceMap": true,
+    "lib": [
+      "es2018"
+    ],
     "strict": true,
     "alwaysStrict": true,
     "skipLibCheck": true,
@@ -12,6 +14,10 @@
     "noFallthroughCasesInSwitch": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "plugins": [
       {
         "name": "tslint-language-service",

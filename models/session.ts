@@ -9,7 +9,8 @@ import ms = require("ms");
 import { Permission } from "../lib/permission";
 
 import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
-import { Observable } from "rxjs/Observable";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 import "rxjs/add/operator/map";
 
 // tslint:disable:max-classes-per-file
@@ -90,8 +91,8 @@ export default class Session extends BaseEntity {
 
 @Interceptor()
 export class SessionInterceptor implements NestInterceptor {
-  public intercept(_: any, __: ExecutionContext, stream$: Observable<any>): Observable<any> {
-    return stream$.map((value) => {
+  public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
+    return call$.pipe(map(value => {
       if (value instanceof Session) {
         return value.toView();
       } else if (Array.isArray(value)) {
@@ -99,6 +100,6 @@ export class SessionInterceptor implements NestInterceptor {
       } else {
         return value;
       }
-    });
+    }));
   }
 }

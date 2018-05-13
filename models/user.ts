@@ -5,16 +5,17 @@ import {
   Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
   OneToMany,
 } from "typeorm";
-import * as bcrypt from "bcrypt";
+import bcrypt from "bcrypt";
 import { password_hash_rounds } from "../lib/config";
-import * as uuid from "uuid/v4";
+import uuid from "uuid/v4";
 import Session from "./session";
 import Message from "./message";
 import Subscription from "./subscription";
 import { Permission } from "../lib/permission";
 
 import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
-import { Observable } from "rxjs/Observable";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 import "rxjs/add/operator/map";
 
 @Entity()
@@ -73,8 +74,8 @@ export default class User extends BaseEntity {
 // tslint:disable-next-line:max-classes-per-file
 @Interceptor()
 export class UserInterceptor implements NestInterceptor {
-  public intercept(_: any, __: ExecutionContext, stream$: Observable<any>): Observable<any> {
-    return stream$.map((value) => {
+  public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
+    return call$.pipe(map(value => {
       if (value instanceof User) {
         return value.toView();
       } else if (Array.isArray(value)) {
@@ -82,6 +83,6 @@ export class UserInterceptor implements NestInterceptor {
       } else {
         return value;
       }
-    });
+    }));
   }
 }

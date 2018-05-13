@@ -1,18 +1,17 @@
-import { ExceptionFilter, Catch, NotFoundException } from "@nestjs/common";
+import { ExceptionFilter, Catch, NotFoundException, ArgumentsHost } from "@nestjs/common";
 import log from "../lib/log";
 import * as Errors from "../lib/errors";
 import { debug } from "../lib/config";
+import Raven from "raven";
 
-// tslint:disable:max-classes-per-file
-@Catch(NotFoundException)
-export class NotFoundExceptionFilter implements ExceptionFilter {
-  public catch() {
-    throw new Errors.ApiEndpointNotFoundError();
-  }
-}
 @Catch()
 export class GenericErrorFilter implements ExceptionFilter {
-  public catch(error: any, response: any) {
+  public catch(error: any, host: ArgumentsHost) {
+    const http = host.switchToHttp();
+    const response = http.getResponse();
+    if (error instanceof NotFoundException) {
+      error = new Errors.ApiEndpointNotFoundError();
+    }
     if (!(error instanceof Errors.ApiError)) {
       log.error(error, "internal server error");
       error = new Errors.InternalServerError(error);
@@ -25,6 +24,14 @@ export class GenericErrorFilter implements ExceptionFilter {
         response.set("WWW-Authenticate", error.right);
       }
     }
+    Raven.captureException(error, { req: http.getRequest() }, (sendErr, eventId) => {
+      // This callback fires once the report has been sent to Sentry
+      if (sendErr) {
+        log.error("sentry error", sendErr);
+      } else {
+        log.error("sentry captured", eventId);
+      }
+    });
     response
       .status(error.status)
       .json({

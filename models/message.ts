@@ -8,7 +8,8 @@ import {
 } from "typeorm";
 import User from "./user";
 import { Interceptor, ExecutionContext, NestInterceptor } from "@nestjs/common";
-import { Observable } from "rxjs/Observable";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 import Subscription from "./subscription";
 
 @Entity()
@@ -71,8 +72,8 @@ export default class Message extends BaseEntity {
 // tslint:disable-next-line:max-classes-per-file
 @Interceptor()
 export class MessageInterceptor implements NestInterceptor {
-  public intercept(_: any, __: ExecutionContext, stream$: Observable<any>): Observable<any> {
-    return stream$.map((value) => {
+  public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
+    return call$.pipe(map(value => {
       if (value instanceof Message) {
         return value.toView();
       } else if (Array.isArray(value)) {
@@ -80,6 +81,6 @@ export class MessageInterceptor implements NestInterceptor {
       } else {
         return value;
       }
-    });
+    }));
   }
 }

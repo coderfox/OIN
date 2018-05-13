@@ -1,7 +1,7 @@
 import test from "ava";
 import { requestAssert, init, dateRegExp } from "../../helpers";
 import { User, Session } from "../../../models";
-import * as uuid from "uuid/v4";
+import uuid from "uuid/v4";
 
 const user = new User("user@example.com");
 const session = new Session(user);

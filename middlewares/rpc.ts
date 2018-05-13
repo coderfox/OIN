@@ -1,30 +1,30 @@
 import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/operator/map";
-import "rxjs/add/operator/catch";
-import "rxjs/add/observable/throw";
+import { Observable } from "rxjs";
+import { map, catchError } from "rxjs/operators";
 import { RpcInternalServerError, RpcError } from "../lib/errors";
 
 // tslint:disable:max-classes-per-file
 @Interceptor()
 class RpcInterceptor implements NestInterceptor {
-  // tslint:disable-next-line:variable-name
-  public intercept(_dataOrRequest: any, _context: ExecutionContext, stream$: Observable<any>): Observable<any> {
-    return stream$.map((data) => ({ result: data }));
+  public intercept(
+    // tslint:disable-next-line:variable-name
+    _context: ExecutionContext,
+    call$: Observable<any>,
+  ): Observable<any> {
+    return call$.pipe(map(data => ({ result: data })));
   }
 }
 
 @Interceptor()
 export class RpcErrorInterceptor implements NestInterceptor {
-  // tslint:disable-next-line:variable-name
-  public intercept(_dataOrRequest: any, _context: ExecutionContext, stream$: Observable<any>): Observable<any> {
-    return stream$.catch((err) => {
+  public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
+    return call$.pipe(catchError(err => {
       if (err instanceof RpcError) {
-        return Observable.throw(err);
+        throw err;
       } else {
-        return Observable.throw(new RpcInternalServerError(err));
+        throw new RpcInternalServerError(err);
       }
-    });
+    }));
   }
 }
 export default RpcInterceptor;

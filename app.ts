@@ -1,9 +1,11 @@
 import { Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import Raven from "raven";
+import * as path from "path";
 
 import { NestLogger } from "./lib/log";
 
-import { GenericErrorFilter, NotFoundExceptionFilter } from "./middlewares/error";
+import { GenericErrorFilter } from "./middlewares/error";
 import { MessageInterceptor } from "./models/message";
 import { SessionInterceptor } from "./models/session";
 import { UserInterceptor } from "./models/user";
@@ -16,6 +18,7 @@ import MessageController from "./controllers/message";
 import ServiceController from "./controllers/service";
 import SubscriptionController from "./controllers/subscription";
 import RpcController from "./controllers/rpc";
+import { sentry_dsn } from "./lib/config";
 
 @Module({
   imports: [],
@@ -32,12 +35,27 @@ import RpcController from "./controllers/rpc";
 class ApplicationModule { }
 
 export default ApplicationModule;
+const root = __dirname || process.cwd();
 export const buildApplication = async () => {
+  Raven.config(sentry_dsn, {
+    dataCallback(data) {
+      const stacktrace = data.exception && data.exception[0].stacktrace;
+
+      if (stacktrace && stacktrace.frames) {
+        stacktrace.frames.forEach((frame: any) => {
+          if (frame.filename.startsWith("/")) {
+            frame.filename = "app:///" + path.relative(root, frame.filename);
+          }
+        });
+      }
+
+      return data;
+    },
+  }).install();
   const app = await NestFactory.create(ApplicationModule, {
     logger: new NestLogger(),
   });
   app.useGlobalFilters(
-    new NotFoundExceptionFilter(),
     new GenericErrorFilter(),
   );
   app.useGlobalInterceptors(
