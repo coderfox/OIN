@@ -7,6 +7,8 @@ import {
   OneToMany,
 } from "typeorm";
 import Subscription from "./subscription";
+import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
+import { Observable } from "rxjs/Observable";
 
 @Entity()
 export default class Service extends BaseEntity {
@@ -38,4 +40,20 @@ export default class Service extends BaseEntity {
     title: this.name,
     description: this.description || "",
   })
+}
+
+// tslint:disable-next-line:max-classes-per-file
+@Interceptor()
+export class ServiceInterceptor implements NestInterceptor {
+  public intercept(_: any, __: ExecutionContext, stream$: Observable<any>): Observable<any> {
+    return stream$.map((value) => {
+      if (value instanceof Service) {
+        return value.toView();
+      } else if (Array.isArray(value)) {
+        return value.map((service) => service instanceof Service ? service.toView() : service);
+      } else {
+        return value;
+      }
+    });
+  }
 }

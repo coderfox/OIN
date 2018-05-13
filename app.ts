@@ -7,12 +7,15 @@ import { GenericErrorFilter, NotFoundExceptionFilter } from "./middlewares/error
 import { MessageInterceptor } from "./models/message";
 import { SessionInterceptor } from "./models/session";
 import { UserInterceptor } from "./models/user";
+import { SubscriptionInterceptor } from "./models/subscription";
+import { ServiceInterceptor } from "./models/service";
 
 import SessionController from "./controllers/session";
 import UserController from "./controllers/user";
 import MessageController from "./controllers/message";
 import ServiceController from "./controllers/service";
 import SubscriptionController from "./controllers/subscription";
+import RpcController from "./controllers/rpc";
 
 @Module({
   imports: [],
@@ -22,6 +25,7 @@ import SubscriptionController from "./controllers/subscription";
     MessageController,
     ServiceController,
     SubscriptionController,
+    RpcController,
   ],
   components: [],
 })
@@ -40,6 +44,8 @@ export const buildApplication = async () => {
     new SessionInterceptor(),
     new UserInterceptor(),
     new MessageInterceptor(),
+    new SubscriptionInterceptor(),
+    new ServiceInterceptor(),
   );
   app.use(((_: any, res: any, next: any) => {
     res.set("Server", "sandra.server.api.rest/0.2.0 (REST/0.4)");

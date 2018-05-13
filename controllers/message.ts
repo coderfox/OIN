@@ -1,6 +1,6 @@
 import { Get, Controller, Query, Req, Res, Param, Post, Body, HttpCode, HttpStatus } from "@nestjs/common";
 import { SessionAuth } from "../middlewares/authentication";
-import { Session, Message } from "../models";
+import { Session, Message, Subscription } from "../models";
 import * as Errors from "../lib/errors";
 import getPagination from "../lib/pagination";
 import log from "../lib/log";
@@ -26,7 +26,14 @@ class MessageController {
             break;
           }
           case "subscription": {
-            where.subscription = param;
+            if (!param) {
+              throw new Errors.BadRequestError("query:query:filters:param");
+            }
+            const subscription = await Subscription.findOne(param);
+            if (!subscription) {
+              throw new Errors.BadRequestError("query:query:filters:param:SUBSCRIPTION_NOT_EXISTS");
+            }
+            where.subscription = subscription;
             break;
           }
         }

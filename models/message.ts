@@ -9,12 +9,13 @@ import {
 import User from "./user";
 import { Interceptor, ExecutionContext, NestInterceptor } from "@nestjs/common";
 import { Observable } from "rxjs/Observable";
+import Subscription from "./subscription";
 
 @Entity()
 export default class Message extends BaseEntity {
   constructor(
     owner: User,
-    subscription: string,
+    subscription: Subscription,
     title: string,
     abstract: string,
     content: string,
@@ -35,8 +36,11 @@ export default class Message extends BaseEntity {
   })
   @JoinColumn({ name: "owner_id" })
   public owner: User;
-  @Column({ type: "uuid" })
-  public subscription: string;
+  @ManyToOne(() => Subscription, (subscription) => subscription.messages, {
+    eager: true,
+  })
+  @JoinColumn({ name: "subscription_id" })
+  public subscription: Subscription;
   @Column({ length: 150 })
   public title: string;
   @Column({ type: "text" })
@@ -52,7 +56,7 @@ export default class Message extends BaseEntity {
     id: this.id,
     readed: this.readed,
     owner: this.owner.id,
-    subscription: this.subscription,
+    subscription: this.subscription.id,
     title: this.title,
     summary: this.summary,
     created_at: this.createdAt.toJSON(),

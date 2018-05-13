@@ -150,8 +150,13 @@ export class RpcError extends ApiError {
     super(code, 500);
   }
 }
+export class RpcInternalServerError extends ApiError {
+  constructor(public readonly baseError: any) {
+    super("INTERNAL_SERVER_ERROR", 503);
+  }
+}
 export class RpcInvalidParametersError extends RpcError {
-  constructor() {
+  constructor(public readonly descriptor: string) {
     super("INVALID_PARAMETERS");
   }
 }
@@ -170,5 +175,15 @@ export class SubscriptionNotExistsError extends ApiError {
 export class ServiceNotExistsError extends ApiError {
   constructor(public readonly id: string) {
     super("SERVICE_NOT_EXISTS", 404);
+  }
+}
+export class RpcInvalidTokenError extends RpcError {
+  constructor(public readonly token: string) {
+    super("INVALID_TOKEN");
+  }
+}
+export class RpcChannelNotFoundError extends RpcError {
+  constructor(public readonly channel: string) {
+    super("CHANNEL_NOT_FOUND");
   }
 }

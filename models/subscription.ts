@@ -1,13 +1,14 @@
 import {
   Entity, BaseEntity,
   Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
-  ManyToOne,
+  ManyToOne, OneToMany,
   JoinColumn,
 } from "typeorm";
 import User from "./user";
 import { Interceptor, ExecutionContext, NestInterceptor } from "@nestjs/common";
 import { Observable } from "rxjs/Observable";
 import Service from "./service";
+import Message from "./message";
 
 @Entity()
 export default class Subscription extends BaseEntity {
@@ -41,6 +42,9 @@ export default class Subscription extends BaseEntity {
   public createdAt!: Date;
   @UpdateDateColumn({ name: "updated_at" })
   public updatedAt!: Date;
+
+  @OneToMany(() => Message, (message) => message.subscription)
+  public messages!: Promise<Message[]>;
 
   public toView = () => ({
     id: this.id,
