@@ -14,7 +14,7 @@ class SubscriptionController {
     @Res() res: any,
   ): Promise<void> {
     const { skip, take } = getPagination(req);
-    const where: Partial<Subscription> = { owner: session.user, deleted: false };
+    const where: Partial<Subscription> = { owner: session.user };
     const [subscriptions, count] = await Subscription.findAndCount({ where, skip, take });
     log.debug("pagination", skip, take, count, skip + take < count);
     if (count > skip + take) {
