@@ -1,4 +1,4 @@
-import { Get, Controller, Req, Res, Param, Post, Body, HttpCode, HttpStatus } from "@nestjs/common";
+import { Get, Controller, Req, Res, Param, Post, Body, HttpCode, HttpStatus, Delete } from "@nestjs/common";
 import { SessionAuth } from "../middlewares/authentication";
 import { Session, Subscription, Service } from "../models";
 import * as Errors from "../lib/errors";
@@ -14,7 +14,7 @@ class SubscriptionController {
     @Res() res: any,
   ): Promise<void> {
     const { skip, take } = getPagination(req);
-    const where: Partial<Subscription> = { owner: session.user };
+    const where: Partial<Subscription> = { owner: session.user, deleted: false };
     const [subscriptions, count] = await Subscription.findAndCount({ where, skip, take });
     log.debug("pagination", skip, take, count, skip + take < count);
     if (count > skip + take) {
@@ -48,7 +48,7 @@ class SubscriptionController {
   ): Promise<{ config: string }> {
     const subscription = await Subscription.findOne(id);
     if (!subscription) {
-      throw new Errors.MessageNotExistsError(id);
+      throw new Errors.SubscriptionNotExistsError(id);
     }
     if (subscription.owner.id !== session.user.id) {
       throw new Errors.InsufficientPermissionError(session, "admin");
@@ -56,6 +56,22 @@ class SubscriptionController {
     subscription.config = config || "";
     await subscription.save();
     return { config: subscription.config };
+  }
+  @Delete(":id")
+  public async deleteOne(
+    @SessionAuth() session: Session,
+    @Param("id") id: string,
+  ): Promise<Subscription> {
+    const subscription = await Subscription.findOne(id);
+    if (!subscription) {
+      throw new Errors.SubscriptionNotExistsError(id);
+    }
+    if (subscription.owner.id !== session.user.id) {
+      throw new Errors.InsufficientPermissionError(session, "admin");
+    }
+    subscription.deleted = true;
+    await subscription.save();
+    return subscription;
   }
 }
 
