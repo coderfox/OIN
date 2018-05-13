@@ -10,6 +10,7 @@ import { password_hash_rounds } from "../lib/config";
 import * as uuid from "uuid/v4";
 import Session from "./session";
 import Message from "./message";
+import Subscription from "./subscription";
 import { Permission } from "../lib/permission";
 
 import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
@@ -18,6 +19,7 @@ import "rxjs/add/operator/map";
 
 @Entity()
 @Index("email_unique_with_deletion", ["email", "deleteToken"], { unique: true })
+@Index("email_unique_without_deletion", ["email"], { unique: true, where: "delete_token IS NULL" })
 export default class User extends BaseEntity {
   constructor(email: string) {
     super();
@@ -47,6 +49,8 @@ export default class User extends BaseEntity {
   public sessions!: Promise<Session[]>;
   @OneToMany(() => Message, (message) => message.owner)
   public messages!: Promise<Message[]>;
+  @OneToMany(() => Subscription, (subscription) => subscription.owner)
+  public subscriptions!: Promise<Subscription[]>;
   @CreateDateColumn({ name: "created_at" })
   public createdAt!: Date;
   @UpdateDateColumn({ name: "updated_at" })

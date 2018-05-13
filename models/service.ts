@@ -4,7 +4,9 @@ import {
   Entity, BaseEntity,
   Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn,
   Generated,
+  OneToMany,
 } from "typeorm";
+import Subscription from "./subscription";
 
 @Entity()
 export default class Service extends BaseEntity {
@@ -27,4 +29,7 @@ export default class Service extends BaseEntity {
   public createdAt!: Date;
   @UpdateDateColumn({ name: "updated_at" })
   public updatedAt!: Date;
+
+  @OneToMany(() => Subscription, (subscription) => subscription.service)
+  public subscriptions!: Promise<Subscription[]>;
 }
