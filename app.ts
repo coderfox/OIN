@@ -12,6 +12,7 @@ import SessionController from "./controllers/session";
 import UserController from "./controllers/user";
 import MessageController from "./controllers/message";
 import ServiceController from "./controllers/service";
+import SubscriptionController from "./controllers/subscription";
 
 @Module({
   imports: [],
@@ -20,6 +21,7 @@ import ServiceController from "./controllers/service";
     UserController,
     MessageController,
     ServiceController,
+    SubscriptionController,
   ],
   components: [],
 })

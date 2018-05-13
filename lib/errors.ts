@@ -160,3 +160,15 @@ export class RpcInsufficientPermissionError extends RpcError {
     super("INSUFFICIENT_PERMISSION");
   }
 }
+export class SubscriptionNotExistsError extends ApiError {
+  public readonly id: string;
+  constructor(id: string) {
+    super("SUBSCRIPTION_NOT_EXISTS", 404);
+    this.id = id;
+  }
+}
+export class ServiceNotExistsError extends ApiError {
+  constructor(public readonly id: string) {
+    super("SERVICE_NOT_EXISTS", 404);
+  }
+}

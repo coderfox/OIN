@@ -51,7 +51,7 @@ class MessageController {
     }
     return message;
   }
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.PARTIAL_CONTENT)
   @Post(":id")
   public async postOne(
     @SessionAuth() session: Session,
