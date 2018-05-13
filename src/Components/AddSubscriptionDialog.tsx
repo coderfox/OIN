@@ -38,7 +38,7 @@ class SubscriptionCreateForm extends React.Component<Props, States> {
     refreshing: false,
     acdata: [],
   };
-  static mapAc = (value: Interfaces.Service) => ({ value: value.id, text: value.name });
+  static mapAc = (value: Interfaces.Service) => ({ value: value.id, text: value.title });
 
   showModal = async () => {
     this.setState({ visible: true, refreshing: true });
@@ -71,7 +71,7 @@ class SubscriptionCreateForm extends React.Component<Props, States> {
   onSearch = (search: string) => {
     const filtered = this.props.session!.services.filter((value) =>
       value.id.toLowerCase().startsWith(search.toLowerCase()) ||
-      value.name.toLowerCase().startsWith(search.toLowerCase()));
+      value.title.toLowerCase().startsWith(search.toLowerCase()));
     this.setState({
       acdata: (filtered.length === 0 ? this.props.session!.services : filtered).map(SubscriptionCreateForm.mapAc)
     });

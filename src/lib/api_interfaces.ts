@@ -27,7 +27,7 @@ export interface Message {
 export interface Service {
   description: string;
   id: string;
-  name: string;
+  title: string;
 }
 export interface Subscription {
   config: string;

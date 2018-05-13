@@ -91,6 +91,8 @@ class ApiClient {
       service: string,
       config: string
     }>('/subscriptions', { service, config })
+  public updateSubscription = (subscription: string, config: string) =>
+    this.post<{ config: string }, { config: string }>('/subscriptions/'.concat(subscription), { config })
 }
 
 export default ApiClient;

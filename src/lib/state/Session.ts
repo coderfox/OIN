@@ -94,4 +94,14 @@ export default class SessionState {
   @action retrieveLatestServices = async () => {
     await this.retrieveServices(true);
   }
+  @action updateSubscriptionConfig = async (id: string, config: string) => {
+    if (!this.authenticated) { return; }
+    try {
+      this.subscriptions[
+        this.subscriptions.findIndex(value => value.id === id)
+      ].config = (await this.client!.updateSubscription(id, config)).config;
+    } catch (ex) {
+      message.error('更新配置失败 ' + ex.message);
+    }
+  }
 }

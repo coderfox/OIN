@@ -93,7 +93,7 @@ class Message extends React.Component<Props, States> {
               title={this.state.subscription && this.state.subscription.id}
               description={
                 this.state.service && this.state.message &&
-                `${this.state.service.name} 于 ${
+                `${this.state.service.title} 于 ${
                 timeago.format(this.state.message.created_at, 'zh_CN')}`
               }
             />

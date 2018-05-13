@@ -12,22 +12,32 @@ var timeago = Timeage();
 import * as Forms from '../Forms';
 import * as Components from '../Components';
 
-import { Card, Icon, Avatar, Button, Collapse, Input, message } from 'antd';
+import { Card, Icon, Avatar, Button, Collapse, Input, message, Form } from 'antd';
+import { FormComponentProps } from 'antd/lib/form';
 const { Meta } = Card;
 const { Panel } = Collapse;
 
-interface Props {
+const FORM_FIELDS = {
+  CONFIG: 'config',
+};
+
+interface Props extends FormComponentProps {
   id: string;
   session?: SessionState;
 }
 interface States {
   subscription?: Interfaces.Subscription;
   service?: Interfaces.Service;
+  loading: boolean;
 }
 
 @inject('session')
 @observer
 class Subscription extends React.Component<Props, States> {
+  state = {
+    loading: false,
+  } as States;
+
   componentWillMount() {
     const subscription = this.props.session!.subscriptions.find(value => value.id === this.props.id);
     if (!subscription) {
@@ -45,8 +55,27 @@ class Subscription extends React.Component<Props, States> {
       service,
     });
   }
+
+  updateConfig: React.FormEventHandler<void> = async (e) => {
+    this.props.form.validateFields((err, values) => {
+      if (!err) {
+        this.setState({ loading: true });
+        this.props.session!.updateSubscriptionConfig(this.props.id, values[FORM_FIELDS.CONFIG])
+          .then((data) => {
+            this.setState({
+              loading: false,
+              subscription: this.props.session!.subscriptions.find(value => value.id === this.props.id)
+            });
+            message.info('配置修改成功');
+          });
+      }
+    });
+  }
+
   render() {
     const { subscription, service } = this.state;
+    const { getFieldDecorator, getFieldsError, isFieldTouched, getFieldValue } = this.props.form;
+    const fieldsError = getFieldsError();
     return (
       <Collapse bordered={false}>
         <Panel
@@ -58,19 +87,36 @@ class Subscription extends React.Component<Props, States> {
               style={{ backgroundColor: color.hex(service && service.id) }}
               icon="fork"
             />}
-            title={service && service.name}
+            title={service && service.title}
             description={service && service.id}
           />
           <div style={{ marginTop: '12px', marginBottom: '12px' }} />
-          <p>配置信息：</p>
-          <p>
-            <Input.TextArea
-              placeholder="配置"
-              autosize={{ minRows: 2 }}
-              value={subscription && subscription.config}
-            />
-          </p>
-          <p><Button type="primary" disabled={true}>修改</Button></p>
+          <Form>
+            <Form.Item label="配置信息">
+              {getFieldDecorator(FORM_FIELDS.CONFIG, {
+                initialValue: subscription && subscription.config
+              })(
+                <Input.TextArea
+                  placeholder="配置"
+                  autosize={{ minRows: 2 }}
+                />
+              )}
+            </Form.Item>
+            <Form.Item>
+              <Button
+                type="primary"
+                // htmlType="submit"
+                disabled={
+                  (Object.keys(fieldsError).some(field => fieldsError[field]) ||
+                    !isFieldTouched(FORM_FIELDS.CONFIG)) &&
+                  getFieldValue(FORM_FIELDS.CONFIG) === (this.state.subscription && this.state.subscription.config)
+                }
+                loading={this.state.loading}
+                onClick={this.updateConfig}
+              >修改
+              </Button>
+            </Form.Item>
+          </Form>
           <p>创建于：{subscription && timeago.format(subscription.created_at, 'zh_CN')}</p>
           <p>最近修改：{subscription && timeago.format(subscription.updated_at, 'zh_CN')}</p>
         </Panel>
@@ -78,5 +124,6 @@ class Subscription extends React.Component<Props, States> {
     );
   }
 }
+const DecoratedSubscription = Form.create()(Subscription);
 
-export default Subscription;
+export default DecoratedSubscription;
