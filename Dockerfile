@@ -1,4 +1,4 @@
-FROM node:8-alpine AS deps
+FROM node:10-alpine AS deps
 LABEL maintainer=coderfox<docker@xfox.me>
 
 RUN apk add --no-cache make gcc g++ python yarn 
@@ -14,7 +14,7 @@ RUN ./node_modules/.bin/tsc --outDir dist --sourceMap false
 RUN ./node_modules/.bin/tslint -p .
 RUN yarn run build:bin
 
-FROM node:8-alpine
+FROM node:10-alpine
 ENV NODE_ENV production
 COPY --from=deps /app/sandra /app/sandra
 WORKDIR /app

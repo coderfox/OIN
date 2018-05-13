@@ -32,4 +32,10 @@ export default class Service extends BaseEntity {
 
   @OneToMany(() => Subscription, (subscription) => subscription.service)
   public subscriptions!: Promise<Subscription[]>;
+
+  public toView = () => ({
+    id: this.id,
+    title: this.name,
+    description: this.description || "",
+  })
 }

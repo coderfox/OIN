@@ -3,14 +3,15 @@ import { NestFactory } from "@nestjs/core";
 
 import { NestLogger } from "./lib/log";
 
-import SessionController from "./controllers/session";
-import UserController from "./controllers/user";
-import MessageController from "./controllers/message";
-
 import { GenericErrorFilter, NotFoundExceptionFilter } from "./middlewares/error";
 import { MessageInterceptor } from "./models/message";
 import { SessionInterceptor } from "./models/session";
 import { UserInterceptor } from "./models/user";
+
+import SessionController from "./controllers/session";
+import UserController from "./controllers/user";
+import MessageController from "./controllers/message";
+import ServiceController from "./controllers/service";
 
 @Module({
   imports: [],
@@ -18,6 +19,7 @@ import { UserInterceptor } from "./models/user";
     SessionController,
     UserController,
     MessageController,
+    ServiceController,
   ],
   components: [],
 })
