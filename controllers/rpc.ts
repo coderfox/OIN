@@ -47,10 +47,12 @@ class RpcController {
     if (!service) {
       throw new Errors.RpcInvalidTokenError(token);
     }
-    return (await service.subscriptions).map(s => ({
-      id: s.id,
-      config: s.config,
-    }));
+    return (await service.subscriptions)
+      .filter(s => s.deleted === false)
+      .map(s => ({
+        id: s.id,
+        config: s.config,
+      }));
   }
   @HttpCode(HttpStatus.OK)
   @Post("create_message")
