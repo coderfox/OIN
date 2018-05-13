@@ -16,7 +16,8 @@
     ],
     "member-ordering": [
       false
-    ]
+    ],
+    "arrow-parens": false
   },
   "rulesDirectory": []
 }

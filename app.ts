@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
+import { NestLogger } from "./lib/log";
+
 import SessionController from "./controllers/session";
 import UserController from "./controllers/user";
 
@@ -20,7 +22,9 @@ class ApplicationModule { }
 
 export default ApplicationModule;
 export const buildApplication = async () => {
-  const app = await NestFactory.create(ApplicationModule);
+  const app = await NestFactory.create(ApplicationModule, {
+    logger: new NestLogger(),
+  });
   app.useGlobalFilters(
     new NotFoundExceptionFilter(),
     new GenericErrorFilter(),
@@ -29,5 +33,9 @@ export const buildApplication = async () => {
     new SessionInterceptor(),
     new UserInterceptor(),
   );
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
   return app;
 };

@@ -29,7 +29,7 @@ export interface IPasswordRecoveryData {
   newPassword: string;
 }
 @Entity()
-export default class Cofirmation extends BaseEntity {
+export default class Confirmation extends BaseEntity {
   constructor(opData: op) {
     super();
     if (opData) {
