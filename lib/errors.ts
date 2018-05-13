@@ -2,7 +2,6 @@
 
 import User from "../models/user";
 import Session from "../models/session";
-import { Context } from "koa";
 
 // tslint:disable:max-classes-per-file
 export class ApiError extends Error {
@@ -106,10 +105,8 @@ export class InsufficientPermissionError extends ApiError {
   }
 }
 export class BadRequestError extends ApiError {
-  public readonly context: Context;
-  constructor(context: Context) {
+  constructor(public readonly descriptor: string) {
     super("BAD_REQUEST", 400);
-    this.context = context;
   }
 }
 export class DuplicateEmailError extends ApiError {
@@ -153,13 +150,40 @@ export class RpcError extends ApiError {
     super(code, 500);
   }
 }
+export class RpcInternalServerError extends ApiError {
+  constructor(public readonly baseError: any) {
+    super("INTERNAL_SERVER_ERROR", 503);
+  }
+}
 export class RpcInvalidParametersError extends RpcError {
-  constructor() {
+  constructor(public readonly descriptor: string) {
     super("INVALID_PARAMETERS");
   }
 }
 export class RpcInsufficientPermissionError extends RpcError {
   constructor() {
     super("INSUFFICIENT_PERMISSION");
+  }
+}
+export class SubscriptionNotExistsError extends ApiError {
+  public readonly id: string;
+  constructor(id: string) {
+    super("SUBSCRIPTION_NOT_EXISTS", 404);
+    this.id = id;
+  }
+}
+export class ServiceNotExistsError extends ApiError {
+  constructor(public readonly id: string) {
+    super("SERVICE_NOT_EXISTS", 404);
+  }
+}
+export class RpcInvalidTokenError extends RpcError {
+  constructor(public readonly token: string) {
+    super("INVALID_TOKEN");
+  }
+}
+export class RpcChannelNotFoundError extends RpcError {
+  constructor(public readonly channel: string) {
+    super("CHANNEL_NOT_FOUND");
   }
 }

@@ -50,23 +50,23 @@ export default class Session extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.sessions, {
     eager: true,
-    cascadeUpdate: true,
   })
   @JoinColumn({ name: "user_id" })
-  public user: User;
+  public user!: User;
   @PrimaryGeneratedColumn("uuid")
-  public token: string;
+  public token!: string;
   @Column("varchar", {
-    isArray: true, transformer: {
+    length: 10,
+    array: true, transformer: {
       to: (roles: Permission) => roles.roles,
       from: (value) => new Permission(value),
     },
   })
   public permission: Permission = new Permission();
   @CreateDateColumn({ name: "created_at" })
-  public createdAt: Date;
+  public createdAt!: Date;
   @UpdateDateColumn({ name: "updated_at" })
-  public updatedAt: Date;
+  public updatedAt!: Date;
   @Column({ name: "expires_at" })
   public expiresAt: Date = this.getNewExpirationDate();
   public get expired() {

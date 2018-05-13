@@ -7,65 +7,79 @@ import {
   JoinColumn,
 } from "typeorm";
 import User from "./user";
+import { Interceptor, ExecutionContext, NestInterceptor } from "@nestjs/common";
+import { Observable } from "rxjs/Observable";
+import Subscription from "./subscription";
 
 @Entity()
 export default class Message extends BaseEntity {
   constructor(
     owner: User,
-    subscription: string,
+    subscription: Subscription,
     title: string,
     abstract: string,
-    contentType: string,
     content: string,
   ) {
     super();
     this.owner = owner;
     this.subscription = subscription;
     this.title = title;
-    this.abstract = abstract;
-    this.contentType = contentType;
+    this.summary = abstract;
     this.content = content;
   }
   @PrimaryGeneratedColumn("uuid")
-  public id: string;
+  public id!: string;
   @Column()
   public readed: boolean = false;
   @ManyToOne(() => User, (user) => user.messages, {
     eager: true,
-    cascadeUpdate: true,
   })
   @JoinColumn({ name: "owner_id" })
   public owner: User;
-  @Column({ type: "uuid" })
-  public subscription: string;
+  @ManyToOne(() => Subscription, (subscription) => subscription.messages, {
+    eager: true,
+  })
+  @JoinColumn({ name: "subscription_id" })
+  public subscription: Subscription;
   @Column({ length: 150 })
   public title: string;
   @Column({ type: "text" })
-  public abstract: string;
-  @Column({ name: "content_type" })
-  public contentType: string;
+  public summary: string;
   @Column({ type: "text" })
   public content: string;
   @CreateDateColumn({ name: "created_at" })
-  public createdAt: Date;
+  public createdAt!: Date;
   @UpdateDateColumn({ name: "updated_at" })
-  public updatedAt: Date;
+  public updatedAt!: Date;
 
   public toViewSimplified = () => ({
     id: this.id,
     readed: this.readed,
     owner: this.owner.id,
-    subscription: this.subscription,
+    subscription: this.subscription.id,
     title: this.title,
-    abstract: this.abstract,
-    createdAt: this.createdAt.toJSON(),
-    updatedAt: this.updatedAt.toJSON(),
+    summary: this.summary,
+    created_at: this.createdAt.toJSON(),
+    updated_at: this.updatedAt.toJSON(),
   })
   public toView = () => ({
     ...this.toViewSimplified(),
-    content: {
-      type: this.contentType,
-      data: this.content,
-    },
+    content: this.content,
   })
+}
+
+// tslint:disable-next-line:max-classes-per-file
+@Interceptor()
+export class MessageInterceptor implements NestInterceptor {
+  public intercept(_: any, __: ExecutionContext, stream$: Observable<any>): Observable<any> {
+    return stream$.map((value) => {
+      if (value instanceof Message) {
+        return value.toView();
+      } else if (Array.isArray(value)) {
+        return value.map((message) => message instanceof Message ? message.toViewSimplified() : message);
+      } else {
+        return value;
+      }
+    });
+  }
 }

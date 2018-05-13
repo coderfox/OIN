@@ -10,6 +10,7 @@ import { password_hash_rounds } from "../lib/config";
 import * as uuid from "uuid/v4";
 import Session from "./session";
 import Message from "./message";
+import Subscription from "./subscription";
 import { Permission } from "../lib/permission";
 
 import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
@@ -18,39 +19,42 @@ import "rxjs/add/operator/map";
 
 @Entity()
 @Index("email_unique_with_deletion", ["email", "deleteToken"], { unique: true })
+@Index("email_unique_without_deletion", ["email"], { unique: true, where: "delete_token IS NULL" })
 export default class User extends BaseEntity {
   constructor(email: string) {
     super();
     this.email = email;
   }
   @PrimaryGeneratedColumn("uuid")
-  public id: string;
+  public id!: string;
   @Column({ type: "varchar", length: 50, nullable: false })
   public email: string;
   @Column({ name: "password", type: "varchar" })
-  public hashedPassword: string;
+  public hashedPassword?: string;
   public static hashPassword = (password: string) =>
     bcrypt.hash(password, password_hash_rounds)
   public setPassword = async (password: string) => {
     this.hashedPassword = await User.hashPassword(password);
   }
   public checkPassword = async (password: string) =>
-    bcrypt.compare(password, this.hashedPassword)
+    this.hashedPassword ? bcrypt.compare(password, this.hashedPassword) : false
   @Column("varchar", {
-    isArray: true, transformer: {
+    array: true, transformer: {
       to: (roles: Permission) => roles.roles,
       from: (value) => new Permission(value),
     },
   })
   public permission: Permission = new Permission();
   @OneToMany(() => Session, (session) => session.user)
-  public sessions: Promise<Session[]>;
+  public sessions!: Promise<Session[]>;
   @OneToMany(() => Message, (message) => message.owner)
-  public messages: Promise<Message[]>;
+  public messages!: Promise<Message[]>;
+  @OneToMany(() => Subscription, (subscription) => subscription.owner)
+  public subscriptions!: Promise<Subscription[]>;
   @CreateDateColumn({ name: "created_at" })
-  public createdAt: Date;
+  public createdAt!: Date;
   @UpdateDateColumn({ name: "updated_at" })
-  public updatedAt: Date;
+  public updatedAt!: Date;
   @Column({ name: "delete_token", type: "uuid", nullable: true })
   public deleteToken?: string;
 

@@ -4,12 +4,11 @@ import {
   Entity, BaseEntity,
   Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn,
   Generated,
+  OneToMany,
 } from "typeorm";
-import {
-  serialize as Serialize,
-  serializeAs as SerializeAs,
-  Serialize as serialize,
-} from "cerialize";
+import Subscription from "./subscription";
+import { Interceptor, NestInterceptor, ExecutionContext } from "@nestjs/common";
+import { Observable } from "rxjs/Observable";
 
 @Entity()
 export default class Service extends BaseEntity {
@@ -20,23 +19,41 @@ export default class Service extends BaseEntity {
     this.description = description;
   }
   @PrimaryColumn("uuid")
-  @Serialize
   public id: string;
   @Column({ type: "varchar", length: 50, nullable: false })
-  @SerializeAs("title")
   public name: string;
   @Column({ unique: true })
   @Generated("uuid")
-  public token: string;
+  public token!: string;
   @Column({ nullable: true })
-  @Serialize
   public description?: string;
   @CreateDateColumn({ name: "created_at" })
-  @Serialize
-  public createdAt: Date;
+  public createdAt!: Date;
   @UpdateDateColumn({ name: "updated_at" })
-  @Serialize
-  public updatedAt: Date;
+  public updatedAt!: Date;
 
-  public toView = () => serialize(this);
+  @OneToMany(() => Subscription, (subscription) => subscription.service)
+  public subscriptions!: Promise<Subscription[]>;
+
+  public toView = () => ({
+    id: this.id,
+    title: this.name,
+    description: this.description || "",
+  })
+}
+
+// tslint:disable-next-line:max-classes-per-file
+@Interceptor()
+export class ServiceInterceptor implements NestInterceptor {
+  public intercept(_: any, __: ExecutionContext, stream$: Observable<any>): Observable<any> {
+    return stream$.map((value) => {
+      if (value instanceof Service) {
+        return value.toView();
+      } else if (Array.isArray(value)) {
+        return value.map((service) => service instanceof Service ? service.toView() : service);
+      } else {
+        return value;
+      }
+    });
+  }
 }

@@ -9,7 +9,7 @@ export const SessionAuth = createRouteParamDecorator(async (_, req) => {
     throw new Errors.AuthenticationNotFoundError("Bearer");
   }
   const token = parseBearer(req.headers.authorization);
-  const session = await Session.findOneById(token);
+  const session = await Session.findOne(token);
   if (!session) {
     throw new Errors.TokenInvalidError(token);
   } else {
