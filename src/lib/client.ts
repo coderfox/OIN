@@ -93,6 +93,8 @@ class ApiClient {
     }>('/subscriptions', { service, config })
   public updateSubscription = (subscription: string, config: string) =>
     this.post<{ config: string }, { config: string }>('/subscriptions/'.concat(subscription), { config })
+  public deleteSubscription = (id: string) =>
+    this.delete<Interfaces.Subscription>('/subscriptions/'.concat(id))
 }
 
 export default ApiClient;

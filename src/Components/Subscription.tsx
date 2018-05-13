@@ -71,6 +71,12 @@ class Subscription extends React.Component<Props, States> {
       }
     });
   }
+  handleDelete: React.FormEventHandler<void> = async (e) => {
+    this.setState({ loading: true });
+    await this.props.session!.deleteSubscription(this.props.id);
+    this.setState({ loading: false });
+    message.info('删除成功');
+  }
 
   render() {
     const { subscription, service } = this.state;
@@ -105,7 +111,6 @@ class Subscription extends React.Component<Props, States> {
             <Form.Item>
               <Button
                 type="primary"
-                // htmlType="submit"
                 disabled={
                   (Object.keys(fieldsError).some(field => fieldsError[field]) ||
                     !isFieldTouched(FORM_FIELDS.CONFIG)) &&
@@ -114,6 +119,13 @@ class Subscription extends React.Component<Props, States> {
                 loading={this.state.loading}
                 onClick={this.updateConfig}
               >修改
+              </Button>
+            </Form.Item>
+            <Form.Item>
+              <Button
+                loading={this.state.loading}
+                onClick={this.handleDelete}
+              >删除
               </Button>
             </Form.Item>
           </Form>
