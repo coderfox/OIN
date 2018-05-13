@@ -52,21 +52,19 @@
     "test-cov": "nyc -r lcovonly -r html mocha test/index",
     "postinstall": "tsc",
     "pretest": "tsc&& tslint -p .",
-    "dev": "supervisor -i coverage bin/run | pino",
+    "dev": "supervisor -i coverage bin/run",
     "start": "node ./bin/run",
     "lint": "tslint -p .",
     "test-nocompile": "nyc -r html mocha test/index",
-    "db:migrate": "node bin/buildOrmConfig && typeorm migrations:run",
-    "db:revert": "node bin/buildOrmConfig && typeorm migrations:revert",
-    "build:bin": "cat entry.js | nexe -o sandra"
+    "db:migrate": "node bin/buildOrmConfig && typeorm migration:run",
+    "db:revert": "node bin/buildOrmConfig && typeorm migration:revert",
+    "build:bin": "nexe -o sandra entry.js"
   },
   "ava": {
     "files": [
       "**/*.test.js",
       "tests/**/*.js",
       "!tests/helpers/*.js"
-    ],
-    "failWithoutAssertions": false,
-    "serial": true
+    ]
   }
 }

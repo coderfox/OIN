@@ -9,7 +9,7 @@ class UserController {
   @HttpCode(201)
   @Post()
   public async post(@Body("email") email: string, @Body("password") password: string): Promise<User> {
-    if (User.findOne({ email })) {
+    if (await User.findOne({ email })) {
       throw new Errors.DuplicateEmailError(email);
     }
     if (!isEmail(email)) {
