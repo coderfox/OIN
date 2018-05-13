@@ -13,7 +13,7 @@ class ApiClient {
   }
 
   private static constructApiUrl = (url: string) =>
-    (process.env.REACT_APP_API_ROOT || 'http://127.0.0.1:5000').concat(url)
+    (process.env.REACT_APP_API_ROOT || 'http://127.0.0.1:3000').concat(url)
   private static constructOptions = (auth?: AxiosBasicCredentials | string) =>
     typeof (auth) === 'undefined' ? undefined :
       typeof (auth) === 'string' ? {

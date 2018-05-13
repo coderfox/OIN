@@ -19,13 +19,10 @@ export interface Message {
   owner: string;
   subscription: string;
   title: string;
-  abstract: string;
+  summary: string;
   created_at: string;
   updated_at: string;
-  content?: {
-    data: string;
-    type: string;
-  };
+  content?: string;
 }
 export interface Service {
   description: string;

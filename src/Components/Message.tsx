@@ -101,11 +101,10 @@ class Message extends React.Component<Props, States> {
               <Button icon="check" onClick={this.markAsRead}>标为已读</Button>
               <Button icon="plus-square" onClick={this.loadContent}>加载详情</Button>
             </div>
-            <div>{this.state.message && (!this.state.message.content) && this.state.message.abstract}</div>
+            <div>{this.state.message && (!this.state.message.content) && this.state.message.summary}</div>
             <div
               dangerouslySetInnerHTML={{
-                __html: this.state.message &&
-                  this.state.message.content && this.state.message.content.data || ''
+                __html: this.state.message && this.state.message.content || ''
               }}
             />
           </Panel>
