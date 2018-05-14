@@ -1,5 +1,3 @@
-"use strict";
-
 import {
   Entity, BaseEntity,
   Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
@@ -7,12 +5,11 @@ import {
   JoinColumn,
 } from "typeorm";
 import User from "./user";
-import { Injectable, ExecutionContext, NestInterceptor } from "@nestjs/common";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
 import Subscription from "./subscription";
+import { Exclude, Expose, Transform } from "class-transformer";
 
 @Entity()
+@Exclude()
 export default class Message extends BaseEntity {
   constructor(
     owner: User,
@@ -28,59 +25,48 @@ export default class Message extends BaseEntity {
     this.summary = abstract;
     this.content = content;
   }
+
   @PrimaryGeneratedColumn("uuid")
+  @Expose()
   public id!: string;
+
   @Column()
+  @Expose()
   public readed: boolean = false;
+
   @ManyToOne(() => User, (user) => user.messages, {
     eager: true,
   })
   @JoinColumn({ name: "owner_id" })
+  @Expose()
+  @Transform((value: User) => value.id)
   public owner: User;
+
   @ManyToOne(() => Subscription, (subscription) => subscription.messages, {
     eager: true,
   })
   @JoinColumn({ name: "subscription_id" })
+  @Expose()
+  @Transform((value: Subscription) => value.id)
   public subscription: Subscription;
+
   @Column("text")
+  @Expose()
   public title: string;
+
   @Column("text")
+  @Expose()
   public summary: string;
+
   @Column("text")
+  @Expose({ since: 1.1 })
   public content: string;
+
   @CreateDateColumn({ name: "created_at" })
+  @Expose({ name: "created_at" })
   public createdAt!: Date;
+
   @UpdateDateColumn({ name: "updated_at" })
+  @Expose({ name: "updated_at" })
   public updatedAt!: Date;
-
-  public toViewSimplified = () => ({
-    id: this.id,
-    readed: this.readed,
-    owner: this.owner.id,
-    subscription: this.subscription.id,
-    title: this.title,
-    summary: this.summary,
-    created_at: this.createdAt.toJSON(),
-    updated_at: this.updatedAt.toJSON(),
-  })
-  public toView = () => ({
-    ...this.toViewSimplified(),
-    content: this.content,
-  })
-}
-
-// tslint:disable-next-line:max-classes-per-file
-@Injectable()
-export class MessageInterceptor implements NestInterceptor {
-  public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
-    return call$.pipe(map(value => {
-      if (value instanceof Message) {
-        return value.toView();
-      } else if (Array.isArray(value)) {
-        return value.map((message) => message instanceof Message ? message.toViewSimplified() : message);
-      } else {
-        return value;
-      }
-    }));
-  }
 }

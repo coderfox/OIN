@@ -7,11 +7,7 @@ import { token_expires } from "../lib/config";
 import User from "./user";
 import ms from "ms";
 import { Permission } from "../lib/permission";
-
-import { Injectable, NestInterceptor, ExecutionContext } from "@nestjs/common";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
-import "rxjs/add/operator/map";
+import { Exclude, Expose, Transform } from "class-transformer";
 
 // tslint:disable:max-classes-per-file
 // tslint:disable-next-line:no-namespace
@@ -38,6 +34,7 @@ export namespace Errors {
   }
 }
 
+@Exclude()
 @Entity()
 export default class Session extends BaseEntity {
   constructor(user: User) {
@@ -53,9 +50,13 @@ export default class Session extends BaseEntity {
     eager: true,
   })
   @JoinColumn({ name: "user_id" })
+  @Expose()
   public user!: User;
+
   @PrimaryGeneratedColumn("uuid")
+  @Expose()
   public token!: string;
+
   @Column("varchar", {
     length: 10,
     array: true, transformer: {
@@ -63,43 +64,27 @@ export default class Session extends BaseEntity {
       from: (value) => new Permission(value),
     },
   })
+  @Expose({ name: "permissions" })
+  @Transform((value: Permission) => value.roles)
   public permission: Permission = new Permission();
+
   @CreateDateColumn({ name: "created_at" })
+  @Expose({ name: "created_at" })
   public createdAt!: Date;
+
   @UpdateDateColumn({ name: "updated_at" })
+  @Expose({ name: "updated_at" })
   public updatedAt!: Date;
+
   @Column({ name: "expires_at" })
+  @Expose({ name: "expires_at" })
   public expiresAt: Date = this.getNewExpirationDate();
+
   public get expired() {
     return (this.expiresAt <= new Date()) || !!this.user.deleteToken;
   }
 
   public renew = () => {
     this.expiresAt = this.getNewExpirationDate();
-  }
-  public toView = () => {
-    return {
-      token: this.token,
-      user: this.user.toView(),
-      permissions: this.permission.roles,
-      created_at: this.createdAt,
-      updated_at: this.updatedAt,
-      expires_at: this.expiresAt,
-    };
-  }
-}
-
-@Injectable()
-export class SessionInterceptor implements NestInterceptor {
-  public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
-    return call$.pipe(map(value => {
-      if (value instanceof Session) {
-        return value.toView();
-      } else if (Array.isArray(value)) {
-        return value.map((session) => session instanceof Session ? session.toView() : session);
-      } else {
-        return value;
-      }
-    }));
   }
 }

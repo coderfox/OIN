@@ -5,13 +5,12 @@ import {
   JoinColumn,
 } from "typeorm";
 import User from "./user";
-import { Injectable, ExecutionContext, NestInterceptor } from "@nestjs/common";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
 import Service from "./service";
 import Message from "./message";
+import { Exclude, Expose, Transform } from "class-transformer";
 
 @Entity()
+@Exclude()
 export default class Subscription extends BaseEntity {
   constructor(
     owner: User,
@@ -23,54 +22,43 @@ export default class Subscription extends BaseEntity {
     this.service = service;
     this.config = config;
   }
+
   @PrimaryGeneratedColumn("uuid")
+  @Expose()
   public id!: string;
+
   @ManyToOne(() => User, (user) => user.subscriptions, {
     eager: true,
   })
   @JoinColumn({ name: "owner_id" })
+  @Expose()
+  @Transform((value: User) => value.id)
   public owner: User;
+
   @ManyToOne(() => Service, (service) => service.subscriptions, {
     eager: true,
   })
   @JoinColumn({ name: "service_id" })
+  @Expose()
+  @Transform((value: Service) => value.id)
   public service: Service;
+
   @Column({ type: "text" })
+  @Expose()
   public config: string;
+
   @Column()
+  @Expose()
   public deleted: boolean = false;
+
   @CreateDateColumn({ name: "created_at" })
+  @Expose({ name: "created_at" })
   public createdAt!: Date;
+
   @UpdateDateColumn({ name: "updated_at" })
+  @Expose({ name: "updated_at" })
   public updatedAt!: Date;
 
   @OneToMany(() => Message, (message) => message.subscription)
   public messages!: Promise<Message[]>;
-
-  public toView = () => ({
-    id: this.id,
-    owner: this.owner.id,
-    service: this.service.id,
-    config: this.config,
-    deleted: this.deleted,
-    created_at: this.createdAt,
-    updated_at: this.updatedAt,
-  })
-}
-
-// tslint:disable-next-line:max-classes-per-file
-@Injectable()
-export class SubscriptionInterceptor implements NestInterceptor {
-  public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
-    return call$.pipe(map(value => {
-      if (value instanceof Subscription) {
-        return value.toView();
-      } else if (Array.isArray(value)) {
-        return value.map((subscription) =>
-          subscription instanceof Subscription ? subscription.toView() : subscription);
-      } else {
-        return value;
-      }
-    }));
-  }
 }

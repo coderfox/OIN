@@ -1,5 +1,3 @@
-"use strict";
-
 import logger from "pino";
 import { log_level } from "./config";
 import { LoggerService } from "@nestjs/common";

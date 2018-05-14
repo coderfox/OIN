@@ -1,7 +1,6 @@
-"use strict";
-
 export type Role = "admin";
 export type Roles = Role[];
+
 export class Permission {
   public roles: Roles;
   constructor(roles?: Roles) {

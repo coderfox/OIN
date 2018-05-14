@@ -1,6 +1,7 @@
 import { Get, Controller, Req, Res } from "@nestjs/common";
 import { Service } from "../models";
 import getPagination from "../lib/pagination";
+import { classToPlain } from "class-transformer";
 
 @Controller("services")
 class ServiceController {
@@ -14,7 +15,7 @@ class ServiceController {
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
     }
-    res.send(services.map(value => value.toView()));
+    res.send(classToPlain(services));
   }
 }
 

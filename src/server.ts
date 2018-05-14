@@ -1,5 +1,3 @@
-"use strict";
-
 import { INestApplication } from "@nestjs/common/interfaces";
 
 import "dotenv/config";
