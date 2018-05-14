@@ -15,6 +15,7 @@ COPY package.json /app/
 COPY yarn.lock /app/
 WORKDIR /app
 RUN yarn install
+RUN npm rebuild bcrypt --build-from-source
 
 # build server
 COPY . . 
@@ -23,10 +24,13 @@ RUN ./node_modules/.bin/tsc
 # build binary
 WORKDIR /app
 RUN pkg . --targets ${NODE}-${PLATFORM}-${ARCH} -o sandra
+RUN mkdir -p build
+RUN cp sandra build/sandra
+RUN cp node_modules/**/*.node build/
 
 FROM node:8-alpine AS release
 
-COPY --from=base /app/sandra /app/sandra
+COPY --from=base /app/build /app
 WORKDIR /app
 
 EXPOSE 3000
