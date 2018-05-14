@@ -6,7 +6,7 @@ export const config: ConnectionOptions = {
   type: "postgres",
   url: db_url,
   entities: [
-    `.${__dirname}/../models/*.js`,
+    `${__dirname}/../models/*.js`,
   ],
   migrations: [
     `${__dirname}/../migrations/*.js`,
