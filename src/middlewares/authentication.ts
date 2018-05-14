@@ -1,10 +1,10 @@
-import { createRouteParamDecorator } from "@nestjs/common";
+import { createParamDecorator } from "@nestjs/common";
 import * as Errors from "../lib/errors";
 import { parseBearer, parseBasic } from "../lib/auth";
 import { Session, User } from "../models";
 import { Errors as SessionErrors } from "../models/session";
 
-export const SessionAuth = createRouteParamDecorator(async (_, req) => {
+export const SessionAuth = createParamDecorator(async (_, req) => {
   if (!req.headers.authorization) {
     throw new Errors.AuthenticationNotFoundError("Bearer");
   }
@@ -29,7 +29,7 @@ export const SessionAuth = createRouteParamDecorator(async (_, req) => {
     }
   }
 });
-export const BasicAuth = createRouteParamDecorator(async (_, req) => {
+export const BasicAuth = createParamDecorator(async (_, req) => {
   if (!req.headers.authorization) {
     throw new Errors.AuthenticationNotFoundError("Basic");
   }
