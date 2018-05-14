@@ -3,7 +3,6 @@ import { SessionAuth } from "../middlewares/authentication";
 import { Session, Message, Subscription } from "../models";
 import * as Errors from "../lib/errors";
 import getPagination from "../lib/pagination";
-import log from "../lib/log";
 
 @Controller("messages")
 class MessageController {

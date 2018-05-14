@@ -3,7 +3,6 @@ import { SessionAuth } from "../middlewares/authentication";
 import { Session, Subscription, Service } from "../models";
 import * as Errors from "../lib/errors";
 import getPagination from "../lib/pagination";
-import log from "../lib/log";
 
 @Controller("subscriptions")
 class SubscriptionController {

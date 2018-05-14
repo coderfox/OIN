@@ -15,21 +15,19 @@ COPY package.json /app/
 COPY yarn.lock /app/
 WORKDIR /app
 RUN yarn install
-RUN mkdir -p build
-RUN cp ./node_modules/**/*.node build
 
 # build server
-COPY . .
+COPY . . 
 RUN ./node_modules/.bin/tsc
 
 # build binary
 WORKDIR /app
-RUN pkg . --targets ${NODE}-${PLATFORM}-${ARCH} --out-path=build
+RUN pkg . --targets ${NODE}-${PLATFORM}-${ARCH} -o sandra
 
 FROM node:8-alpine AS release
 
-COPY --from=base /app/build /app
+COPY --from=base /app/sandra /app/sandra
 WORKDIR /app
 
 EXPOSE 3000
-CMD [ "./clover" ]
+CMD [ "./sandra" ]

@@ -70,6 +70,7 @@
       "!dist/tests/helpers/*.js"
     ]
   },
+  "bin": "dist/bin/run.js",
   "pkg": {
     "scripts": [
       "dist/**/*.js"
