@@ -12,17 +12,6 @@ export class GenericErrorFilter implements ExceptionFilter {
     if (error instanceof NotFoundException) {
       error = new Errors.ApiEndpointNotFoundError();
     }
-    Raven.captureException(error, {
-      req: http.getRequest(),
-      level: error instanceof Errors.ApiError ? "info" : "error",
-    }, (sendErr, eventId) => {
-      // This callback fires once the report has been sent to Sentry
-      if (sendErr) {
-        log.error("sentry error", sendErr);
-      } else {
-        log.info("sentry captured", eventId);
-      }
-    });
     if (!(error instanceof Errors.ApiError)) {
       log.error(error, "internal server error");
       error = new Errors.InternalServerError(error);
@@ -35,6 +24,17 @@ export class GenericErrorFilter implements ExceptionFilter {
         response.set("WWW-Authenticate", error.right);
       }
     }
+    Raven.captureException(error.baseError || error, {
+      req: http.getRequest(),
+      level: error.baseError ? "info" : "error",
+    }, (sendErr, eventId) => {
+      // This callback fires once the report has been sent to Sentry
+      if (sendErr) {
+        log.error("sentry error", sendErr);
+      } else {
+        log.info("sentry captured", eventId);
+      }
+    });
     response
       .status(error.status)
       .json({

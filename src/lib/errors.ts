@@ -30,10 +30,8 @@ export class NotImplementedError extends ApiError {
   }
 }
 export class InternalServerError extends ApiError {
-  public readonly baseError: any;
-  constructor(error: any) {
+  constructor(public readonly baseError: any) {
     super("INTERNAL_SERVER_ERROR", 500);
-    this.baseError = error;
   }
 }
 export class AuthenticationNotFoundError extends ApiError {
@@ -47,17 +45,13 @@ export class CorruptedAuthorizationHeaderError extends ApiError {
   }
 }
 export class UserNotFound403Error extends ApiError {
-  public readonly email: string;
-  constructor(email: string) {
+  constructor(public readonly email: string) {
     super("USER_NOT_FOUND", 403);
-    this.email = email;
   }
 }
 export class UserNotFoundByIdError extends ApiError {
-  public readonly id: string;
-  constructor(id: string) {
+  constructor(public readonly id: string) {
     super("USER_NOT_FOUND", 404);
-    this.id = id;
   }
 }
 export class UserNotFoundByEmailError extends ApiError {
