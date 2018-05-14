@@ -1,21 +1,35 @@
-FROM node:10-alpine AS deps
+FROM node:8-alpine as base
 LABEL maintainer=coderfox<docker@xfox.me>
 
-RUN apk add --no-cache make gcc g++ python yarn 
+# install build tools
+RUN apk add --no-cache make gcc g++ python
+RUN yarn global add pkg pkg-fetch
 
-COPY ./package.json /app/
-COPY ./yarn.lock /app/
+ENV NODE node8
+ENV PLATFORM alpine
+ENV ARCH x64
+RUN pkg-fetch ${NODE} ${PLATFORM} ${ARCH}
+
+# install dependencies
+COPY package.json /app/
+COPY yarn.lock /app/
 WORKDIR /app
 RUN yarn install
-COPY . /app
-WORKDIR /app
-RUN ./node_modules/.bin/tsc --outDir dist --sourceMap false
-RUN ./node_modules/.bin/tslint -p .
+RUN mkdir -p build
+RUN cp ./node_modules/**/*.node build
 
-FROM node:10-alpine
-ENV NODE_ENV production
-COPY --from=deps /app/dist /app
-COPY --from=deps /app/node_modules /app/node_modules
+# build server
+COPY . .
+RUN ./node_modules/.bin/tsc
+
+# build binary
 WORKDIR /app
+RUN pkg . --targets ${NODE}-${PLATFORM}-${ARCH} --out-path=build
+
+FROM node:8-alpine AS release
+
+COPY --from=base /app/build /app
+WORKDIR /app
+
 EXPOSE 3000
-CMD ["node", "entry"]
+CMD [ "./clover" ]

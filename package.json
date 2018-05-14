@@ -2,7 +2,7 @@
   "name": "sandra.server.api.rest",
   "private": true,
   "version": "0.2.0",
-  "main": "bin/run",
+  "main": "dist/bin/run",
   "dependencies": {
     "@nestjs/common": "^5.0.0",
     "@nestjs/core": "^5.0.0",
@@ -19,7 +19,6 @@
     "rxjs": "^6.1.0",
     "rxjs-compat": "^6.1.0",
     "sendgrid": "^5.1.1",
-    "tslint-language-service": "^0.9.8",
     "typeorm": "^0.2.5",
     "typescript": "^2.6.1",
     "uuid": "^3.1.0",
@@ -47,6 +46,7 @@
     "supervisor": "^0.12.0",
     "tslint": "^5.10.0",
     "tslint-consistent-codestyle": "^1.13.0",
+    "tslint-language-service": "^0.9.8",
     "tslint-eslint-rules": "^5.2.0"
   },
   "scripts": {
@@ -61,7 +61,7 @@
     "test-nocompile": "nyc -r html ava",
     "db:migrate": "typeorm migration:run",
     "db:revert": "typeorm migration:revert",
-    "build:bin": "nexe -o sandra dist/entry.js"
+    "build:bin": "pkg -o sandra dist/entry.js"
   },
   "ava": {
     "files": [
@@ -69,5 +69,11 @@
       "dist/tests/**/*.js",
       "!dist/tests/helpers/*.js"
     ]
+  },
+  "pkg": {
+    "scripts": [
+      "dist/**/*.js"
+    ],
+    "assets": []
   }
 }
