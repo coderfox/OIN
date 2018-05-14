@@ -1,37 +1,21 @@
-FROM node:8-alpine as base
+FROM node:10-alpine AS deps
 LABEL maintainer=coderfox<docker@xfox.me>
 
-# install build tools
-RUN apk add --no-cache make gcc g++ python
-RUN yarn global add pkg pkg-fetch
+RUN apk add --no-cache make gcc g++ python yarn 
 
-ENV NODE node8
-ENV PLATFORM alpine
-ENV ARCH x64
-RUN pkg-fetch ${NODE} ${PLATFORM} ${ARCH}
-
-# install dependencies
-COPY package.json /app/
-COPY yarn.lock /app/
+COPY ./package.json /app/
+COPY ./yarn.lock /app/
 WORKDIR /app
 RUN yarn install
-RUN npm rebuild bcrypt --build-from-source
-
-# build server
-COPY . . 
+COPY . /app
+WORKDIR /app
 RUN ./node_modules/.bin/tsc
+RUN ./node_modules/.bin/tslint -p .
 
-# build binary
+FROM node:10-alpine
+ENV NODE_ENV production
+COPY --from=deps /app/dist /app
+COPY --from=deps /app/node_modules /app/node_modules
 WORKDIR /app
-RUN pkg . --targets ${NODE}-${PLATFORM}-${ARCH} -o sandra
-RUN mkdir -p build
-RUN cp sandra build/sandra
-RUN cp node_modules/**/*.node build/
-
-FROM node:8-alpine AS release
-
-COPY --from=base /app/build /app
-WORKDIR /app
-
 EXPOSE 3000
-CMD [ "./sandra" ]
+CMD ["node", "entry"]
