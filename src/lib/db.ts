@@ -6,10 +6,10 @@ export const config: ConnectionOptions = {
   type: "postgres",
   url: db_url,
   entities: [
-    "./dist/models/*.js",
+    `.${__dirname}/../models/*.js`,
   ],
   migrations: [
-    "./dist/migrations/*.js",
+    `${__dirname}/../migrations/*.js`,
   ],
   synchronize: false,
 };
