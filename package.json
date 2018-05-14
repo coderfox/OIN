@@ -50,24 +50,24 @@
     "tslint-eslint-rules": "^5.2.0"
   },
   "scripts": {
-    "compile": "tsc && tslint -p . && node bin/buildOrmConfig",
+    "compile": "tsc && tslint -p . && node dist/bin/buildOrmConfig",
     "test": "nyc -r html ava",
-    "test-cov": "nyc -r lcovonly -r html mocha test/index",
+    "test-cov": "nyc -r lcovonly -r html ava",
     "postinstall": "tsc",
     "pretest": "tsc&& tslint -p .",
-    "dev": "supervisor -i coverage bin/run",
-    "start": "node ./bin/run",
+    "dev": "supervisor -i coverage dist/bin/run",
+    "start": "node dist/bin/run",
     "lint": "tslint -p .",
-    "test-nocompile": "nyc -r html mocha test/index",
-    "db:migrate": "node bin/buildOrmConfig && typeorm migration:run",
-    "db:revert": "node bin/buildOrmConfig && typeorm migration:revert",
-    "build:bin": "nexe -o sandra entry.js"
+    "test-nocompile": "nyc -r html ava",
+    "db:migrate": "typeorm migration:run",
+    "db:revert": "typeorm migration:revert",
+    "build:bin": "nexe -o sandra dist/entry.js"
   },
   "ava": {
     "files": [
-      "**/*.test.js",
-      "tests/**/*.js",
-      "!tests/helpers/*.js"
+      "dist/**/*.test.js",
+      "dist/tests/**/*.js",
+      "!dist/tests/helpers/*.js"
     ]
   }
 }

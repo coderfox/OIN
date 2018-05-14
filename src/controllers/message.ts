@@ -39,9 +39,7 @@ class MessageController {
         }
       }
     } else { where.readed = false; }
-    log.debug("where", where, skip, take);
     const [messages, count] = await Message.findAndCount({ where, skip, take });
-    log.debug("pagination", skip, take, count, skip + take < count);
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
     }

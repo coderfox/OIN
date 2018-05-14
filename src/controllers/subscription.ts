@@ -16,7 +16,6 @@ class SubscriptionController {
     const { skip, take } = getPagination(req);
     const where: Partial<Subscription> = { owner: session.user };
     const [subscriptions, count] = await Subscription.findAndCount({ where, skip, take });
-    log.debug("pagination", skip, take, count, skip + take < count);
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
     }

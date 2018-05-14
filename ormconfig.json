@@ -1,0 +1,1 @@
+{"name":"default","type":"postgres","url":"pg://postgres:f9c2526551886736255e2d503e43a413@oin.app:5432/sandra","entities":["./models/*.js"],"migrations":["./migrations/*.js"],"synchronize":false}
