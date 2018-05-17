@@ -22,7 +22,9 @@ class Subscriptions extends React.Component<Props, States> {
     return (
       <div>
         <Components.AddSubscriptionDialog />
-        {subscriptions.map(value => (<Components.Subscription id={value.id} key={value.id} />))}
+        {subscriptions
+          .filter(value => value.deleted === false)
+          .map(value => (<Components.Subscription id={value.id} key={value.id} />))}
       </div>
     );
   }

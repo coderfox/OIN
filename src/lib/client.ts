@@ -13,7 +13,7 @@ class ApiClient {
   }
 
   private static constructApiUrl = (url: string) =>
-    (process.env.REACT_APP_API_ROOT || 'http://127.0.0.1:5000').concat(url)
+    (process.env.REACT_APP_API_ROOT || 'http://127.0.0.1:3000').concat(url)
   private static constructOptions = (auth?: AxiosBasicCredentials | string) =>
     typeof (auth) === 'undefined' ? undefined :
       typeof (auth) === 'string' ? {
@@ -91,6 +91,10 @@ class ApiClient {
       service: string,
       config: string
     }>('/subscriptions', { service, config })
+  public updateSubscription = (subscription: string, config: string) =>
+    this.post<{ config: string }, { config: string }>('/subscriptions/'.concat(subscription), { config })
+  public deleteSubscription = (id: string) =>
+    this.delete<Interfaces.Subscription>('/subscriptions/'.concat(id))
 }
 
 export default ApiClient;
