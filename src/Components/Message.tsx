@@ -3,8 +3,6 @@ import { inject, observer } from 'mobx-react';
 import { Redirect } from 'react-router-dom';
 import SessionState from '../lib/state/Session';
 import * as Interfaces from '../lib/api_interfaces';
-const ColorHash = require('color-hash');
-const color = new ColorHash();
 import Timeage from 'timeago.js';
 var timeago = Timeage();
 
@@ -79,37 +77,31 @@ class Message extends React.Component<Props, States> {
 
   render() {
     return (
-      <Spin spinning={this.state.loading}>
-        <Collapse bordered={false}>
-          <Panel
-            key={this.props.id}
-            header={this.state.message && this.state.message.title}
-          >
-            <Meta
-              avatar={<Avatar
-                style={{ backgroundColor: color.hex(this.state.message && this.state.message.subscription) }}
-                icon="fork"
-              />}
-              title={this.state.subscription && this.state.subscription.id}
-              description={
-                this.state.service && this.state.message &&
-                `${this.state.service.title} 于 ${
-                timeago.format(this.state.message.created_at, 'zh_CN')}`
-              }
-            />
-            <div style={{ marginTop: '12px', marginBottom: '8px' }}>
-              <Button icon="check" onClick={this.markAsRead}>标为已读</Button>
-              <Button icon="plus-square" onClick={this.loadContent}>加载详情</Button>
-            </div>
-            <div>{this.state.message && (!this.state.message.content) && this.state.message.summary}</div>
+      <Card
+        style={{ marginTop: '12px' }}
+        loading={this.state.loading}
+        type="inner"
+        actions={[<Icon key="read" type="check" onClick={this.markAsRead} />]}
+      >
+        <Meta
+          title={this.state.message && this.state.message.title}
+          description={
+            this.state.service && this.state.message &&
+            `${this.state.subscription && this.state.subscription.id} (${this.state.service.title}) 于 ${
+            timeago.format(this.state.message.created_at, 'zh_CN')}`
+          }
+          style={{ marginBottom: '12px' }}
+        />
+        {this.state.message && (!this.state.message.content ? (
+          <p>{this.state.message.summary} <a onClick={this.loadContent}>More</a></p>
+        ) : (
             <div
               dangerouslySetInnerHTML={{
-                __html: this.state.message && this.state.message.content || ''
+                __html: this.state.message.content || ''
               }}
             />
-          </Panel>
-        </Collapse>
-      </Spin>
+          ))}
+      </Card>
     );
   }
 }
