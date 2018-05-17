@@ -3,6 +3,7 @@ import { SessionAuth } from "../middlewares/authentication";
 import { Session, Subscription, Service } from "../models";
 import * as Errors from "../lib/errors";
 import getPagination from "../lib/pagination";
+import { classToPlain } from "class-transformer";
 
 @Controller("subscriptions")
 class SubscriptionController {
@@ -18,7 +19,7 @@ class SubscriptionController {
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
     }
-    res.send(subscriptions.map(value => value.toView()));
+    res.send(classToPlain(subscriptions));
   }
   @Post()
   public async postAll(

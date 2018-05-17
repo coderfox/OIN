@@ -1,5 +1,3 @@
-"use strict";
-
 // tslint:disable:variable-name
 export const password_hash_rounds = +(process.env.PASSWORD_HASH_ROUNDS || 12);
 export const db_url = process.env.DB_URL || "pg://postgres@127.0.0.1:5432/sandra";

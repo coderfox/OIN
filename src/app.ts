@@ -6,11 +6,7 @@ import * as path from "path";
 import { NestLogger } from "./lib/log";
 
 import { GenericErrorFilter } from "./middlewares/error";
-import { MessageInterceptor } from "./models/message";
-import { SessionInterceptor } from "./models/session";
-import { UserInterceptor } from "./models/user";
-import { SubscriptionInterceptor } from "./models/subscription";
-import { ServiceInterceptor } from "./models/service";
+import SerializeInterceptor from "./middlewares/serialize.interceptor";
 
 import SessionController from "./controllers/session";
 import UserController from "./controllers/user";
@@ -59,11 +55,7 @@ export const buildApplication = async () => {
     new GenericErrorFilter(),
   );
   app.useGlobalInterceptors(
-    new SessionInterceptor(),
-    new UserInterceptor(),
-    new MessageInterceptor(),
-    new SubscriptionInterceptor(),
-    new ServiceInterceptor(),
+    new SerializeInterceptor(),
   );
   app.use(((_: any, res: any, next: any) => {
     res.set("Server", "sandra.server.api.rest/0.2.0 (REST/0.4)");

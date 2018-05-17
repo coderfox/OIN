@@ -3,6 +3,7 @@ import { SessionAuth } from "../middlewares/authentication";
 import { Session, Message, Subscription } from "../models";
 import * as Errors from "../lib/errors";
 import getPagination from "../lib/pagination";
+import { classToPlain } from "class-transformer";
 
 @Controller("messages")
 class MessageController {
@@ -42,7 +43,7 @@ class MessageController {
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
     }
-    res.send(messages.map(value => value.toViewSimplified()));
+    res.send(classToPlain(messages, { version: 1.0 }));
   }
   @Get(":id")
   public async getOne(@SessionAuth() session: Session, @Param("id") id: string): Promise<Message> {

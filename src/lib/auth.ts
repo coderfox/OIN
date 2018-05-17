@@ -1,5 +1,3 @@
-"use strict";
-
 import { Context } from "koa";
 import User from "../models/user";
 import Session from "../models/session";
