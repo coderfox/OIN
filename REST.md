@@ -1,6 +1,6 @@
 # Backend REST APIs
 
-Version: `0.3-draft`
+**version** 0.4
 
 ## Basic Conventions
 
@@ -8,7 +8,7 @@ The verbs MUST, MUST NOT, SHOULD, SHOULD NOT, MAY and other requirement indicati
 
 ### Request and Response
 
-The client SHOULD send request body in `application/json`, and MAY use `application/x-www-form-urlencoded` or `multipart/form-data`, but MUST NOT use other request body formats. The charset MUST be `utf8`, and the client SHOULD specify charset when `utf8` is not the default charset of the content type. However, when a complex data struct is defined in the API document, the request MUST be in `application/json`. The server SHOULD throw a `400 Bad Request - INVALID_REQUEST_BODY_TYPE` error on unexpected request body types.
+The client SHOULD send request body in `application/json`, and MAY use `application/x-www-form-urlencoded` or `multipart/form-data`, but MUST NOT use other request body formats. The charset MUST be `UTF-8`, and the client SHOULD specify charset when `UTF-8` is not the default charset of the content type. However, when a complex data struct is defined in the API document, the request MUST be in `application/json`. The server SHOULD throw a `400 Bad Request - INVALID_REQUEST_BODY_TYPE` error on unexpected request body types.
 
 The response body MUST be in `application/json` in `utf8`. The response JSON string MAY be either beautified or not.
 
@@ -32,7 +32,7 @@ Any request or responses beyond the conventions or the documents MUST be regarde
 
 There are two types of authentication used by REST API: `Basic` and `Bearer`. Unless specified explicitly, all API calls MUST be authenticated by *Bearer Authentication*.
 
-When calling an API requiring authentication without providing either types, the server MUST throw `401 Unauthorized - NOT_AUTNENTICATED` with header `WWW-Authenticate: TYPE`, where `TYPE` is the required authentication type.
+When calling an API requiring authentication without providing either types, the server MUST throw `401 Unauthorized - NOT_AUTHENTICATED` with header `WWW-Authenticate: TYPE`, where `TYPE` is the required authentication type.
 
 When an authorization header does not match [RFC 6750](https://tools.ietf.org/html/rfc6750) or [RFC 7617](https://tools.ietf.org/html/rfc7617), the server will throw a `400 Bad Request - CORRUPTED_AUTHORIZATION_HEADER` error.
 
@@ -49,11 +49,11 @@ Authorization: Basic dXNlckBleGFtcGxlLmNvbTpwYXNzd29yZA==
 
 This authentication type is only used when the API document requires and indicates, and does not support permission scopes. In other words, it always grants user the permission when calling those API endpoints requiring *Basic Authentication*, but it cannot grants permission when the API endpoint does not specify support of *Basic Authentication* explicitly.
 
-When the user with the indicated email does not exist, the server will throw `403 Forbidden - USER_NOT_FOUND`.
-
-When the password mismatches the user's, the server will throw `403 Forbidden - PASSWORD_MISMATCH`.
-
-When calling an API endpoint which does not support *Bearer Authentication* (requires *Basic Authentication*), the server will throw `401 Unauthorized - INVALID_AUTHENTICATION_TYPE` with header `WWW-Authenticate: Basic`.
+| HTTP Code | Error Code                  | Description                                              |
+| --------- | --------------------------- | -------------------------------------------------------- |
+| 403       | USER_NOT_FOUND              | the user with the indicated email does not exist         |
+| 403       | PASSWORD_MISMATCH           | the password mismatches the user's                       |
+| 401       | INVALID_AUTHENTICATION_TYPE | the API endpoint does not support *Basic Authentication* |
 
 #### Bearer
 
@@ -66,15 +66,11 @@ GET /some_api_endpoint HTTP/1.1
 Authorization: Bearer 8fceef49-f673-4670-bf73-2dc7bb35634a
 ```
 
-When the token is expired, the server will throw a `403 Forbidden - EXPIRED_TOKEN` error.
-
-When the token is invalid (the session or the user corresponding to the token does not exists, in other words, a faked token), the server will throw a `403 Forbidden - INVALID_TOKEN` error.
-
-When the token's permission is insufficient to execute the action, the server will throw a `403 Forbidden - INSUFFICIENT_PERMISSION` error.
-
-You can call `PUT /session` to acquire a token as described below, use `GET /session` to gain the information of the token provided, and use `DELETE /session` to terminate a session.
-
-When calling an API endpoint which does not support *Basic Authentication* (requires *Bearer Authentication*), the server will throw `401 Unauthorized - INVALID_AUTHENTICATION_TYPE` with header `WWW-Authenticate: Bearer`.
+| HTTP Code | Error Code                  | Description                                                  |
+| --------- | --------------------------- | ------------------------------------------------------------ |
+| 403       | INVALID_TOKEN               | the token is expired, or the token is invalid (the session or the user corresponding to the token does not exists, in other words, a faked token) |
+| 403       | INSUFFICIENT_PERMISSION     | the token's permission is insufficient to execute the action |
+| 401       | INVALID_AUTHENTICATION_TYPE | the API endpoint does not support *Bearer Authentication*    |
 
 ### Time
 
@@ -92,22 +88,52 @@ See:
 
 ### Permissions
 
+> Permissions is not implemented in this version of API.
+
 | name  | description      |
 | ----- | ---------------- |
 | admin | admin permission |
+
+### Pagination
+
+Pagination is available through query params, request bodies or HTTP headers.
+
+**Query Param / Request Body**
+
+| Name  | Description              |
+| ----- | ------------------------ |
+| limit | optional, defaults to 50 |
+| page  | optional, defaults to 1  |
+
+**HTTP Header**
+
+| Name               | Description              |
+| ------------------ | ------------------------ |
+| X-Pagination-Page  | optional, defaults to 1  |
+| X-Pagination-Limit | optional, defaults to 50 |
+
+HTTP Header is prior to query param or request body.
+
+The server may respond with HTTP header indicating whether more items can be retrieved:
+
+| Name              | Description |
+| ----------------- | ----------- |
+| X-Pagination-More | true/false  |
 
 ### Errors
 
 Here are some common errors for the API server:
 
-| HTTP Code | Error Code                | Description                                   |
-| --------- | ------------------------- | --------------------------------------------- |
-| 404       | API_ENDPOINT_NOT_FOUND    |                                               |
-| 500       | INTERNAL_SERVER_ERROR     |                                               |
-| 501       | NOT_IMPLEMENTED           |                                               |
-| 400       | BAD_REQUEST               | some of the required parameters is not passed |
-| 406       | NOT_ACCEPTABLE            | the `Accept` header cannot be fulfilled       |
-| 400       | INVALID_REQUEST_BODY_TYPE |                                               |
+| HTTP Code | Error Code                     | Description                                  |
+| --------- | ------------------------------ | -------------------------------------------- |
+| 404       | API_ENDPOINT_NOT_FOUND         |                                              |
+| 500       | INTERNAL_SERVER_ERROR          |                                              |
+| 501       | NOT_IMPLEMENTED                |                                              |
+| 400       | BAD_REQUEST                    | some of the required parameters is not valid |
+| 406       | NOT_ACCEPTABLE                 | the `Accept` header cannot be fulfilled      |
+| 400       | INVALID_REQUEST_BODY_TYPE      |                                              |
+| 401       | NOT_AUTHENTICATED              |                                              |
+| 400       | CORRUPTED_AUTHORIZATION_HEADER |                                              |
 
 ## User
 
@@ -143,7 +169,7 @@ This API does not require any authentication.
 
 #### Request
 
-**URL Params:** nothing
+**URL Params:** none
 
 **Body**
 
@@ -152,15 +178,15 @@ This API does not require any authentication.
 | email    | email       |
 | password | password    |
 
-**Header:** nothing
+**Header:** none
 
 #### Response
 
 **Code:** 201 Created
 
-**Header:** nothing
+**Header:** none
 
-**Content:** nothing
+**Content:** User
 
 #### Errors
 
@@ -190,35 +216,31 @@ Content-Type: application/json; charset=utf-8
 {"id":"fb19a446-363c-443a-be93-72f4150a6841","email":"i@xfox.me","created_at":"2018-02-24T10:06:21.9851850Z","updated_at":"2018-02-24T10:06:21.9851850Z","permissions":[]}
 ```
 
-### Lookup User
+### Lookup Current User
 
-`GET` /users/:id
+`GET` /users/me
 
 #### Authentication
 
-Only the user according to the token can be shown.
+*Bearer Authentication*
 
 #### Request
 
-**URL Params:** nothing
+**URL Params:** none
 
-**Header:** nothing
+**Header:** none
 
 #### Response
 
 **Code:** 200 OK
 
-**Header:** nothing
+**Header:** none
 
-**Content:** conventional user object
+**Content:** User
 
 #### Errors
 
-| HTTP Code | Error Code     | Description    |
-| --------- | -------------- | -------------- |
-| 404       | USER_NOT_FOUND | user not found |
-
-There are error codes defined in *Conventions*.
+none
 
 #### Example
 
@@ -274,35 +296,37 @@ Example:
 
 The token expiration is automatically extended as requests are performed.
 
+> This feature is not implemented in current version of API.
+
 ### Create Session
 
 `PUT` /session
 
-By this request, a token is generated and the default expiration is 7 days and will be extended as API calls are performed.
+By this request, a token is generated and the default expiration is 7 days.
 
 #### Authentication
 
-Conventional *Basic Authentication*.
+*Basic Authentication*.
 
 #### Request
 
-**URL Params:** nothing
+**URL Params:** none
 
-Request **Body**
+**Request Body**
 
 | Path         | Type      | Description |
 | ------------ | --------- | ----------- |
 | /permissions | string[]? | optional    |
 
-**Header:** nothing
+**Header:** none
 
 #### Response
 
 **Code:** 200 OK
 
-**Header:** nothing
+**Header:** none
 
-**Content:** conventional session object
+**Content:** Session
 
 #### Errors
 
@@ -336,21 +360,23 @@ Content-Type: application/json; charset=utf-8
 
 #### Authentication
 
-This API requires token auth, and will not extend token expiration.
+*Bearer Authentication*
+
+This API will not extend token expiration.
 
 #### Request
 
-**URL Params:** nothing
+**URL Params:** none
 
-**Header:** nothing
+**Header:** none
 
 #### Response
 
 **Code:** 200 OK
 
-**Header:** nothing
+**Header:** none
 
-**Content:** conventional session object
+**Content:** Session
 
 #### Errors
 
@@ -395,21 +421,21 @@ This will set the expire time of session to now.
 
 #### Authentication
 
-This API requires token auth, and will not extend token expiration.
+*Bearer Authentication*
 
 #### Request
 
-**URL Params:** nothing
+**URL Params:** none
 
-**Header:** nothing
+**Header:** none
 
 #### Response
 
 **Code:** 200 OK
 
-**Header:** nothing
+**Header:** none
 
-**Content:** conventional session object
+**Content:** Session
 
 #### Errors
 
@@ -449,19 +475,17 @@ Content-Type: application/json
 
 ### Describing Message
 
-| Path          | Type    | Description                              |
-| ------------- | ------- | ---------------------------------------- |
-| /id           | string  | message id in UUID, unique at website level |
-| /readed       | boolean |                                          |
-| /owner        | string  | owner user id in UUID                    |
-| /subscription | string  | subscription id in UUID                  |
-| /title        | string  | message title                            |
-| /abstract     | string  | biref introduction to the message        |
-| /content      | object  | message content                          |
-| /content/type | string  | MIME type, can be `text/html` or `text/html` |
-| /content/data | string  | content data                             |
-| /createdAt    | string  | time of creation, in conventional time format |
-| /updatedAt    | string  | time of last update, in conventional time format |
+| Path          | Type    | Description                                      |
+| ------------- | ------- | ------------------------------------------------ |
+| /id           | string  | message id in UUID, unique at website level      |
+| /readed       | boolean |                                                  |
+| /owner        | string  | owner user id in UUID                            |
+| /subscription | string  | subscription id in UUID                          |
+| /title        | string  | message title                                    |
+| /summary      | string  | biref introduction to the message                |
+| /content      | string  | message content                                  |
+| /created_at   | string  | time of creation, in conventional time format    |
+| /updated_at   | string  | time of last update, in conventional time format |
 
 Example:
 
@@ -472,19 +496,34 @@ Example:
   "owner": "10b44e16-7384-4edb-a77f-8e2f79de3995",
   "subscription": "ef192845-ac6a-468d-93d8-fa0a4559f646",
   "title": "title",
-  "abstract": "ABS",
-  "content": {
-    "type": "text/plain",
-    "data": "Hello World!"
-  },
+  "summary": "ABS",
+  "content": "Hello World!",
   "created_at": "2018-02-24T00:54:42.8845480Z",
   "updated_at": "2018-02-24T00:54:42.8845480Z"
 }
 ```
 
+### Filters
+
+Multiple filters can be joined with space, for example: `readed:true subscription:ef192845-ac6a-468d-93d8-fa0a4559f646`.
+
+#### Readed
+
+`readed:<boolean>` filters the read status of messages
+
+#### Subscription
+
+`subscription:<id>`
+
+#### Service
+
+`service:<id>`
+
+> This feature is not implemented in current version of API.
+
 ### List Personal Messages
 
-`GET` /messages/mine(/unread|/readed|/all)
+`GET` /messages/mine
 
 #### Authentication
 
@@ -492,15 +531,19 @@ only messages belonging to the current user is displayed
 
 #### Request
 
-**URL Params**: None
+**URL Params**
 
-**Header**: None
+| Name  | Description                                                  |
+| ----- | ------------------------------------------------------------ |
+| query | filters messages<br />Default: `readed:false`<br />@see Message/Filters |
+
+**Header**: none
 
 #### Response
 
 **Code:** 200 OK
 
-**Header:** nothing
+**Header:** none
 
 **Content**
 
@@ -525,7 +568,7 @@ Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-[{"id":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","readed":false,"owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","subscription":"ef192845-ac6a-468d-93d8-fa0a4559f646","title":"title","abstract":"ABS","created_at":"2018-02-24T00:54:45.0933280Z","updated_at":"2018-02-24T00:54:45.0933280Z"},{"id":"83101da4-5bc3-41d1-8da9-8d2d8eae0189","readed":false,"owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","subscription":"ef192845-ac6a-468d-93d8-fa0a4559f646","title":"title","abstract":"ABS","created_at":"2018-02-24T00:54:46.3594670Z","updated_at":"2018-02-24T00:54:46.3594670Z"}]
+[{"id":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","readed":false,"owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","subscription":"ef192845-ac6a-468d-93d8-fa0a4559f646","title":"title","summary":"ABS","created_at":"2018-02-24T00:54:45.0933280Z","updated_at":"2018-02-24T00:54:45.0933280Z"},{"id":"83101da4-5bc3-41d1-8da9-8d2d8eae0189","readed":false,"owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","subscription":"ef192845-ac6a-468d-93d8-fa0a4559f646","title":"title","summary":"ABS","created_at":"2018-02-24T00:54:46.3594670Z","updated_at":"2018-02-24T00:54:46.3594670Z"}]
 ```
 
 ### Get Details of a Message
@@ -540,15 +583,15 @@ only messages belonging to the current user can be displayed
 
 #### Request
 
-**URL Params:** nothing
+**URL Params:** none
 
-**Header**: nothing
+**Header**: none
 
 #### Response
 
 **Code:** 200 OK
 
-**Header:** nothing
+**Header:** none
 
 **Content**
 
@@ -583,11 +626,8 @@ Content-Type: application/json
   "owner": "10b44e16-7384-4edb-a77f-8e2f79de3995",
   "subscription": "ef192845-ac6a-468d-93d8-fa0a4559f646",
   "title": "title",
-  "abstract": "ABS",
-  "content": {
-    "type": "text/plain",
-    "data": "Hello World!"
-  },
+  "summary": "ABS",
+  "content": "Hello World!",
   "created_at": "2018-02-24T00:54:42.8845480Z",
   "updated_at": "2018-02-24T00:54:42.8845480Z"
 }
@@ -603,7 +643,7 @@ ONLY messages belonging to the current user can be modified.
 
 #### Request
 
-**URL Params:** nothing
+**URL Params:** none
 
 **Body**
 
@@ -611,19 +651,13 @@ ONLY messages belonging to the current user can be modified.
 | ------ | -------------- | ---------------- |
 | readed | boolean/string | *reading* status |
 
-**Header**
-
-| Name            | Description                              |
-| --------------- | ---------------------------------------- |
-| Accept-Language | falls back to zh_CN, see: [RFC 7231 # 5.3.5](https://tools.ietf.org/html/rfc7231#section-5.3.5) |
-
-The variables in header is prior to those in URL params.
+**Header**: none
 
 #### Response
 
 **Code:** 206 Partial Content
 
-**Header:** nothing
+**Header:** none
 
 **Content:** updated *reading* status
 
@@ -651,7 +685,7 @@ readed=true
 **Response**
 
 ```http
-HTTP/1.1 200 OK
+HTTP/1.1 206 Partial Content
 Content-Type: application/json; charset=utf-8
 
 {"readed":true}
@@ -687,29 +721,17 @@ no authentication required
 
 #### Request
 
-**URL Params**
+**URL Params**: none
 
-| Name  | Description              |
-| ----- | ------------------------ |
-| limit | optional, defaults to 50 |
-| skip  | optional, defaults to 0  |
-
-**Header**
-
-| Name         | Description              |
-| ------------ | ------------------------ |
-| X-Page-Limit | optional, defaults to 50 |
-| X-Page-Skip  | optional, defaults to 0  |
-
-The variables in header is prior to those in URL params.
+**Header**: none
 
 #### Response
 
 **Code:** 200 OK
 
-**Header:** nothing
+**Header:** none
 
-**Content:** array of conventional service object
+**Content:** Service[]
 
 #### Errors
 
@@ -763,7 +785,7 @@ Example:
   "id": "ef192845-ac6a-468d-93d8-fa0a4559f646",
   "owner": "10b44e16-7384-4edb-a77f-8e2f79de3995",
   "service": "89ee9095-60e2-4ddd-a0ec-e431131a768a",
-  "config": "nothing",
+  "config": "none",
   "deleted": false,
   "created_at": "2018-02-24T08:52:06.4191790",
   "updated_at": "2018-02-24T00:52:06.4191790Z"
@@ -780,19 +802,17 @@ only subscriptions belonging to the current user is displayed
 
 #### Request
 
-**URL Params**: nothing
+**URL Params**: none
 
-**Header**: nothing
+**Header**: none
 
 #### Response
 
 **Code:** 200 OK
 
-**Header:** nothing
+**Header:** none
 
-**Content**
-
-array of conventional subscription object
+**Content**: Subscription[]
 
 #### Errors
 
@@ -813,7 +833,7 @@ Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
-[{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"nothing","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z"}]
+[{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z"}]
 ```
 
 ### Create a Subscription
@@ -826,7 +846,7 @@ Content-Type: application/json; charset=utf-8
 
 #### Request
 
-**URL Params:** nothing
+**URL Params:** none
 
 **Body**
 
@@ -835,7 +855,7 @@ Content-Type: application/json; charset=utf-8
 | /service | string | service id                               |
 | /config  | string | subscription settings, varies by service |
 
-**Header**: nothing
+**Header**: none
 
 #### Response
 
@@ -851,10 +871,10 @@ Content-Type: application/json; charset=utf-8
 
 #### Errors
 
-| HTTP Code | Error Code         | Description                           |
-| --------- | ------------------ | ------------------------------------- |
-| 404       | SERVICE_NOT_EXISTS | service does not exist                |
-| 400       | INVALID_SETTINGS   | invalid settings for the subscription |
+| HTTP Code | Error Code         | Description                                                  |
+| --------- | ------------------ | ------------------------------------------------------------ |
+| 404       | SERVICE_NOT_EXISTS | service does not exist                                       |
+| 400       | INVALID_SETTINGS   | invalid settings for the subscription<br />*This feature is not implemented in current version of API.* |
 
 There are error codes defined in *Conventions*.
 
@@ -868,7 +888,7 @@ Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 Content-Type: application/x-www-form-urlencoded; charset=utf-8
 Content-Length: 59
 
-service=89ee9095-60e2-4ddd-a0ec-e431131a768a&config=nothing
+service=89ee9095-60e2-4ddd-a0ec-e431131a768a&config=none
 ```
 
 **Response**
@@ -878,5 +898,114 @@ HTTP/1.1 201 Created
 Content-Type: application/json
 Location: /subscriptions/ef192845-ac6a-468d-93d8-fa0a4559f646
 
-{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"nothing","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z"}
+{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z"}
 ```
+
+### Modify Subscription Settings
+
+`POST` /subscription/:id
+
+#### Authentication
+
+ONLY subscriptions belonging to the current user can be modified.
+
+#### Request
+
+**URL Params:** none
+
+**Body**
+
+| Path   | Type   | Description |
+| ------ | ------ | ----------- |
+| config | string |             |
+
+**Header**: none
+
+#### Response
+
+**Code:** 206 Partial Content
+
+**Header:** none
+
+**Content:** updated config
+
+#### Errors
+
+| HTTP Code | Error Code              | Description                                                  |
+| --------- | ----------------------- | ------------------------------------------------------------ |
+| 404       | SUBSCRIPTION_NOT_EXISTS | subscription does not exist                                  |
+| 400       | INVALID_SETTINGS        | invalid settings for the subscription<br />*This feature is not implemented in current version of API.* |
+
+There are error codes defined in *Conventions*.
+
+#### Example
+
+**Request**
+
+```http
+POST /subscriptions/4afd65ae-d58b-4d36-b28a-202b0bf46f98 HTTP/1.1
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
+Content-Type: application/x-www-form-urlencoded; charset=utf-8
+Content-Length: 30
+
+config=https://xfox.me/rss.xml
+```
+
+**Response**
+
+```http
+HTTP/1.1 206 Partial Content
+Content-Type: application/json; charset=utf-8
+
+{"config":"https://xfox.me/rss.xml"}
+```
+### Delete Subscription
+
+`DELETE` /subscription/:id
+
+#### Authentication
+
+ONLY subscriptions belonging to the current user can be deleted.
+
+#### Request
+
+**URL Params:** none
+
+**Body**: none
+
+**Header**: none
+
+#### Response
+
+**Code:** 200 OK
+
+**Header:** none
+
+**Content:** Subscription
+
+#### Errors
+
+| HTTP Code | Error Code              | Description                 |
+| --------- | ----------------------- | --------------------------- |
+| 404       | SUBSCRIPTION_NOT_EXISTS | subscription does not exist |
+
+There are error codes defined in *Conventions*.
+
+#### Example
+
+**Request**
+
+```http
+DELETE /subscriptions/4afd65ae-d58b-4d36-b28a-202b0bf46f98 HTTP/1.1
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
+```
+
+**Response**
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+{"id":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":true,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z"}
+```
+

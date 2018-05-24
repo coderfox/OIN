@@ -98,19 +98,18 @@ get_channels(token: string) -> IChannel[]
 
 ## create_message
 
-get_channels(token: string, channel_id: string, messages: IMessage) -> true
+get_channels(token: string, channel_id: string, message: IMessage) -> true
 
 ### Parameters
 
-|         name          |     type      |                 description                  |
-| :-------------------: | :-----------: | :------------------------------------------: |
-|         token         |    string     |                SERVICE_TOKEN                 |
-|      channel_id       | string (uuid) |                                              |
-|       messages        |   IMessage    |                                              |
-|    messages/title     |    string     |                message title                 |
-|   messages/abstract   |    string?    |      biref introduction to the message       |
-| messages/content/type |    string     | MIME type, can be `text/html` or `text/html` |
-| messages/content/data |    string     |                 content data                 |
+|      name       |     type      |            description            |
+| :-------------: | :-----------: | :-------------------------------: |
+|      token      |    string     |           SERVICE_TOKEN           |
+|   channel_id    | string (uuid) |                                   |
+|     message     |   IMessage    |                                   |
+|  message/title  |    string     |           message title           |
+| message/summary |    string?    | biref introduction to the message |
+| message/content |    string     |           content data            |
 
 ### Return Value
 
