@@ -1,3 +1,7 @@
+/*
+ * Thanks to https://github.com/DIYgod/RSSHub/blob/master/routes/bilibili/bangumi.js
+ * Licensed under MIT License
+ */
 import Service from "../../service";
 import ApiClient from "../../client";
 import Store from "../../store";

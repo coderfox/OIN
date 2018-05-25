@@ -4,6 +4,7 @@ import Store from "./store";
 
 abstract class Service {
   constructor(public client: ApiClient, public store: Store) { }
+  public abstract initialize: () => Promise<string>;
   public abstract mapChannelToMessages: (config: string) => Promise<Message[]>;
   public getChannels = () =>
     this.client.getChannels()
