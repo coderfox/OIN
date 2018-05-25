@@ -2,9 +2,10 @@
 
 ## Components
 
-- ~~RSS~~
-- ~~Atom Feed~~
-- ~~JSON Feed~~
+- Feed
+  * RSS
+  * Atom
+  * JSON
 - Bilibili
   * Bangumi
   * UP Dynamic
