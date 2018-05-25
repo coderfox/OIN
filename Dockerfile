@@ -1,4 +1,4 @@
-FROM node:10-alpine AS deps
+FROM node:10.1-alpine AS deps
 LABEL maintainer=coderfox<docker@xfox.me>
 
 RUN apk add --no-cache make gcc g++ python yarn 
@@ -12,7 +12,7 @@ WORKDIR /app
 RUN ./node_modules/.bin/tsc
 RUN ./node_modules/.bin/tslint -p .
 
-FROM node:10-alpine
+FROM node:10.1-alpine
 ENV NODE_ENV production
 COPY --from=deps /app/dist /app
 COPY --from=deps /app/node_modules /app/node_modules
