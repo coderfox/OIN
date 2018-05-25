@@ -9,11 +9,13 @@
   "private": true,
   "dependencies": {
     "axios": "^0.18.0",
+    "feedparser": "^2.2.9",
     "pino": "^4.16.1",
     "tslib": "^1.9.1",
     "typescript": "^2.8.3"
   },
   "devDependencies": {
+    "@types/feedparser": "^2.2.1",
     "@types/node": "^10.1.2",
     "@types/pino": "^4.16.0",
     "tslint": "^5.10.0",
