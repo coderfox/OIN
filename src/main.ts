@@ -4,6 +4,11 @@ import BiliDynamic from "./services/bili/dynamic";
 import Service from "./service";
 import RssService from "./services/rss";
 
+const delay = () => new Promise(resolve => setTimeout(resolve, 1000 * 60 * 15));
+const loop = async (services: Service[], store: Store) => {
+  await Promise.all(services.map(service => service.handleChannels()));
+  await store.save();
+};
 const main = async () => {
   const store = await Store.load();
   const services: Service[] = [];
@@ -11,8 +16,10 @@ const main = async () => {
   services.push(new BiliDynamic(store));
   services.push(new RssService(store));
   await Promise.all(services.map(service => service.initialize()));
-  await Promise.all(services.map(service => service.handleChannels()));
-  await store.save();
+  while (true) {
+    await loop(services, store);
+    await delay();
+  }
 };
 
 export default main;
