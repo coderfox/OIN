@@ -63,7 +63,7 @@ const mapCardToContent = (type: number, card: any) => {
     case CARD_TYPES.ARTICLE:
       return `
         <p><a href="https://www.bilibili.com/read/cv${card.id}"><b>${card.title}</b></a></p>
-        <p><a href="https://space.bilibili.com/${card.author.mid}/#/article"></a></p>
+        <p><a href="https://space.bilibili.com/${card.author.mid}/#/article">${card.author.name}</a></p>
         ${card.banner_url ?
           `<p><img referrerpolicy="no-referrer" src="${card.banner_url}"></p>
           <p>${card.summary}</p>` :
