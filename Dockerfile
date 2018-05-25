@@ -1,4 +1,4 @@
-FROM node:8-alpine
+FROM node:8-alpine AS base
 LABEL maintainer=coderfox<docker@xfox.me>
 
 # install build tools
