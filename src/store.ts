@@ -20,16 +20,18 @@ class Store {
       return new Store({});
     }
   }
+  private static normalizeKey = (service: string, channel: string) =>
+    `${service}#${channel}`.toLowerCase()
   public set = (service: string, channel: string, value: Date) => {
     if (this.get(service, channel) > value) {
       log.debug("set storage skipped", { service, channel, value });
     } else {
       log.debug("set storage", { service, channel, value });
-      this.data[service + "#" + channel] = value;
+      this.data[Store.normalizeKey(service, channel)] = value;
     }
   }
   public get = (service: string, channel: string) =>
-    this.data[service + "#" + channel] || new Date(0)
+    this.data[Store.normalizeKey(service, channel)] || new Date(0)
   public save = async () => {
     log.info("writing storage to ", SANDRA_HAZEL_STORE);
     log.debug("data = ", this.data);
