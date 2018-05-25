@@ -10,7 +10,7 @@ import axios from "axios";
 import { SANDRA_CRAWLER_UA } from "../config";
 import Message from "../message";
 
-class RssService extends Service {
+class PackageService extends Service {
   constructor(store: Store) {
     super(new ApiClient(
       "29911A4B-B722-47EA-9AB8-BC15E363C39E",
@@ -53,4 +53,4 @@ class RssService extends Service {
   }
 }
 
-export default RssService;
+export default PackageService;
