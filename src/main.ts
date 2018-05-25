@@ -3,6 +3,7 @@ import BiliBgm from "./services/bili/bgm";
 import BiliDynamic from "./services/bili/dynamic";
 import Service from "./service";
 import RssService from "./services/rss";
+import BiliDynamicFollow from "./services/bili/dynamic_follow";
 
 const delay = () => new Promise(resolve => setTimeout(resolve, 1000 * 60 * 15));
 const loop = async (services: Service[], store: Store) => {
@@ -15,6 +16,7 @@ const main = async () => {
   services.push(new BiliBgm(store));
   services.push(new BiliDynamic(store));
   services.push(new RssService(store));
+  services.push(new BiliDynamicFollow(store));
   await Promise.all(services.map(service => service.initialize()));
   while (true) {
     await loop(services, store);
