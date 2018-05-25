@@ -2,7 +2,6 @@ image: docker:latest
 
 stages:
   - build
-  - push
 
 services:
   - docker:dind
@@ -14,6 +13,7 @@ build-master:
   stage: build
   script:
     - docker build --cache-from $CI_REGISTRY_IMAGE --pull -t "$CI_REGISTRY_IMAGE" .
+    - docker push "$CI_REGISTRY_IMAGE"
   only:
     - master
 
@@ -21,19 +21,6 @@ build:
   stage: build
   script:
     - docker build --cache-from $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
-  except:
-    - master
-
-push-master:
-  stage: push
-  script:
-    - docker push "$CI_REGISTRY_IMAGE"
-  only:
-    - master
-
-push:
-  stage: push
-  script:
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   except:
     - master
