@@ -1,3 +1,6 @@
+### project ###
+store.json
+
 ### TypeScript ###
 dist
 !src/bin/
