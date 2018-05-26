@@ -786,6 +786,7 @@ Content-Type: application/json
 | updated_at | string  | time of last update, in conventional time format |
 | deleted    | boolean |                                                  |
 | name       | string  | name of the subscription                         |
+| last_event | Event?  | last execution event of subscription             |
 
 Example:
 
@@ -798,7 +799,14 @@ Example:
   "deleted": false,
   "created_at": "2018-02-24T08:52:06.4191790",
   "updated_at": "2018-02-24T00:52:06.4191790Z",
-  "name": "测试订阅"
+  "name": "测试订阅",
+  "last_event": {
+    "id": "23efa991-15cb-425a-96dc-4e78641986f3",
+    "subscription": "4afd65ae-d58b-4d36-b28a-202b0bf46f98",
+    "status": true,
+    "message": "succeeded",
+    "time": "2018-02-24T00:52:06.419Z"
+  }
 }
 ```
 
@@ -843,7 +851,7 @@ Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
-[{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅"}]
+[{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅","last_event":{"id":"23efa991-15cb-425a-96dc-4e78641986f3","subscription":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","status":true,"message":"succeeded","time":"2018-02-24T00:52:06.419Z"}}]
 ```
 
 ### Create a Subscription
@@ -1018,6 +1026,73 @@ Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
-{"id":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":true,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅"}
+{"id":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":true,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅","last_event":{"id":"23efa991-15cb-425a-96dc-4e78641986f3","subscription":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","status":true,"message":"succeeded","time":"2018-02-24T00:52:06.419Z"}}
+```
+
+## Subscription Events
+
+### Describing Event
+
+| Path         | Type    | Description                                    |
+| ------------ | ------- | ---------------------------------------------- |
+| id           | string  | event id, unique at website level              |
+| subscription | string  | subscription id                                |
+| status       | boolean | whether the event succeeded                    |
+| message      | string  | event result explanation                       |
+| time         | string  | time of execution, in conventional time format |
+
+Example:
+
+```json
+{
+  "id": "23efa991-15cb-425a-96dc-4e78641986f3",
+  "subscription": "4afd65ae-d58b-4d36-b28a-202b0bf46f98",
+  "status": true,
+  "message": "succeeded",
+  "time": "2018-02-24T00:52:06.419Z"
+}
+```
+### List Subscription Events
+
+`GET` /subscriptions/:id/events
+
+#### Authentication
+
+only subscription events belonging to the current user can be retrieved
+
+#### Request
+
+**URL Params**: none
+
+**Header**: none
+
+#### Response
+
+**Code:** 200 OK
+
+**Header:** none
+
+**Content**: Event[]
+
+#### Errors
+
+There are error codes defined in *Conventions*.
+
+#### Example
+
+**Request**
+
+```http
+GET /subscriptions/4afd65ae-d58b-4d36-b28a-202b0bf46f98/events HTTP/1.1
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
+```
+
+**Response**
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+[{"id":"23efa991-15cb-425a-96dc-4e78641986f3","subscription":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","status":true,"message":"succeeded","time":"2018-02-24T00:52:06.419Z"}]
 ```
 
