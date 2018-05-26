@@ -1,5 +1,6 @@
 import Store from "./store";
 import Service from "./service";
+import log from "./log";
 
 import RssService from "./services/rss";
 import BiliBgm from "./services/bili/bgm";
@@ -9,7 +10,11 @@ import PackageService from "./services/package";
 
 const delay = () => new Promise(resolve => setTimeout(resolve, 1000 * 60 * 15));
 const loop = async (services: Service[], store: Store) => {
-  await Promise.all(services.map(service => service.handleChannels()));
+  await Promise.all(
+    services.map(service =>
+      service.handleChannels()
+        .catch(err => log.error("error processing service " + service.client.id, err))
+    ));
   await store.save();
 };
 const main = async () => {
