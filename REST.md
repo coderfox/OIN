@@ -1,6 +1,6 @@
 # Backend REST APIs
 
-**version** 0.4
+**version** 0.4.1
 
 ## Basic Conventions
 
@@ -139,23 +139,25 @@ Here are some common errors for the API server:
 
 ### Describing User
 
-| Path         | Type     | Description                                      |
-| ------------ | -------- | ------------------------------------------------ |
-| /id          | string   | user id in UUID                                  |
-| /email       | string   |                                                  |
-| /permissions | string[] |                                                  |
-| /created_at  | string   | time of creation, in conventional time format    |
-| /updated_at  | string   | time of last update, in conventional time format |
+| Path        | Type     | Description                                      |
+| ----------- | -------- | ------------------------------------------------ |
+| id          | string   | user id in UUID                                  |
+| email       | string   |                                                  |
+| permissions | string[] |                                                  |
+| created_at  | string   | time of creation, in conventional time format    |
+| updated_at  | string   | time of last update, in conventional time format |
+| nickname    | string   |                                                  |
 
 Example:
 
 ```json
 {
   "id": "fb19a446-363c-443a-be93-72f4150a6841",
-  "email": "i@xfox.me",
+  "email": "user@example.com",
   "created_at": "2018-02-24T10:06:21.9851850Z",
   "updated_at": "2018-02-24T10:06:21.9851850Z",
-  "permissions": []
+  "permissions": [],
+  "nickname": "user@example.com"
 }
 ```
 
@@ -173,10 +175,11 @@ This API does not require any authentication.
 
 **Body**
 
-| Name     | Description |
-| -------- | ----------- |
-| email    | email       |
-| password | password    |
+| Name     | Description                   |
+| -------- | ----------------------------- |
+| email    | email                         |
+| password | password                      |
+| nickname | *optional*, defaults to email |
 
 **Header:** none
 
@@ -213,7 +216,7 @@ email=i%40xfox.me&password=test
 HTTP/1.1 201 Created
 Content-Type: application/json; charset=utf-8
 
-{"id":"fb19a446-363c-443a-be93-72f4150a6841","email":"i@xfox.me","created_at":"2018-02-24T10:06:21.9851850Z","updated_at":"2018-02-24T10:06:21.9851850Z","permissions":[]}
+{"id":"fb19a446-363c-443a-be93-72f4150a6841","email":"user@example.com","created_at":"2018-02-24T10:06:21.9851850Z","updated_at":"2018-02-24T10:06:21.9851850Z","permissions":[],"nickname":"user@example.com"}
 ```
 
 ### Lookup Current User
@@ -257,23 +260,22 @@ Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
-{"id":"fb19a446-363c-443a-be93-72f4150a6841","email":"i@xfox.me","created_at":"2018-02-24T10:06:21.9851850Z","updated_at":"2018-02-24T10:06:21.9851850Z","permissions":[]}
+{"id":"fb19a446-363c-443a-be93-72f4150a6841","email":"user@example.com","created_at":"2018-02-24T10:06:21.9851850Z","updated_at":"2018-02-24T10:06:21.9851850Z","permissions":[],"nickname":"user@example.com"}
 ```
 
 ## Authentication
 
 ### Describing Session
 
-| Path               | Type     | Description                                       |
-| ------------------ | -------- | ------------------------------------------------- |
-| /id                | number   | session id                                        |
-| /token             | string   | *token*                                           |
-| /user              | object   | user object                                       |
-| /permissions       | string[] |                                                   |
-| /permissions/admin | boolean  |                                                   |
-| /created_at        | string   | time of creation, in conventional time format     |
-| /updated_at        | string   | time of last refresh, in conventional time format |
-| /expires_at        | string   | time of expiration, in conventional time format   |
+| Path        | Type     | Description                                       |
+| ----------- | -------- | ------------------------------------------------- |
+| id          | number   | session id                                        |
+| token       | string   | *token*                                           |
+| user        | object   | user object                                       |
+| permissions | string[] |                                                   |
+| created_at  | string   | time of creation, in conventional time format     |
+| updated_at  | string   | time of last refresh, in conventional time format |
+| expires_at  | string   | time of expiration, in conventional time format   |
 
 Example:
 
@@ -282,10 +284,11 @@ Example:
   "token": "8725a638-0346-4303-8227-ecd089a04878",
   "user": {
     "id": "fb19a446-363c-443a-be93-72f4150a6841",
-    "email": "i@xfox.me",
+    "email": "user@example.com",
     "created_at": "2018-02-24T10:06:21.9851850Z",
     "updated_at": "2018-02-24T10:06:21.9851850Z",
-    "permissions": []
+    "permissions": [],
+    "nickname": "user@example.com"
   },
   "created_at": "2018-02-24T10:08:33.6095940Z",
   "updated_at": "2018-02-24T10:08:33.6095940Z",
@@ -314,9 +317,9 @@ By this request, a token is generated and the default expiration is 7 days.
 
 **Request Body**
 
-| Path         | Type      | Description |
-| ------------ | --------- | ----------- |
-| /permissions | string[]? | optional    |
+| Path        | Type      | Description |
+| ----------- | --------- | ----------- |
+| permissions | string[]? | optional    |
 
 **Header:** none
 
@@ -351,7 +354,7 @@ Authorization: Basic aUB4Zm94Lm1lOnRlc3Q=
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
-{"token":"8725a638-0346-4303-8227-ecd089a04878","user":{"id":"fb19a446-363c-443a-be93-72f4150a6841","email":"i@xfox.me","created_at":"2018-02-24T10:06:21.9851850Z","updated_at":"2018-02-24T10:06:21.9851850Z","permissions":[]},"created_at":"2018-02-24T10:08:33.6095940Z","updated_at":"2018-02-24T10:08:33.6095940Z","expires_at":"2018-03-03T10:08:33.3517152Z","permissions":[]}
+{"token":"8725a638-0346-4303-8227-ecd089a04878","user":{"id":"fb19a446-363c-443a-be93-72f4150a6841","email":"user@example.com","created_at":"2018-02-24T10:06:21.9851850Z","updated_at":"2018-02-24T10:06:21.9851850Z","permissions":[],"nickname":"user@example.com"},"created_at":"2018-02-24T10:08:33.6095940Z","updated_at":"2018-02-24T10:08:33.6095940Z","expires_at":"2018-03-03T10:08:33.3517152Z","permissions":[]}
 ```
 
 ### Get Session Detail
@@ -401,10 +404,11 @@ Content-Type: application/json
   "token": "8725a638-0346-4303-8227-ecd089a04878",
   "user": {
     "id": "fb19a446-363c-443a-be93-72f4150a6841",
-    "email": "i@xfox.me",
+    "email": "user@example.com",
     "created_at": "2018-02-24T10:06:21.9851850Z",
     "updated_at": "2018-02-24T10:06:21.9851850Z",
-    "permissions": []
+    "permissions": [],
+    "nickname": "user@example.com"
   },
   "created_at": "2018-02-24T10:08:33.6095940Z",
   "updated_at": "2018-02-24T10:08:33.6095940Z",
@@ -460,10 +464,11 @@ Content-Type: application/json
   "token": "60f69553-4011-410e-a605-7e739b48f4d9",
   "user": {
     "id": "10b44e16-7384-4edb-a77f-8e2f79de3995",
-    "email": "i@xfox.me",
+    "email": "user@example.com",
     "created_at": "2018-02-23T02:42:42.6433150Z",
     "updated_at": "2018-02-23T02:42:42.6433150Z",
-    "permissions": []
+    "permissions": [],
+    "nickname": "user@example.com"
   },
   "created_at": "2018-02-23T15:49:44.5461110Z",
   "updated_at": "2018-02-23T15:49:44.5461110Z",
@@ -475,17 +480,17 @@ Content-Type: application/json
 
 ### Describing Message
 
-| Path          | Type    | Description                                      |
-| ------------- | ------- | ------------------------------------------------ |
-| /id           | string  | message id in UUID, unique at website level      |
-| /readed       | boolean |                                                  |
-| /owner        | string  | owner user id in UUID                            |
-| /subscription | string  | subscription id in UUID                          |
-| /title        | string  | message title                                    |
-| /summary      | string  | biref introduction to the message                |
-| /content      | string  | message content                                  |
-| /created_at   | string  | time of creation, in conventional time format    |
-| /updated_at   | string  | time of last update, in conventional time format |
+| Path         | Type    | Description                                      |
+| ------------ | ------- | ------------------------------------------------ |
+| id           | string  | message id in UUID, unique at website level      |
+| readed       | boolean |                                                  |
+| owner        | string  | owner user id in UUID                            |
+| subscription | string  | subscription id in UUID                          |
+| title        | string  | message title                                    |
+| summary      | string  | biref introduction to the message                |
+| content      | string  | message content                                  |
+| created_at   | string  | time of creation, in conventional time format    |
+| updated_at   | string  | time of last update, in conventional time format |
 
 Example:
 
@@ -768,15 +773,16 @@ Content-Type: application/json
 
 ### Describing Subscription
 
-| Path        | Type    | Description                                      |
-| ----------- | ------- | ------------------------------------------------ |
-| /id         | string  | subscription id, unique at website level         |
-| /service    | string  | service id                                       |
-| /owner      | string  | owner user id                                    |
-| /config     | string  | settings, varies by service                      |
-| /created_at | string  | time of creation, in conventional time format    |
-| /updated_at | string  | time of last update, in conventional time format |
-| /deleted    | boolean |                                                  |
+| Path       | Type    | Description                                      |
+| ---------- | ------- | ------------------------------------------------ |
+| id         | string  | subscription id, unique at website level         |
+| service    | string  | service id                                       |
+| owner      | string  | owner user id                                    |
+| config     | string  | settings, varies by service                      |
+| created_at | string  | time of creation, in conventional time format    |
+| updated_at | string  | time of last update, in conventional time format |
+| deleted    | boolean |                                                  |
+| name       | string  | name of the subscription                         |
 
 Example:
 
@@ -788,7 +794,8 @@ Example:
   "config": "none",
   "deleted": false,
   "created_at": "2018-02-24T08:52:06.4191790",
-  "updated_at": "2018-02-24T00:52:06.4191790Z"
+  "updated_at": "2018-02-24T00:52:06.4191790Z",
+  "name": "测试订阅"
 }
 ```
 
@@ -833,7 +840,7 @@ Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
-[{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z"}]
+[{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅"}]
 ```
 
 ### Create a Subscription
@@ -850,10 +857,11 @@ Content-Type: application/json; charset=utf-8
 
 **Body**
 
-| Path     | Type   | Description                              |
-| -------- | ------ | ---------------------------------------- |
-| /service | string | service id                               |
-| /config  | string | subscription settings, varies by service |
+| Path    | Type    | Description                                                  |
+| ------- | ------- | ------------------------------------------------------------ |
+| service | string  | service id                                                   |
+| config  | string  | subscription settings, varies by service                     |
+| name    | string? | subscription name, defaults to the generated subscription id |
 
 **Header**: none
 
@@ -886,9 +894,9 @@ There are error codes defined in *Conventions*.
 POST /subscriptions HTTP/1.1
 Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 Content-Type: application/x-www-form-urlencoded; charset=utf-8
-Content-Length: 59
+Content-Length: 86
 
-service=89ee9095-60e2-4ddd-a0ec-e431131a768a&config=none
+service=89ee9095-60e2-4ddd-a0ec-e431131a768a&config=none&name=%u6D4B%u8BD5%u8BA2%u9605
 ```
 
 **Response**
@@ -898,7 +906,7 @@ HTTP/1.1 201 Created
 Content-Type: application/json
 Location: /subscriptions/ef192845-ac6a-468d-93d8-fa0a4559f646
 
-{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z"}
+{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅"}
 ```
 
 ### Modify Subscription Settings
@@ -915,9 +923,10 @@ ONLY subscriptions belonging to the current user can be modified.
 
 **Body**
 
-| Path   | Type   | Description |
-| ------ | ------ | ----------- |
-| config | string |             |
+| Path   | Type    | Description |
+| ------ | ------- | ----------- |
+| config | string? |             |
+| name   | string? |             |
 
 **Header**: none
 
@@ -1006,6 +1015,6 @@ Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
-{"id":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":true,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z"}
+{"id":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":true,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅"}
 ```
 
