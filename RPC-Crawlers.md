@@ -110,6 +110,7 @@ get_channels(token: string, channel_id: string, message: IMessage) -> true
 |  message/title  |    string     |           message title           |
 | message/summary |    string?    | biref introduction to the message |
 | message/content |    string     |           content data            |
+|  message/href   |    string?    |            source link            |
 
 ### Return Value
 
