@@ -34,7 +34,7 @@ class BiliBgm extends Service {
         `${data.title} 第 ${item.index} 话 ${item.index_title}`,
         `更新时间：${item.update_time}`,
         // tslint:disable-next-line:max-line-length
-        `<p>更新时间：${item.update_time}</p><p><a href="${item.webplay_url}"><img referrerpolicy="no-referrer"src="${item.cover}"></a></p>`,
+        `<p>更新时间：${item.update_time}</p><p><a href="${item.webplay_url}"><img referrerpolicy="no-referrer" src="${item.cover}"></a></p>`,
         new Date(item.update_time),
       ));
   }

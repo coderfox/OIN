@@ -12,6 +12,8 @@
   * Dynamic Stream
 - Weibo
   * User
+- JavLibrary
+  * Genre
 
 ## Configuration
 

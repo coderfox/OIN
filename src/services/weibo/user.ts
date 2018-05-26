@@ -39,7 +39,7 @@ const weiboUtils = {
     // 添加微博配图
     if (status.pics) {
       status.pics.forEach((item: any) => {
-        temp += '<img referrerpolicy="no-referrer"src="' + item.large.url + '"><br><br>';
+        temp += '<img referrerpolicy="no-referrer" src="' + item.large.url + '"><br><br>';
       });
     }
     return temp;
