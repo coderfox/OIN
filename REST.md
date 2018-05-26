@@ -487,10 +487,11 @@ Content-Type: application/json
 | owner        | string  | owner user id in UUID                            |
 | subscription | string  | subscription id in UUID                          |
 | title        | string  | message title                                    |
-| summary      | string  | biref introduction to the message                |
-| content      | string  | message content                                  |
+| summary      | string  | biref introduction to the message, in plain text |
+| content      | string  | message content, in `text/html`                  |
 | created_at   | string  | time of creation, in conventional time format    |
 | updated_at   | string  | time of last update, in conventional time format |
+| href         | string? | link to external source                          |
 
 Example:
 
@@ -504,7 +505,8 @@ Example:
   "summary": "ABS",
   "content": "Hello World!",
   "created_at": "2018-02-24T00:54:42.8845480Z",
-  "updated_at": "2018-02-24T00:54:42.8845480Z"
+  "updated_at": "2018-02-24T00:54:42.8845480Z",
+  "href": "https://weibo.com"
 }
 ```
 
@@ -573,7 +575,7 @@ Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-[{"id":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","readed":false,"owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","subscription":"ef192845-ac6a-468d-93d8-fa0a4559f646","title":"title","summary":"ABS","created_at":"2018-02-24T00:54:45.0933280Z","updated_at":"2018-02-24T00:54:45.0933280Z"},{"id":"83101da4-5bc3-41d1-8da9-8d2d8eae0189","readed":false,"owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","subscription":"ef192845-ac6a-468d-93d8-fa0a4559f646","title":"title","summary":"ABS","created_at":"2018-02-24T00:54:46.3594670Z","updated_at":"2018-02-24T00:54:46.3594670Z"}]
+[{"id":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","readed":false,"owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","subscription":"ef192845-ac6a-468d-93d8-fa0a4559f646","title":"title","summary":"ABS","created_at":"2018-02-24T00:54:45.0933280Z","updated_at":"2018-02-24T00:54:45.0933280Z","href":"https://weibo.com"},{"id":"83101da4-5bc3-41d1-8da9-8d2d8eae0189","readed":false,"owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","subscription":"ef192845-ac6a-468d-93d8-fa0a4559f646","title":"title","summary":"ABS","created_at":"2018-02-24T00:54:46.3594670Z","updated_at":"2018-02-24T00:54:46.3594670Z","href":"https://weibo.com"}]
 ```
 
 ### Get Details of a Message
@@ -634,7 +636,8 @@ Content-Type: application/json
   "summary": "ABS",
   "content": "Hello World!",
   "created_at": "2018-02-24T00:54:42.8845480Z",
-  "updated_at": "2018-02-24T00:54:42.8845480Z"
+  "updated_at": "2018-02-24T00:54:42.8845480Z",
+  "href": "https://weibo.com"
 }
 ```
 
