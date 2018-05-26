@@ -9,6 +9,9 @@
 - Bilibili
   * Bangumi
   * UP Dynamic
+  * Dynamic Stream
+- Weibo
+  * User
 
 ## Configuration
 

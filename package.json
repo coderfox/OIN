@@ -9,6 +9,7 @@
   "private": true,
   "dependencies": {
     "axios": "^0.18.0",
+    "cheerio": "^1.0.0-rc.2",
     "cookie": "^0.3.1",
     "feedme": "^1.2.0",
     "json-bigint": "^0.2.3",
@@ -17,6 +18,7 @@
     "typescript": "^2.8.3"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.7",
     "@types/cookie": "^0.3.1",
     "@types/feedme": "^1.0.0",
     "@types/node": "^10.1.2",

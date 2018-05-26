@@ -13,7 +13,7 @@ const loop = async (services: Service[], store: Store) => {
   await Promise.all(
     services.map(service =>
       service.handleChannels()
-        .catch(err => log.error("error processing service " + service.client.id, err))
+        .catch(err => log.error("error processing service " + service.client.id, err)),
     ));
   await store.save();
 };
