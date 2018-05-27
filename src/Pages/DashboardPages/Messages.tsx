@@ -98,7 +98,7 @@ class Messages extends React.Component<Props, States> {
               {messages
                 .filter(m => m.readed === false)
                 .map(m =>
-                  (<Components.MessageCard
+                  (<Components.MessageSimple
                     id={m.id}
                     title={m.title}
                     summary={m.summary}

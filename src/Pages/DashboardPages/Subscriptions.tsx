@@ -6,7 +6,6 @@ import * as Interfaces from '../../lib/api_interfaces';
 
 import * as Forms from '../../Forms';
 import * as Components from '../../Components';
-import { Row, Col, Button, Collapse, message } from 'antd';
 
 interface Props {
   session?: SessionState;
@@ -21,10 +20,7 @@ class Subscriptions extends React.Component<Props, States> {
     const { subscriptions } = this.props.session!;
     return (
       <div>
-        <Components.AddSubscriptionDialog />
-        {subscriptions
-          .filter(value => value.deleted === false)
-          .map(value => (<Components.Subscription id={value.id} key={value.id} />))}
+        TODO
       </div>
     );
   }

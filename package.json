@@ -1,9 +1,8 @@
 {
-  "name": "antd-demo-ts",
-  "version": "0.1.0",
+  "name": "sandra.frontend",
+  "version": "0.3.0",
   "private": true,
   "dependencies": {
-    "antd": "^3.3.1",
     "axios": "^0.18.0",
     "color-hash": "^1.0.3",
     "javascript-time-ago": "^1.0.30",

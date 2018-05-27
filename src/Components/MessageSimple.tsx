@@ -26,7 +26,7 @@ interface States {
 
 @inject('session')
 @observer
-class Message extends React.PureComponent<Props, States> {
+class MessageSimple extends React.PureComponent<Props, States> {
   onClick: ButtonProps['onClick'] = () => {
     this.props.onClick(this.props.id);
   }
@@ -56,4 +56,4 @@ class Message extends React.PureComponent<Props, States> {
   }
 }
 
-export default Message;
+export default MessageSimple;

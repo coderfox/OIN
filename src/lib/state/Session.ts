@@ -82,7 +82,7 @@ export default class SessionState {
     if (!this.authenticated) { return; }
     this.subscriptions[
       this.subscriptions.findIndex(value => value.id === id)
-    ].config = (await this.client!.updateSubscription(id, config)).config;
+    ].config = (await this.client!.updateSubscription(id, { config })).config;
   }
   @action deleteSubscription = async (id: string) => {
     if (!this.authenticated) { return; }

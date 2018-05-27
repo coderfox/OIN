@@ -2,11 +2,12 @@ import axios, { AxiosBasicCredentials } from 'axios';
 import * as Interfaces from './api_interfaces';
 
 class ApiClient {
-  public static register = async (email: string, password: string) => {
+  public static register = async (email: string, password: string, nickname?: string) => {
     return await ApiClient.post<Interfaces.User, {
       email: string,
       password: string,
-    }>('/users', { email, password });
+      nickname?: string,
+    }>('/users', { email, password, nickname });
   }
   public static login = async (email: string, password: string) => {
     return await ApiClient.put<Interfaces.Session, {}>('/session', {}, { username: email, password: password });
@@ -80,19 +81,30 @@ class ApiClient {
     this.get<Interfaces.Message[]>('/messages/mine')
   public getServices = () =>
     this.get<Interfaces.Service[]>('/services')
+  public getService = (id: string) =>
+    this.get<Interfaces.Service>('/service/'.concat(id))
   public getSubscriptions = () =>
     this.get<Interfaces.Subscription[]>('/subscriptions/mine')
+  public getSubscription = (id: string) =>
+    this.get<Interfaces.Subscription>('/subscriptions/'.concat(id))
   public markAsReaded = (id: string) =>
     this.post<{ readed: boolean }, { readed: true }>('/messages/'.concat(id), { readed: true })
   public getSession = () =>
     this.get<Interfaces.Session>('/session')
-  public createSubscription = (service: string, config: string) =>
+  public createSubscription = (service: string, config: string, name: string) =>
     this.post<Interfaces.Subscription, {
       service: string,
-      config: string
-    }>('/subscriptions', { service, config })
-  public updateSubscription = (subscription: string, config: string) =>
-    this.post<{ config: string }, { config: string }>('/subscriptions/'.concat(subscription), { config })
+      config: string,
+      name: string,
+    }>('/subscriptions', { service, config, name })
+  public updateSubscription = (subscription: string, updateQuery: {
+    config?: string,
+    name?: string
+  }) =>
+    this.post<Interfaces.Subscription, {
+      config?: string,
+      name?: string
+    }>('/subscriptions/'.concat(subscription), updateQuery)
   public deleteSubscription = (id: string) =>
     this.delete<Interfaces.Subscription>('/subscriptions/'.concat(id))
 }
