@@ -76,7 +76,8 @@ export default class SessionState {
     if (!this.authenticated) { return; }
     try {
       await this.client!.markAsReaded(id);
-      this.messages.splice(this.messages.findIndex(value => value.id === id), 1);
+      const msg = this.messages.find(value => value.id === id);
+      if (msg) { msg.readed = true; }
     } catch (ex) {
       message.error('标记已读失败' + ex.message);
     }

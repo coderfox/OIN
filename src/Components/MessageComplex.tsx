@@ -93,7 +93,12 @@ class MessageComplexComponent extends React.Component<Props, States> {
           this.state.service && this.state.message && this.state.subscription &&
           <div>
             <Header size="huge">{this.state.message && this.state.message.title}</Header>
-            <Button content="标为已读" onClick={this.markAsRead} />
+            <Button
+              content="标为已读"
+              color="olive"
+              onClick={this.markAsRead}
+              disabled={this.state.message.readed}
+            />
             <Segment
               dangerouslySetInnerHTML={{
                 __html: this.state.message && this.state.message.content || ''
