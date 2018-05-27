@@ -22,7 +22,7 @@ export default class Subscription extends BaseEntity {
     this.owner = owner;
     this.service = service;
     this.config = config;
-    this.name = name || this.id;
+    this.name = name || "新订阅";
   }
 
   @PrimaryGeneratedColumn("uuid")

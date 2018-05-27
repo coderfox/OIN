@@ -27,6 +27,7 @@ class SubscriptionController {
     @SessionAuth() session: Session,
     @Body("service") service_id?: string,
     @Body("config") config?: string,
+    @Body("name") name?: string,
   ): Promise<Subscription> {
     if (!service_id) {
       throw new Errors.BadRequestError("body:service");
@@ -35,7 +36,7 @@ class SubscriptionController {
     if (!service) {
       throw new Errors.ServiceNotExistsError(service_id);
     }
-    const subscription = new Subscription(session.user, service, config);
+    const subscription = new Subscription(session.user, service, config, name);
     await subscription.save();
     return subscription;
   }
@@ -45,7 +46,8 @@ class SubscriptionController {
     @SessionAuth() session: Session,
     @Param("id") id: string,
     @Body("config") config?: string,
-  ): Promise<{ config: string }> {
+    @Body("name") name?: string,
+  ): Promise<{ config?: string, name?: string }> {
     const subscription = await Subscription.findOne(id);
     if (!subscription) {
       throw new Errors.SubscriptionNotExistsError(id);
@@ -53,9 +55,14 @@ class SubscriptionController {
     if (subscription.owner.id !== session.user.id) {
       throw new Errors.InsufficientPermissionError(session, "admin");
     }
-    subscription.config = config || "";
+    if (config !== undefined) {
+      subscription.config = config;
+    }
+    if (name !== undefined) {
+      subscription.name = name;
+    }
     await subscription.save();
-    return { config: subscription.config };
+    return subscription;
   }
   @Delete(":id")
   public async delete_one(

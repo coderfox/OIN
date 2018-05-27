@@ -17,7 +17,7 @@ export default class Message extends BaseEntity {
     title: string,
     abstract: string,
     content: string,
-    href?: string,
+    href?: string | null,
   ) {
     super();
     this.owner = owner;
@@ -74,5 +74,5 @@ export default class Message extends BaseEntity {
 
   @Expose()
   @Column("varchar", { nullable: true })
-  public href?: string;
+  public href?: string | null;
 }

@@ -59,13 +59,14 @@ class RpcController {
   public async create_message(
     @Body("token") token?: string,
     @Body("channel_id") channel?: string,
-    @Body("message") msg?: {
+    @Body("message") message?: {
       title?: string,
       summary?: string,
       content?: string,
+      href?: string,
     },
   ): Promise<true> {
-    if (!token || !channel || !msg || !msg.title || !msg.content) {
+    if (!token || !channel || !message || !message.title || !message.content) {
       throw new Errors.RpcInvalidParametersError("body:param");
     }
     const service = await Service.findOne({ token });
@@ -76,13 +77,14 @@ class RpcController {
     if (!subscription) {
       throw new Errors.RpcChannelNotFoundError(channel);
     }
-    const message = new Message(
+    const message_db = new Message(
       subscription.owner,
       subscription,
-      msg.title,
-      msg.summary || msg.content,
-      msg.content);
-    await message.save();
+      message.title,
+      message.summary || message.content,
+      message.content,
+      message.href !== "" ? message.href : null);
+    await message_db.save();
     return true;
   }
 }

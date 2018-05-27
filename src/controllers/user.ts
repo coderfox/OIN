@@ -8,14 +8,18 @@ import { isEmail } from "validator";
 class UserController {
   @HttpCode(201)
   @Post()
-  public async post(@Body("email") email: string, @Body("password") password: string): Promise<User> {
+  public async post(
+    @Body("email") email: string,
+    @Body("password") password: string,
+    @Body("nickname") nickname?: string,
+  ): Promise<User> {
     if (await User.findOne({ email })) {
       throw new Errors.DuplicateEmailError(email);
     }
     if (!isEmail(email)) {
       throw new Errors.BadRequestError("body:email");
     }
-    const user = new User(email);
+    const user = new User(email, nickname);
     await user.set_password(password);
     await user.save();
     return user;
