@@ -18,33 +18,36 @@ class SubscriptionController {
     const [subscriptions, count] = await Subscription.findAndCount({ where, skip, take });
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
+      res.set("X-Pagination-Total", count);
     }
     res.send(classToPlain(subscriptions));
   }
   @Post()
-  public async postAll(
+  public async post_all(
     @SessionAuth() session: Session,
-    @Body("service") serviceId?: string,
+    @Body("service") service_id?: string,
     @Body("config") config?: string,
+    @Body("name") name?: string,
   ): Promise<Subscription> {
-    if (!serviceId) {
+    if (!service_id) {
       throw new Errors.BadRequestError("body:service");
     }
-    const service = await Service.findOne(serviceId);
+    const service = await Service.findOne(service_id);
     if (!service) {
-      throw new Errors.ServiceNotExistsError(serviceId);
+      throw new Errors.ServiceNotExistsError(service_id);
     }
-    const subscription = new Subscription(session.user, service, config);
+    const subscription = new Subscription(session.user, service, config, name);
     await subscription.save();
     return subscription;
   }
   @HttpCode(HttpStatus.PARTIAL_CONTENT)
   @Post(":id")
-  public async postOne(
+  public async post_one(
     @SessionAuth() session: Session,
     @Param("id") id: string,
     @Body("config") config?: string,
-  ): Promise<{ config: string }> {
+    @Body("name") name?: string,
+  ): Promise<{ config?: string, name?: string }> {
     const subscription = await Subscription.findOne(id);
     if (!subscription) {
       throw new Errors.SubscriptionNotExistsError(id);
@@ -52,12 +55,17 @@ class SubscriptionController {
     if (subscription.owner.id !== session.user.id) {
       throw new Errors.InsufficientPermissionError(session, "admin");
     }
-    subscription.config = config || "";
+    if (config !== undefined) {
+      subscription.config = config;
+    }
+    if (name !== undefined) {
+      subscription.name = name;
+    }
     await subscription.save();
-    return { config: subscription.config };
+    return subscription;
   }
   @Delete(":id")
-  public async deleteOne(
+  public async delete_one(
     @SessionAuth() session: Session,
     @Param("id") id: string,
   ): Promise<Subscription> {
@@ -70,6 +78,17 @@ class SubscriptionController {
     }
     subscription.deleted = true;
     await subscription.save();
+    return subscription;
+  }
+  @Get(":id")
+  public async get_one(@SessionAuth() session: Session, @Param("id") id: string): Promise<Subscription> {
+    const subscription = await Subscription.findOne(id);
+    if (!subscription) {
+      throw new Errors.MessageNotExistsError(id);
+    }
+    if (subscription.owner.id !== session.user.id) {
+      throw new Errors.InsufficientPermissionError(session, "admin");
+    }
     return subscription;
   }
 }

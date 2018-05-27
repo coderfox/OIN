@@ -1,7 +1,7 @@
 import { ExceptionFilter, Catch, NotFoundException, ArgumentsHost } from "@nestjs/common";
 import log from "../lib/log";
 import * as Errors from "../lib/errors";
-import { debug } from "../lib/config";
+import { DEBUG } from "../lib/config";
 import Raven from "raven";
 
 @Catch()
@@ -27,20 +27,20 @@ export class GenericErrorFilter implements ExceptionFilter {
     Raven.captureException(error.baseError || error, {
       req: http.getRequest(),
       level: error.baseError ? "info" : "error",
-    }, (sendErr, eventId) => {
+    }, (sentry_err, event_id) => {
       // This callback fires once the report has been sent to Sentry
-      if (sendErr) {
-        log.error("sentry error", sendErr);
+      if (sentry_err) {
+        log.error("sentry error", sentry_err);
       } else {
-        log.info("sentry captured", eventId);
+        log.info("sentry captured", event_id);
       }
     });
     response
       .status(error.status)
       .json({
         code: error.code,
-        api_error: debug && error,
-        base_error: (debug && error.baseError) ? {
+        api_error: DEBUG && error,
+        base_error: (DEBUG && error.baseError) ? {
           message: error.baseError.message,
           stack: error.baseError.stack,
           ...error.baseError,

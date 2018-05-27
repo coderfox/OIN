@@ -42,11 +42,12 @@ class MessageController {
     const [messages, count] = await Message.findAndCount({ where, skip, take });
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
+      res.set("X-Pagination-Total", count);
     }
     res.send(classToPlain(messages, { version: 1.0 }));
   }
   @Get(":id")
-  public async getOne(@SessionAuth() session: Session, @Param("id") id: string): Promise<Message> {
+  public async get_one(@SessionAuth() session: Session, @Param("id") id: string): Promise<Message> {
     const message = await Message.findOne(id);
     if (!message) {
       throw new Errors.MessageNotExistsError(id);
@@ -58,7 +59,7 @@ class MessageController {
   }
   @HttpCode(HttpStatus.PARTIAL_CONTENT)
   @Post(":id")
-  public async postOne(
+  public async post_one(
     @SessionAuth() session: Session,
     @Param("id") id: string,
     @Body("readed") readed?: string | boolean,

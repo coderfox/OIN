@@ -4,7 +4,7 @@ import {
   OneToMany,
 } from "typeorm";
 import bcrypt from "bcrypt";
-import { password_hash_rounds } from "../lib/config";
+import { PASSWORD_HASH_ROUNDS } from "../lib/config";
 import uuid from "uuid/v4";
 import Session from "./session";
 import Message from "./message";
@@ -13,13 +13,14 @@ import { Permission } from "../lib/permission";
 import { Exclude, Expose, Transform } from "class-transformer";
 
 @Entity()
-@Index("email_unique_with_deletion", ["email", "deleteToken"], { unique: true })
+@Index("email_unique_with_deletion", ["email", "delete_token"], { unique: true })
 @Index("email_unique_without_deletion", ["email"], { unique: true, where: "delete_token IS NULL" })
 @Exclude()
 export default class User extends BaseEntity {
-  constructor(email: string) {
+  constructor(email: string, nickname?: string) {
     super();
     this.email = email;
+    this.nickname = nickname || email;
   }
 
   @PrimaryGeneratedColumn("uuid")
@@ -31,15 +32,15 @@ export default class User extends BaseEntity {
   public email: string;
 
   @Column({ name: "password", type: "varchar" })
-  public hashedPassword?: string;
+  public password_hashed?: string;
 
-  public static hashPassword = (password: string) =>
-    bcrypt.hash(password, password_hash_rounds)
-  public setPassword = async (password: string) => {
-    this.hashedPassword = await User.hashPassword(password);
+  public static hash_password = (password: string) =>
+    bcrypt.hash(password, PASSWORD_HASH_ROUNDS)
+  public set_password = async (password: string) => {
+    this.password_hashed = await User.hash_password(password);
   }
-  public checkPassword = async (password: string) =>
-    this.hashedPassword ? bcrypt.compare(password, this.hashedPassword) : false
+  public check_password = async (password: string) =>
+    this.password_hashed ? bcrypt.compare(password, this.password_hashed) : false
 
   @Column("varchar", {
     array: true, transformer: {
@@ -62,14 +63,18 @@ export default class User extends BaseEntity {
 
   @CreateDateColumn({ name: "created_at" })
   @Expose({ name: "created_at" })
-  public createdAt!: Date;
+  public created_at!: Date;
 
   @UpdateDateColumn({ name: "updated_at" })
   @Expose({ name: "updated_at" })
-  public updatedAt!: Date;
+  public updated_at!: Date;
 
   @Column({ name: "delete_token", type: "uuid", nullable: true })
-  public deleteToken?: string;
+  public delete_token?: string;
 
-  public markDeleted = () => this.deleteToken = uuid();
+  public mark_deleted = () => this.delete_token = uuid();
+
+  @Expose()
+  @Column("varchar")
+  public nickname: string;
 }

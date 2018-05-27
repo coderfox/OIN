@@ -3,7 +3,7 @@ import {
   Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
   ManyToOne, JoinColumn,
 } from "typeorm";
-import { token_expires } from "../lib/config";
+import { TOKEN_EXPIRES } from "../lib/config";
 import User from "./user";
 import ms from "ms";
 import { Permission } from "../lib/permission";
@@ -23,13 +23,13 @@ export namespace Errors {
     }
   }
   export class TokenExpiredError extends Error {
-    public expiredAt: Date;
-    public currentTime: Date;
-    constructor(expiresAt: Date) {
-      super(`token expired at ${expiresAt.toJSON}`);
+    public expired_at: Date;
+    public current_time: Date;
+    constructor(expires_at: Date) {
+      super(`token expired at ${expires_at.toJSON}`);
       this.name = "TokenExpiredError";
-      this.expiredAt = expiresAt;
-      this.currentTime = new Date(Date.now());
+      this.expired_at = expires_at;
+      this.current_time = new Date(Date.now());
     }
   }
 }
@@ -43,8 +43,8 @@ export default class Session extends BaseEntity {
       this.user = user;
     }
   }
-  private getNewExpirationDate = () =>
-    new Date(Date.now() + ms(token_expires))
+  private _get_new_expires_at = () =>
+    new Date(Date.now() + ms(TOKEN_EXPIRES))
 
   @ManyToOne(() => User, (user) => user.sessions, {
     eager: true,
@@ -58,7 +58,6 @@ export default class Session extends BaseEntity {
   public token!: string;
 
   @Column("varchar", {
-    length: 10,
     array: true, transformer: {
       to: (roles: Permission) => roles.roles,
       from: (value) => new Permission(value),
@@ -70,21 +69,21 @@ export default class Session extends BaseEntity {
 
   @CreateDateColumn({ name: "created_at" })
   @Expose({ name: "created_at" })
-  public createdAt!: Date;
+  public created_at!: Date;
 
   @UpdateDateColumn({ name: "updated_at" })
   @Expose({ name: "updated_at" })
-  public updatedAt!: Date;
+  public updated_at!: Date;
 
   @Column({ name: "expires_at" })
   @Expose({ name: "expires_at" })
-  public expiresAt: Date = this.getNewExpirationDate();
+  public expires_at: Date = this._get_new_expires_at();
 
   public get expired() {
-    return (this.expiresAt <= new Date()) || !!this.user.deleteToken;
+    return (this.expires_at <= new Date()) || !!this.user.delete_token;
   }
 
   public renew = () => {
-    this.expiresAt = this.getNewExpirationDate();
+    this.expires_at = this._get_new_expires_at();
   }
 }

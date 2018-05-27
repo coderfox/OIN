@@ -33,10 +33,10 @@ export default class Service extends BaseEntity {
   public description?: string;
 
   @CreateDateColumn({ name: "created_at" })
-  public createdAt!: Date;
+  public created_at!: Date;
 
   @UpdateDateColumn({ name: "updated_at" })
-  public updatedAt!: Date;
+  public updated_at!: Date;
 
   @OneToMany(() => Subscription, (subscription) => subscription.service)
   public subscriptions!: Promise<Subscription[]>;

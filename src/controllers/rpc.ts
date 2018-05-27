@@ -2,7 +2,7 @@ import { Controller, Post, Body, UseInterceptors, HttpCode, HttpStatus } from "@
 import { Subscription, Service, Message } from "../models";
 import * as Errors from "../lib/errors";
 import RpcInterceptor, { RpcErrorInterceptor } from "../middlewares/rpc";
-import { deploy_token } from "../lib/config";
+import { DEPLOY_TOKEN } from "../lib/config";
 
 @UseInterceptors(RpcInterceptor, RpcErrorInterceptor)
 @Controller("rpc")
@@ -15,20 +15,20 @@ class RpcController {
       name?: string,
       description?: string,
     },
-    @Body("deploy_token") deployToken?: string,
+    @Body("deploy_token") deploy_token?: string,
   ): Promise<string> {
-    if (!metadata || !metadata.id || !metadata.name || !metadata.description || !deployToken) {
+    if (!metadata || !metadata.id || !metadata.name || !metadata.description || !deploy_token) {
       throw new Errors.RpcInvalidParametersError("body:param");
     }
-    if (deployToken !== deploy_token) {
+    if (deploy_token !== DEPLOY_TOKEN) {
       throw new Errors.RpcInsufficientPermissionError();
     }
-    const existingService = await Service.findOne(metadata.id);
-    if (existingService) {
-      existingService.name = metadata.name;
-      existingService.description = metadata.description;
-      await existingService.save();
-      return existingService.token;
+    const existing_service = await Service.findOne(metadata.id);
+    if (existing_service) {
+      existing_service.name = metadata.name;
+      existing_service.description = metadata.description;
+      await existing_service.save();
+      return existing_service.token;
     } else {
       const service = new Service(metadata.id, metadata.name, metadata.description);
       await service.save();
@@ -59,13 +59,14 @@ class RpcController {
   public async create_message(
     @Body("token") token?: string,
     @Body("channel_id") channel?: string,
-    @Body("message") msg?: {
+    @Body("message") message?: {
       title?: string,
       summary?: string,
       content?: string,
+      href?: string,
     },
   ): Promise<true> {
-    if (!token || !channel || !msg || !msg.title || !msg.content) {
+    if (!token || !channel || !message || !message.title || !message.content) {
       throw new Errors.RpcInvalidParametersError("body:param");
     }
     const service = await Service.findOne({ token });
@@ -76,13 +77,14 @@ class RpcController {
     if (!subscription) {
       throw new Errors.RpcChannelNotFoundError(channel);
     }
-    const message = new Message(
+    const message_db = new Message(
       subscription.owner,
       subscription,
-      msg.title,
-      msg.summary || msg.content,
-      msg.content);
-    await message.save();
+      message.title,
+      message.summary || message.content,
+      message.content,
+      message.href !== "" ? message.href : null);
+    await message_db.save();
     return true;
   }
 }

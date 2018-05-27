@@ -1,8 +1,8 @@
 import logger from "pino";
-import { log_level } from "./config";
+import { LOG_LEVEL } from "./config";
 import { LoggerService } from "@nestjs/common";
 
-const log = logger({ level: process.env.NODE_ENV === "test" ? "warn" : log_level });
+const log = logger({ level: process.env.NODE_ENV === "test" ? "warn" : LOG_LEVEL });
 export default log;
 
 export class NestLogger implements LoggerService {

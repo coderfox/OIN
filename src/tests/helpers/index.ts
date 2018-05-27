@@ -62,4 +62,4 @@ export const init = async (test: RegisterContextual<any>) => {
 };
 export const clearDb = () =>
   getConnection().query(`TRUNCATE "cofirmation", "message", "service", "session", "user" RESTART IDENTITY CASCADE;`);
-export const dateRegExp = /^\d{4,4}-\d{2,2}-\d{2,2}T\d{2,2}:\d{2,2}:\d{2,2}.\d{3,3}Z$/;
+export const DATE_REGEXP = /^\d{4,4}-\d{2,2}-\d{2,2}T\d{2,2}:\d{2,2}:\d{2,2}.\d{3,3}Z$/;

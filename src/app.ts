@@ -14,7 +14,7 @@ import MessageController from "./controllers/message";
 import ServiceController from "./controllers/service";
 import SubscriptionController from "./controllers/subscription";
 import RpcController from "./controllers/rpc";
-import { sentry_dsn } from "./lib/config";
+import { SENTRY_DSN } from "./lib/config";
 
 @Module({
   imports: [],
@@ -33,7 +33,8 @@ class ApplicationModule { }
 export default ApplicationModule;
 const root = __dirname || process.cwd();
 export const buildApplication = async () => {
-  Raven.config(sentry_dsn, {
+  Raven.config(SENTRY_DSN, {
+    // tslint:disable-next-line:naming-convention
     dataCallback(data) {
       const stacktrace = data.exception && data.exception[0].stacktrace;
 

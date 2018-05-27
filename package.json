@@ -2,7 +2,7 @@
   "name": "sandra.server.api.rest",
   "private": true,
   "version": "0.2.0",
-  "main": "dist/bin/run",
+  "main": "dist/entry",
   "dependencies": {
     "@nestjs/common": "^5.0.0",
     "@nestjs/core": "^5.0.0",
@@ -56,8 +56,8 @@
     "test-cov": "nyc -r lcovonly -r html ava",
     "postinstall": "tsc",
     "pretest": "tsc&& tslint -p .",
-    "dev": "supervisor -i coverage dist/bin/run",
-    "start": "node dist/bin/run",
+    "dev": "supervisor -i coverage dist/entry",
+    "start": "node dist/entry",
     "lint": "tslint -p .",
     "test-nocompile": "nyc -r html ava",
     "db:migrate": "typeorm migration:run",
@@ -71,7 +71,7 @@
       "!dist/tests/helpers/*.js"
     ]
   },
-  "bin": "dist/bin/run.js",
+  "bin": "dist/entry.js",
   "pkg": {
     "scripts": [
       "dist/**/*.js"
