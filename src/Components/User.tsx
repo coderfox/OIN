@@ -31,8 +31,11 @@ class User extends React.Component<Props, States> {
     return (
       <Card>
         <Card.Content>
-          <Card.Header>{session.user.email}</Card.Header>
-          <Card.Description><Icon name="user" style={{ color: color.hex(session.user.id) }} /></Card.Description>
+          <Card.Header>
+            <Icon name="user" style={{ color: color.hex(session.user.id) }} />
+            {session.user.nickname}
+          </Card.Header>
+          <Card.Meta>{session.user.email}</Card.Meta>
         </Card.Content>
         <Card.Content extra>
           <Button onClick={this.logout}>登出</Button>

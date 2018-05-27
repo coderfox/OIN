@@ -56,7 +56,7 @@ class Messages extends React.Component<Props, States> {
   }
 
   render() {
-    const { messages } = this.props.session!;
+    const { messages, subscriptions } = this.props.session!;
     return (
       <Grid columns={2}>
         <Ref innerRef={this.handleContextRef}>
@@ -97,15 +97,19 @@ class Messages extends React.Component<Props, States> {
               </Segment>
               {messages
                 .filter(m => m.readed === false)
-                .map(m =>
-                  (<Components.MessageSimple
-                    id={m.id}
-                    title={m.title}
-                    summary={m.summary}
-                    subscription={m.subscription}
-                    onClick={this.handleMessageClick}
-                    onMarkedAsReaded={this.handleMessageReaded}
-                  />))}
+                .map(m => {
+                  const subscription = subscriptions.find(s => s.id === m.subscription);
+                  return (
+                    <Components.MessageSimple
+                      key={m.id}
+                      id={m.id}
+                      title={m.title}
+                      summary={m.summary}
+                      subscription={subscription && subscription.name || '未找到对应的订阅'}
+                      onClick={this.handleMessageClick}
+                      onMarkedAsReaded={this.handleMessageReaded}
+                    />);
+                })}
             </Grid.Column>
             <Grid.Column width={10}>
               {this.state.selected_message &&

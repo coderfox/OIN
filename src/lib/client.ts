@@ -82,7 +82,7 @@ class ApiClient {
   public getServices = () =>
     this.get<Interfaces.Service[]>('/services')
   public getService = (id: string) =>
-    this.get<Interfaces.Service>('/service/'.concat(id))
+    this.get<Interfaces.Service>('/services/'.concat(id))
   public getSubscriptions = () =>
     this.get<Interfaces.Subscription[]>('/subscriptions/mine')
   public getSubscription = (id: string) =>

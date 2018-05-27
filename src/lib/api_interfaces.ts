@@ -39,4 +39,5 @@ export interface Subscription {
   owner: string;
   service: string;
   updated_at: string;
+  name: string;
 }

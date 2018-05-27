@@ -5,11 +5,13 @@ import SessionState from '../lib/state/Session';
 import * as Interfaces from '../lib/api_interfaces';
 import Timeage from 'timeago.js';
 var timeago = Timeage();
+const ColorHash = require('color-hash');
+const color = new ColorHash();
 
 import * as Forms from '../Forms';
 import * as Components from '../Components';
 
-import { Card, CardProps, Segment, Header, Button, Dimmer, Loader, Message } from 'semantic-ui-react';
+import { Card, CardProps, Segment, Header, Button, Dimmer, Loader, Message, Label, Icon } from 'semantic-ui-react';
 
 interface Props {
   session?: SessionState;
@@ -41,21 +43,11 @@ class MessageComplexComponent extends React.Component<Props, States> {
       error: undefined,
     });
     try {
-      const msg = await newProps.session!.client!.getMessage(newProps.id);
-      if (!msg) {
-        throw new Error(`数据不一致，M${newProps.id} 不存在！`);
-      }
-      const subscription = newProps.session!.subscriptions.find(value => value.id === msg.subscription);
-      if (!subscription) {
-        throw new Error(`数据不一致，C${msg.subscription} 不存在！`);
-      }
-      const service = newProps.session!.services.find(value =>
-        subscription !== undefined && value.id === subscription.service);
-      if (!service) {
-        throw new Error(`数据不一致，S${subscription.service} 不存在！`);
-      }
+      const message = await newProps.session!.client!.getMessage(newProps.id);
+      const subscription = await newProps.session!.client!.getSubscription(message.subscription);
+      const service = await newProps.session!.client!.getService(subscription.service);
       this.setState({
-        message: msg,
+        message,
         service,
         subscription,
       });
@@ -93,12 +85,24 @@ class MessageComplexComponent extends React.Component<Props, States> {
           this.state.service && this.state.message && this.state.subscription &&
           <div>
             <Header size="huge">{this.state.message && this.state.message.title}</Header>
-            <Button
-              content="标为已读"
-              color="olive"
-              onClick={this.markAsRead}
-              disabled={this.state.message.readed}
-            />
+            <p>
+              <Label>
+                <Icon name="clock" />{timeago.format(this.state.message.created_at, 'zh_CN')}
+              </Label>
+              <Label color="orange">
+                订阅<Label.Detail>{this.state.subscription.name}</Label.Detail>
+              </Label>
+              <Label color="purple">
+                服务<Label.Detail>{this.state.service.title}</Label.Detail>
+              </Label>
+            </p><p>
+              <Button
+                content="标为已读"
+                color="olive"
+                onClick={this.markAsRead}
+                disabled={this.state.message.readed}
+              />
+            </p>
             <Segment
               dangerouslySetInnerHTML={{
                 __html: this.state.message && this.state.message.content || ''
@@ -107,9 +111,14 @@ class MessageComplexComponent extends React.Component<Props, States> {
             <Card fluid>
               <Card.Content header="订阅信息" />
               <Card.Content>
-                <Card.Header>{this.state.subscription.id}</Card.Header>
-                <Card.Meta>{this.state.service.title}</Card.Meta>
-                <Card.Description>于{timeago.format(this.state.message.created_at, 'zh_CN')}</Card.Description>
+                <Card.Header>{this.state.subscription.name}</Card.Header>
+                <Card.Meta>{this.state.subscription.id}</Card.Meta>
+              </Card.Content>
+              <Card.Content header="服务信息" />
+              <Card.Content>
+                <Card.Header>{this.state.service.title}</Card.Header>
+                <Card.Meta>{this.state.service.id}</Card.Meta>
+                <Card.Description>{this.state.service.description}</Card.Description>
               </Card.Content>
             </Card>
           </div>
