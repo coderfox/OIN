@@ -1,6 +1,6 @@
 import { observable, action, computed } from 'mobx';
-import * as Interfaces from '../api_interfaces';
-import ApiClient from '../client';
+import * as Interfaces from './api_interfaces';
+import ApiClient from './client';
 
 const store = require('store');
 

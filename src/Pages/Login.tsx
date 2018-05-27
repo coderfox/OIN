@@ -9,7 +9,7 @@ import * as Forms from '../Forms';
 
 import ApiClient from '../lib/client';
 import { RouterStore } from 'mobx-react-router';
-import SessionState from '../lib/state/Session';
+import SessionState from '../lib/SessionStore';
 
 interface Props {
 }

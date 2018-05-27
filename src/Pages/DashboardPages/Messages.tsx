@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 import { Redirect } from 'react-router-dom';
-import SessionState from '../../lib/state/Session';
+import SessionState from '../../lib/SessionStore';
 import * as Interfaces from '../../lib/api_interfaces';
 
 import * as Forms from '../../Forms';

@@ -4,7 +4,7 @@ import { Provider } from 'mobx-react';
 import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
 import { Router, Route, Switch } from 'react-router-dom';
 import ProtectedRoute from './Routes/ProtectedRoute';
-import SessionState from './lib/state/Session';
+import SessionState from './lib/SessionStore';
 
 import * as Pages from './Pages';
 

@@ -2,17 +2,10 @@ import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 
 import {
-  FormProps, FormInputProps, FormTextAreaProps, FormDropdownProps,
-  Button, Form, Grid, Header, Image, Message, Segment,
+  FormInputProps, FormTextAreaProps, FormDropdownProps,
+  Form, Message, Segment,
 } from 'semantic-ui-react';
-import { Link } from 'react-router-dom';
-
-import EnsureAnonymous from '../Routes/EnsureAnonymous';
-
-import ApiClient from '../lib/client';
-import { RouterStore } from 'mobx-react-router';
-import SessionState from '../lib/state/Session';
-import { User } from '../lib/api_interfaces';
+import SessionState from '../lib/SessionStore';
 
 interface Props {
   session?: SessionState;
@@ -39,11 +32,11 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
     loading: false,
   };
 
-  handleInputChange: FormInputProps['onChange'] = (e, data) =>
+  handleInputChange: FormInputProps['onChange'] = (_, data) =>
     this.setState({ [data.name]: data.value })
-  handleTextAreaChange: FormTextAreaProps['onChange'] = (e, data) =>
+  handleTextAreaChange: FormTextAreaProps['onChange'] = (_, data) =>
     this.setState({ [data.name]: data.value })
-  handleDropdownChange: FormDropdownProps['onChange'] = (e, data) => {
+  handleDropdownChange: FormDropdownProps['onChange'] = (_, data) => {
     const service = this.props.session!.services.find(s => s.id === data.value);
     this.setState({
       service: data.value as string,
@@ -100,7 +93,7 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
             text: s.title,
             desc: s.description,
           }))}
-          value={this.state.service}
+          value={service}
           onChange={this.handleDropdownChange}
         />
         <Segment>

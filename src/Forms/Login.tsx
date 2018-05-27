@@ -1,14 +1,11 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 
-import { Button, Form, Grid, Header, Image, Message, Segment, InputOnChangeData } from 'semantic-ui-react';
-import { Link } from 'react-router-dom';
-
-import EnsureAnonymous from '../Routes/EnsureAnonymous';
-
-import ApiClient from '../lib/client';
-import { RouterStore } from 'mobx-react-router';
-import SessionState from '../lib/state/Session';
+import {
+  Button, Form, Message, Segment,
+  InputOnChangeData
+} from 'semantic-ui-react';
+import SessionState from '../lib/SessionStore';
 
 interface Props {
   session?: SessionState;
@@ -27,7 +24,7 @@ interface States {
 class LoginForm extends React.Component<Props, States> {
   state: States = { email: '', password: '', loading: false, error: false, message: '' };
 
-  handleChange = (e: React.SyntheticEvent<HTMLInputElement>, data: InputOnChangeData) =>
+  handleChange = (_: React.SyntheticEvent<HTMLInputElement>, data: InputOnChangeData) =>
     this.setState({ [data.name]: data.value })
   handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const { email, password } = this.state;

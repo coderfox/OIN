@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
 
-import SessionState from '../lib/state/Session';
+import SessionState from '../lib/SessionStore';
 
 @inject('session')
 @observer

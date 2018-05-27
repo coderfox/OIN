@@ -2,17 +2,12 @@ import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 
 import {
-  FormProps, FormInputProps, FormTextAreaProps, FormDropdownProps,
-  Button, Form, Grid, Header, Image, Message, Segment,
+  FormInputProps, FormTextAreaProps,
+  Form, Message, Segment,
 } from 'semantic-ui-react';
-import { Link } from 'react-router-dom';
 
-import EnsureAnonymous from '../Routes/EnsureAnonymous';
-
-import ApiClient from '../lib/client';
-import { RouterStore } from 'mobx-react-router';
-import SessionState from '../lib/state/Session';
-import { User, Subscription, Service } from '../lib/api_interfaces';
+import SessionState from '../lib/SessionStore';
+import { Subscription, Service } from '../lib/api_interfaces';
 
 interface Props {
   session?: SessionState;
@@ -55,9 +50,9 @@ class UpdateSubscriptionForm extends React.Component<Props, States> {
     }
   }
 
-  handleInputChange: FormInputProps['onChange'] = (e, data) =>
+  handleInputChange: FormInputProps['onChange'] = (_, data) =>
     this.setState({ [data.name]: data.value })
-  handleTextAreaChange: FormTextAreaProps['onChange'] = (e, data) =>
+  handleTextAreaChange: FormTextAreaProps['onChange'] = (_, data) =>
     this.setState({ [data.name]: data.value })
 
   handleSubmit = async () => {

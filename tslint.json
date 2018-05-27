@@ -16,7 +16,7 @@
       "check-space"
     ],
     "curly": true,
-    "eofline": false,
+    "eofline": true,
     "forin": true,
     "indent": [
       true,
@@ -84,7 +84,7 @@
     ],
     "switch-default": true,
     "trailing-comma": [
-      false
+      true
     ],
     "triple-equals": [
       true,

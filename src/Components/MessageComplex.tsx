@@ -1,17 +1,11 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Redirect } from 'react-router-dom';
-import SessionState from '../lib/state/Session';
+import SessionState from '../lib/SessionStore';
 import * as Interfaces from '../lib/api_interfaces';
 import Timeage from 'timeago.js';
 var timeago = Timeage();
-const ColorHash = require('color-hash');
-const color = new ColorHash();
 
-import * as Forms from '../Forms';
-import * as Components from '../Components';
-
-import { Card, CardProps, Segment, Header, Button, Dimmer, Loader, Message, Label, Icon } from 'semantic-ui-react';
+import { Card, Segment, Header, Button, Dimmer, Loader, Message, Label, Icon } from 'semantic-ui-react';
 
 interface Props {
   session?: SessionState;

@@ -1,14 +1,9 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Redirect } from 'react-router-dom';
-import SessionState from '../lib/state/Session';
-import * as Interfaces from '../lib/api_interfaces';
+import SessionState from '../lib/SessionStore';
 const ColorHash = require('color-hash');
 const color = new ColorHash();
 import { RouterStore } from 'mobx-react-router';
-
-import * as Forms from '../Forms';
-import * as Components from '../Components';
 
 import { Card, Icon, Button } from 'semantic-ui-react';
 
