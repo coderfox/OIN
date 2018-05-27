@@ -73,6 +73,17 @@ class SubscriptionController {
     await subscription.save();
     return subscription;
   }
+  @Get(":id")
+  public async get_one(@SessionAuth() session: Session, @Param("id") id: string): Promise<Subscription> {
+    const subscription = await Subscription.findOne(id);
+    if (!subscription) {
+      throw new Errors.MessageNotExistsError(id);
+    }
+    if (subscription.owner.id !== session.user.id) {
+      throw new Errors.InsufficientPermissionError(session, "admin");
+    }
+    return subscription;
+  }
 }
 
 export default SubscriptionController;
