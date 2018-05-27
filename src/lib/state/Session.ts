@@ -1,7 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import * as Interfaces from '../api_interfaces';
 import ApiClient from '../client';
-import { message } from 'antd';
 
 const store = require('store');
 
@@ -48,39 +47,23 @@ export default class SessionState {
   @action retrieveMessages = async (forced = false) => {
     if (!this.authenticated) { return; }
     if (!forced && this.messages.length > 0) { return; }
-    try {
-      this.messages = (await this.client!.getMessages()).sort(compare);
-    } catch (ex) {
-      message.error('加载消息失败 - '.concat(ex.message));
-    }
+    this.messages = (await this.client!.getMessages()).sort(compare);
   }
   @action retrieveSubscriptions = async (forced = false) => {
     if (!this.authenticated) { return; }
     if (!forced && this.subscriptions.length > 0) { return; }
-    try {
-      this.subscriptions = (await this.client!.getSubscriptions()).sort(compare);
-    } catch (ex) {
-      message.error('加载订阅列表失败 - '.concat(ex.message));
-    }
+    this.subscriptions = (await this.client!.getSubscriptions()).sort(compare);
   }
   @action retrieveServices = async (forced = false) => {
     if (!this.authenticated) { return; }
     if (!forced && this.services.length > 0) { return; }
-    try {
-      this.services = await this.client!.getServices();
-    } catch (ex) {
-      message.error('加载服务列表失败 - '.concat(ex.message));
-    }
+    this.services = await this.client!.getServices();
   }
   @action markAsReaded = async (id: string) => {
     if (!this.authenticated) { return; }
-    try {
-      await this.client!.markAsReaded(id);
-      const msg = this.messages.find(value => value.id === id);
-      if (msg) { msg.readed = true; }
-    } catch (ex) {
-      message.error('标记已读失败' + ex.message);
-    }
+    await this.client!.markAsReaded(id);
+    const msg = this.messages.find(value => value.id === id);
+    if (msg) { msg.readed = true; }
   }
   @action loadSession = async () => {
     if (this.authenticated && !this.session) {
@@ -97,23 +80,15 @@ export default class SessionState {
   }
   @action updateSubscriptionConfig = async (id: string, config: string) => {
     if (!this.authenticated) { return; }
-    try {
-      this.subscriptions[
-        this.subscriptions.findIndex(value => value.id === id)
-      ].config = (await this.client!.updateSubscription(id, config)).config;
-    } catch (ex) {
-      message.error('更新配置失败 ' + ex.message);
-    }
+    this.subscriptions[
+      this.subscriptions.findIndex(value => value.id === id)
+    ].config = (await this.client!.updateSubscription(id, config)).config;
   }
   @action deleteSubscription = async (id: string) => {
     if (!this.authenticated) { return; }
-    try {
-      await this.client!.deleteSubscription(id);
-      this.subscriptions[
-        this.subscriptions.findIndex(value => value.id === id)
-      ].deleted = true;
-    } catch (ex) {
-      message.error('删除失败' + ex.message);
-    }
+    await this.client!.deleteSubscription(id);
+    this.subscriptions[
+      this.subscriptions.findIndex(value => value.id === id)
+    ].deleted = true;
   }
 }

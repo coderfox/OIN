@@ -4,6 +4,7 @@ export interface User {
   id: string;
   permissions: string[];
   updated_at: string;
+  nickname: string;
 }
 export interface Session {
   created_at: string;
@@ -23,6 +24,7 @@ export interface Message {
   created_at: string;
   updated_at: string;
   content?: string;
+  href: string | null;
 }
 export interface Service {
   description: string;

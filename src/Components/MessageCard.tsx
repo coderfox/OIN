@@ -40,7 +40,7 @@ class Message extends React.PureComponent<Props, States> {
     const { title, subscription, summary } = this.props;
     return (
       <Card fluid>
-        <Card.Content onClick={this.onClick}>
+        <Card.Content>
           <Card.Header>{title}</Card.Header>
           <Card.Meta>{subscription}</Card.Meta>
           <Card.Description>
