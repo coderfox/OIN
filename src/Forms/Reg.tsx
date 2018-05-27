@@ -34,12 +34,12 @@ class RegForm extends React.Component<Props, States> {
     this.setState({ [data.name]: data.value })
   handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const { email, password, password_confirm } = this.state;
-    this.setState({ loading: true });
+    this.setState({ loading: true, error: false });
     e.preventDefault();
-    if (password !== password_confirm) {
-      this.setState({ error: true, message: '两次输入的密码不一致' });
-    }
     try {
+      if (password !== password_confirm) {
+        throw new Error('两次输入的密码不一致');
+      }
       const user = await ApiClient.register(email, password);
       this.setState({ user });
       setTimeout(() => this.props.routing!.push('/login'), 1000);
@@ -52,7 +52,7 @@ class RegForm extends React.Component<Props, States> {
     this.setState({ loading: false });
   }
   render() {
-    const { email, password, loading, error, message, user } = this.state;
+    const { email, password, password_confirm, loading, error, message, user } = this.state;
     return (
       <Form
         size="large"
@@ -98,7 +98,7 @@ class RegForm extends React.Component<Props, States> {
             placeholder="确认密码"
             type="password"
             name="password_confirm"
-            value={password}
+            value={password_confirm}
             onChange={this.handleChange}
           />
           <Button primary fluid size="large">注册</Button>
