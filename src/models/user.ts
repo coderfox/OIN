@@ -13,7 +13,7 @@ import { Permission } from "../lib/permission";
 import { Exclude, Expose, Transform } from "class-transformer";
 
 @Entity()
-@Index("email_unique_with_deletion", ["email", "deleteToken"], { unique: true })
+@Index("email_unique_with_deletion", ["email", "delete_token"], { unique: true })
 @Index("email_unique_without_deletion", ["email"], { unique: true, where: "delete_token IS NULL" })
 @Exclude()
 export default class User extends BaseEntity {

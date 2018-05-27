@@ -159,7 +159,7 @@ export class SubscriptionNotExistsError extends ApiError {
 }
 export class ServiceNotExistsError extends ApiError {
   constructor(public readonly id: string) {
-    super("SERVICE_NOT_EXISTS", 404);
+    super("SERVICE_NOT_EXISTS", 400);
   }
 }
 export class RpcInvalidTokenError extends RpcError {
@@ -170,5 +170,10 @@ export class RpcInvalidTokenError extends RpcError {
 export class RpcChannelNotFoundError extends RpcError {
   constructor(public readonly channel: string) {
     super("CHANNEL_NOT_FOUND");
+  }
+}
+export class ServiceNotFoundError extends ApiError {
+  constructor(public readonly id: string) {
+    super("SERVICE_NOT_FOUND", 404);
   }
 }
