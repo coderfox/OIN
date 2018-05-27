@@ -4,7 +4,7 @@ import SessionState from '../../lib/SessionStore';
 
 import * as Forms from '../../Forms';
 import * as Components from '../../Components';
-import { Card, Menu, Input, MenuItemProps } from 'semantic-ui-react';
+import { Card, Menu, Input, MenuItemProps, Dimmer, Loader } from 'semantic-ui-react';
 
 import * as I from '../../lib/api_interfaces';
 
@@ -37,16 +37,20 @@ class Subscriptions extends React.Component<Props, States> {
     return (
       <div>
         <Menu secondary>
-          <Menu.Item position="right">
+          <Menu.Item position="left">
             <Input icon="search" placeholder="搜索" />
           </Menu.Item>
           <Menu.Item
             name="添加订阅"
             onClick={this.openCreateCard}
             disabled={this.state.create_card_visible}
+            position="right"
           />
         </Menu>
         <Card.Group itemsPerRow={2}>
+          <Dimmer active={subscriptions === undefined} inverted>
+            <Loader>Loading</Loader>
+          </Dimmer>
           {
             this.state.create_card_visible &&
             <Card>

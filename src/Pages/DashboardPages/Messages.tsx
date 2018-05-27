@@ -6,7 +6,9 @@ import * as Components from '../../Components';
 import {
   Grid, Progress, Segment, Message,
   Ref, RefProps,
-  Button
+  Button,
+  Dimmer,
+  Loader
 } from 'semantic-ui-react';
 import * as I from '../../lib/api_interfaces';
 
@@ -17,7 +19,6 @@ interface States {
   selected_message?: string;
   contextRef?: HTMLElement;
   done_messages?: number;
-  loading?: boolean;
   loadingMarkAllAsReaded?: boolean;
   messages?: I.Message[];
   subscriptions?: { [key: string]: I.Subscription | undefined };
@@ -29,14 +30,14 @@ class Messages extends React.Component<Props, States> {
   state: States = {};
 
   async componentDidMount() {
-    this.setState({ loading: true, messages: undefined });
+    this.setState({ messages: undefined });
     const messages = await this.props.session!.client!.getMessages();
     const subscriptionsArr = await Promise.all(
       messages.map(m =>
         this.props.session!.client!.getSubscription(m.subscription)));
     const subscriptions: { [key: string]: I.Subscription | undefined } = {};
     subscriptionsArr.map(s => subscriptions[s.id] = s);
-    this.setState({ messages, subscriptions, loading: false });
+    this.setState({ messages, subscriptions });
   }
 
   handleMessageClick = (id: string) => {
@@ -61,13 +62,12 @@ class Messages extends React.Component<Props, States> {
     this.setState({ loadingMarkAllAsReaded: false });
   }
   refresh = async () => {
-    this.setState({ loading: true, done_messages: 0 });
+    this.setState({ done_messages: 0 });
     try {
       await this.componentDidMount();
     } catch (ex) {
       // nop, TODO
     }
-    this.setState({ loading: false });
   }
 
   render() {
@@ -77,6 +77,9 @@ class Messages extends React.Component<Props, States> {
         <Ref innerRef={this.handleContextRef}>
           <Grid.Row>
             <Grid.Column width={6}>
+              <Dimmer active={messages === undefined} inverted>
+                <Loader>Loading</Loader>
+              </Dimmer>
               <Segment>
                 {messages &&
                   <Message positive hidden={messages.length !== 0 && this.state.done_messages !== messages.length}>
@@ -108,7 +111,6 @@ class Messages extends React.Component<Props, States> {
                   color="pink"
                   content="刷新"
                   size="small"
-                  loading={this.state.loading}
                 />
               </Segment>
               {messages && messages

@@ -99,7 +99,7 @@ class SubscriptionComponent extends React.Component<Props, States> {
                   content={this.state.error}
                 />
               </Card.Content>
-              <Dimmer active={this.state.error === '' && this.state.service === undefined}>
+              <Dimmer active={this.state.error === '' && this.state.service === undefined} inverted>
                 <Loader />
               </Dimmer>
             </React.Fragment>

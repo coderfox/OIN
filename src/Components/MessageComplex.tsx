@@ -64,59 +64,55 @@ class MessageComplexComponent extends React.Component<Props, States> {
   }
 
   render() {
+    const { message, subscription, service, loading, error } = this.state;
     return (
       <Segment>
-        <Dimmer active={this.state.loading}>
-          <Loader active={this.state.loading} />
+        <Dimmer active={loading} inverted>
+          <Loader>Loading</Loader>
         </Dimmer>
         <Message
-          hidden={this.state.error === undefined}
+          hidden={error === undefined}
           header="加载失败"
-          content={this.state.error}
+          content={error}
           error
         />
-        {
-          this.state.service && this.state.message && this.state.subscription &&
-          <div>
-            <Header size="huge">{this.state.message && this.state.message.title}</Header>
-            <p>
-              <Label>
-                <Icon name="clock" />{timeago.format(this.state.message.created_at, 'zh_CN')}
-              </Label>
-              <Label color="orange">
-                订阅<Label.Detail>{this.state.subscription.name}</Label.Detail>
-              </Label>
-              <Label color="purple">
-                服务<Label.Detail>{this.state.service.title}</Label.Detail>
-              </Label>
-            </p><p>
-              <Button
-                content="标为已读"
-                color="olive"
-                onClick={this.markAsRead}
-                disabled={this.state.message.readed}
-              />
-            </p>
-            <Segment
-              dangerouslySetInnerHTML={{
-                __html: this.state.message && this.state.message.content || ''
-              }}
-            />
-            <Card fluid>
-              <Card.Content header="订阅信息" />
-              <Card.Content>
-                <Card.Header>{this.state.subscription.name}</Card.Header>
-                <Card.Meta>{this.state.subscription.id}</Card.Meta>
-              </Card.Content>
-              <Card.Content header="服务信息" />
-              <Card.Content>
-                <Card.Header>{this.state.service.title}</Card.Header>
-                <Card.Meta>{this.state.service.id}</Card.Meta>
-                <Card.Description>{this.state.service.description}</Card.Description>
-              </Card.Content>
-            </Card>
-          </div>
-        }
+        <Header size="huge">{message && message.title}</Header>
+        <p>
+          <Label>
+            <Icon name="clock" />{message && timeago.format(message.created_at, 'zh_CN')}
+          </Label>
+          <Label color="orange">
+            订阅<Label.Detail>{subscription && subscription.name}</Label.Detail>
+          </Label>
+          <Label color="purple">
+            服务<Label.Detail>{service && service.title}</Label.Detail>
+          </Label>
+        </p><p>
+          <Button
+            content="标为已读"
+            color="olive"
+            onClick={this.markAsRead}
+            disabled={message && message.readed}
+          />
+        </p>
+        <Segment
+          dangerouslySetInnerHTML={{
+            __html: message && message.content
+          }}
+        />
+        <Card fluid>
+          <Card.Content header="订阅信息" />
+          <Card.Content>
+            <Card.Header>{subscription && subscription.name}</Card.Header>
+            <Card.Meta>{subscription && subscription.id}</Card.Meta>
+          </Card.Content>
+          <Card.Content header="服务信息" />
+          <Card.Content>
+            <Card.Header>{service && service.title}</Card.Header>
+            <Card.Meta>{service && service.id}</Card.Meta>
+            <Card.Description>{service && service.description}</Card.Description>
+          </Card.Content>
+        </Card>
       </Segment>
     );
   }
