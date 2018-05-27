@@ -14,6 +14,7 @@ class ServiceController {
     const [services, count] = await Service.findAndCount({ skip, take });
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
+      res.set("X-Pagination-Total", count);
     }
     res.send(classToPlain(services));
   }

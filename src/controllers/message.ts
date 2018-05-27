@@ -42,6 +42,7 @@ class MessageController {
     const [messages, count] = await Message.findAndCount({ where, skip, take });
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
+      res.set("X-Pagination-Total", count);
     }
     res.send(classToPlain(messages, { version: 1.0 }));
   }

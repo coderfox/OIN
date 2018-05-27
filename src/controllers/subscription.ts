@@ -18,6 +18,7 @@ class SubscriptionController {
     const [subscriptions, count] = await Subscription.findAndCount({ where, skip, take });
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
+      res.set("X-Pagination-Total", count);
     }
     res.send(classToPlain(subscriptions));
   }
