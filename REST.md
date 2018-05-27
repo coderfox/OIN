@@ -1,6 +1,6 @@
 # Backend REST APIs
 
-**version** 0.4.1
+**version** 0.4.3
 
 ## Basic Conventions
 
@@ -114,11 +114,12 @@ Pagination is available through query params, request bodies or HTTP headers.
 
 HTTP Header is prior to query param or request body.
 
-The server may respond with HTTP header indicating whether more items can be retrieved:
+The server MAY respond with HTTP header indicating whether more items can be retrieved:
 
-| Name              | Description |
-| ----------------- | ----------- |
-| X-Pagination-More | true/false  |
+| Name               | Description             |
+| ------------------ | ----------------------- |
+| X-Pagination-More  | true/false              |
+| X-Pagination-Total | total count of entities |
 
 ### Errors
 
@@ -606,9 +607,10 @@ conventional message object
 
 #### Errors
 
-| HTTP Code | Error Code         | Description            |
-| --------- | ------------------ | ---------------------- |
-| 404       | MESSAGE_NOT_EXISTS | message does not exist |
+| HTTP Code | Error Code              | Description            |
+| --------- | ----------------------- | ---------------------- |
+| 404       | MESSAGE_NOT_EXISTS      | message does not exist |
+| 403       | INSUFFICIENT_PERMISSION |                        |
 
 There are error codes defined in *Conventions*.
 
@@ -772,6 +774,53 @@ Content-Type: application/json
 ]
 ```
 
+### Lookup A Service
+
+`GET` /services/:id
+
+#### Authentication
+
+no authentication required
+
+#### Request
+
+**URL Params:** none
+
+**Header:** none
+
+#### Response
+
+**Code:** 200 OK
+
+**Header:** none
+
+**Content:** Service
+
+#### Errors
+
+| HTTP Code | Error Code         | Description            |
+| --------- | ------------------ | ---------------------- |
+| 404       | SERVICE_NOT_EXISTS | message does not exist |
+
+There are error codes defined in *Conventions*.
+
+#### Example
+
+**Request**
+
+```http
+GET /services/2d19176f-e9bc-4131-bd97-6e73182db2dc HTTP/1.1
+```
+
+**Response**
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+{"id":"2d19176f-e9bc-4131-bd97-6e73182db2dc","title":"Twitter","description":"Subscribe to a Twitter user."}
+```
+
 ## Subscriptions
 
 ### Describing Subscription
@@ -918,6 +967,55 @@ Content-Type: application/json
 Location: /subscriptions/ef192845-ac6a-468d-93d8-fa0a4559f646
 
 {"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅"}
+```
+
+### Lookup A Subscription
+
+`GET` /services/:id
+
+#### Authentication
+
+only subscriptions belonging to the current user is displayed
+
+#### Request
+
+**URL Params:** none
+
+**Header:** none
+
+#### Response
+
+**Code:** 200 OK
+
+**Header:** none
+
+**Content:** Subscription
+
+#### Errors
+
+| HTTP Code | Error Code              | Description            |
+| --------- | ----------------------- | ---------------------- |
+| 404       | SUBSCRIPTION_NOT_EXISTS | message does not exist |
+| 403       | INSUFFICIENT_PERMISSION |                        |
+
+There are error codes defined in *Conventions*.
+
+#### Example
+
+**Request**
+
+```http
+GET /subscriptions/ef192845-ac6a-468d-93d8-fa0a4559f646 HTTP/1.1
+Authorization: Bearer 8725a638-0346-4303-8227-ecd089a04878
+```
+
+**Response**
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅","last_event":{"id":"23efa991-15cb-425a-96dc-4e78641986f3","subscription":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","status":true,"message":"succeeded","time":"2018-02-24T00:52:06.419Z"}}
 ```
 
 ### Modify Subscription Settings
