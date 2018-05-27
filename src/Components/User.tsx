@@ -10,8 +10,7 @@ import { RouterStore } from 'mobx-react-router';
 import * as Forms from '../Forms';
 import * as Components from '../Components';
 
-import { Card, Icon, Avatar, Button, message } from 'antd';
-const { Meta } = Card;
+import { Card, Icon, Button } from 'semantic-ui-react';
 
 interface Props {
   routing?: RouterStore;
@@ -30,17 +29,14 @@ class User extends React.Component<Props, States> {
   render() {
     const session = this.props.session!.session!;
     return (
-      <Card title="用户信息">
-        <Meta
-          avatar={<Avatar
-            style={{ backgroundColor: color.hex(session.user.id) }}
-            icon="user"
-          />}
-          title={session.user.email}
-        />
-        <div>
+      <Card>
+        <Card.Content>
+          <Card.Header>{session.user.email}</Card.Header>
+          <Card.Description><Icon name="user" style={{ color: color.hex(session.user.id) }} /></Card.Description>
+        </Card.Content>
+        <Card.Content extra>
           <Button onClick={this.logout}>登出</Button>
-        </div>
+        </Card.Content>
       </Card>
     );
   }
