@@ -16,6 +16,8 @@ interface States {
   selected_message?: string;
   contextRef?: HTMLElement;
   done_messages?: number;
+  loading?: boolean;
+  loadingMarkAllAsReaded?: boolean;
 }
 
 @inject('session')
@@ -29,13 +31,29 @@ class Messages extends React.Component<Props, States> {
   handleMessageReaded = () =>
     this.setState(prev => ({ done_messages: (prev.done_messages || 0) + 1 }))
   handleContextRef: RefProps['innerRef'] = contextRef => this.setState({ contextRef });
-  markAllAsReaded = () =>
-    Promise.all(this.props.session!.messages
-      .filter(m => m.readed === false)
-      .map(async m => {
-        this.props.session!.markAsReaded(m.id);
-        this.handleMessageReaded();
-      }))
+  markAllAsReaded = async () => {
+    this.setState({ loadingMarkAllAsReaded: true });
+    try {
+      await Promise.all(this.props.session!.messages
+        .filter(m => m.readed === false)
+        .map(async m => {
+          await this.props.session!.markAsReaded(m.id);
+          this.handleMessageReaded();
+        }));
+    } catch (ex) {
+      // nop, TODO
+    }
+    this.setState({ loadingMarkAllAsReaded: false });
+  }
+  refresh = async () => {
+    this.setState({ loading: true, done_messages: 0 });
+    try {
+      await this.props.session!.retrieveLatestData();
+    } catch (ex) {
+      // nop, TODO
+    }
+    this.setState({ loading: false });
+  }
 
   render() {
     const { messages } = this.props.session!;
@@ -67,6 +85,14 @@ class Messages extends React.Component<Props, States> {
                   content="全部标为已读"
                   disabled={messages.length === 0}
                   size="small"
+                  loading={this.state.loadingMarkAllAsReaded}
+                />
+                <Button
+                  onClick={this.refresh}
+                  color="pink"
+                  content="刷新"
+                  size="small"
+                  loading={this.state.loading}
                 />
               </Segment>
               {messages
