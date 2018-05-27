@@ -1,98 +1,95 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 
-import { Form, Input, Icon, Button, message } from 'antd';
-import { FormComponentProps } from 'antd/lib/form/Form';
+import { Button, Form, Grid, Header, Image, Message, Segment, InputOnChangeData } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+
+import EnsureAnonymous from '../Routes/EnsureAnonymous';
 
 import ApiClient from '../lib/client';
 import { RouterStore } from 'mobx-react-router';
 import SessionState from '../lib/state/Session';
 
-const FORM_FIELDS = {
-  EMAIL: 'email',
-  PASSWORD: 'password'
-};
-
-interface Props extends FormComponentProps {
-  routing?: RouterStore;
+interface Props {
   session?: SessionState;
 }
 interface States {
+  email: string;
+  password: string;
   loading: boolean;
+  error: boolean;
+  message: string;
+  token?: string;
 }
 
-@inject('routing', 'session')
+@inject('session')
 @observer
 class LoginForm extends React.Component<Props, States> {
-  state = { loading: false };
+  state: States = { email: '', password: '', loading: false, error: false, message: '' };
 
-  handleSubmit: React.FormEventHandler<void> = (e) => {
-    const { push } = this.props.routing!;
+  handleChange = (e: React.SyntheticEvent<HTMLInputElement>, data: InputOnChangeData) =>
+    this.setState({ [data.name]: data.value })
+  handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const { email, password } = this.state;
     this.setState({ loading: true });
     e.preventDefault();
-    this.props.form.validateFields((err, values) => {
-      if (!err) {
-        this.props.session!.login(values[FORM_FIELDS.EMAIL], values[FORM_FIELDS.PASSWORD])
-          .then((token) => {
-            message.info(<p>登入成功，token {token}。</p>);
-          })
-          .catch((ex) => {
-            message.error(<p>{ex.message} - {ex.response && ex.response.data && ex.response.data.code}</p>);
-          })
-          .then(() => this.setState({ loading: false }));
-      }
-    });
+    try {
+      const token = await this.props.session!.login(email, password);
+      this.setState({ token });
+    } catch (ex) {
+      this.setState({
+        error: true,
+        message: (ex.response && ex.response.data && ex.response.data.code) || ex.message
+      });
+    }
+    this.setState({ loading: false });
   }
+
   render() {
-    const { getFieldDecorator, getFieldsError, isFieldTouched } = this.props.form;
-    const fieldsError = getFieldsError();
+    const { email, password, loading, error, message, token } = this.state;
     return (
-      <Form onSubmit={this.handleSubmit}>
-        <h2>登入</h2>
-        <Form.Item>
-          {getFieldDecorator(FORM_FIELDS.EMAIL, {
-            rules: [
-              { type: 'email', message: '请输入有效的邮箱地址' },
-              { required: true, message: '请输入邮箱' }
-            ],
-          })(
-            <Input
-              type="email"
-              prefix={<Icon type="mail" style={{ color: 'rgba(0,0,0,.25)' }} />}
-              placeholder="邮箱"
-            />
-          )}
-        </Form.Item>
-        <Form.Item>
-          {getFieldDecorator(FORM_FIELDS.PASSWORD, {
-            rules: [{ required: true, message: '请输入密码' }],
-          })(
-            <Input
-              prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
-              type="password"
-              placeholder="密码"
-            />
-          )}
-        </Form.Item>
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            disabled={
-              Object.keys(fieldsError).some(field => fieldsError[field]) ||
-              !(isFieldTouched(FORM_FIELDS.EMAIL) && isFieldTouched(FORM_FIELDS.PASSWORD))
-            }
-            loading={this.state.loading}
-          >
-            登入
-          </Button>
-        </Form.Item>
-        <Link to="/reg">没有账号，马上注册</Link>
+      <Form
+        size="large"
+        onSubmit={this.handleSubmit}
+        loading={loading}
+        error={error}
+        success={token !== undefined}
+      >
+        <Segment raised>
+          <Message success>
+            <Message.Header>登入成功</Message.Header>
+            <p>您的 token：{token}，将为您导向您的主页。</p>
+          </Message>
+          <Message
+            error
+            header="登入失败"
+            content={message}
+          />
+          <Form.Input
+            fluid
+            icon="mail"
+            iconPosition="left"
+            placeholder="邮箱"
+            type="email"
+            name="email"
+            value={email}
+            onChange={this.handleChange}
+          />
+          <Form.Input
+            fluid
+            icon="lock"
+            iconPosition="left"
+            placeholder="密码"
+            type="password"
+            name="password"
+            value={password}
+            onChange={this.handleChange}
+          />
+          <Button primary fluid size="large">登入</Button>
+        </Segment>
       </Form>
     );
   }
 }
-const DecoratedLoginForm = Form.create()(LoginForm);
 
-export default DecoratedLoginForm;
+export default LoginForm;
