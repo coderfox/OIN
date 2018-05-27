@@ -4,6 +4,7 @@ import { parseBearer, parseBasic } from "../lib/auth";
 import { Session, User } from "../models";
 import { Errors as SessionErrors } from "../models/session";
 
+// tslint:disable-next-line:naming-convention
 export const SessionAuth = createParamDecorator(async (_, req) => {
   if (!req.headers.authorization) {
     throw new Errors.AuthenticationNotFoundError("Bearer");
@@ -29,6 +30,7 @@ export const SessionAuth = createParamDecorator(async (_, req) => {
     }
   }
 });
+// tslint:disable-next-line:naming-convention
 export const BasicAuth = createParamDecorator(async (_, req) => {
   if (!req.headers.authorization) {
     throw new Errors.AuthenticationNotFoundError("Basic");
@@ -37,10 +39,10 @@ export const BasicAuth = createParamDecorator(async (_, req) => {
   const user = await User.findOne({
     email: result.username,
   });
-  if (!user || !!user.deleteToken) {
+  if (!user || !!user.delete_token) {
     throw new Errors.UserNotFound403Error(result.username);
   } else {
-    if (await user.checkPassword(result.password)) {
+    if (await user.check_password(result.password)) {
       return user;
     } else {
       throw new Errors.PasswordMismatchError(user, result.password);

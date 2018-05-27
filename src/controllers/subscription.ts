@@ -23,17 +23,17 @@ class SubscriptionController {
     res.send(classToPlain(subscriptions));
   }
   @Post()
-  public async postAll(
+  public async post_all(
     @SessionAuth() session: Session,
-    @Body("service") serviceId?: string,
+    @Body("service") service_id?: string,
     @Body("config") config?: string,
   ): Promise<Subscription> {
-    if (!serviceId) {
+    if (!service_id) {
       throw new Errors.BadRequestError("body:service");
     }
-    const service = await Service.findOne(serviceId);
+    const service = await Service.findOne(service_id);
     if (!service) {
-      throw new Errors.ServiceNotExistsError(serviceId);
+      throw new Errors.ServiceNotExistsError(service_id);
     }
     const subscription = new Subscription(session.user, service, config);
     await subscription.save();
@@ -41,7 +41,7 @@ class SubscriptionController {
   }
   @HttpCode(HttpStatus.PARTIAL_CONTENT)
   @Post(":id")
-  public async postOne(
+  public async post_one(
     @SessionAuth() session: Session,
     @Param("id") id: string,
     @Body("config") config?: string,
@@ -58,7 +58,7 @@ class SubscriptionController {
     return { config: subscription.config };
   }
   @Delete(":id")
-  public async deleteOne(
+  public async delete_one(
     @SessionAuth() session: Session,
     @Param("id") id: string,
   ): Promise<Subscription> {

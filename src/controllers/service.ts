@@ -6,7 +6,7 @@ import { classToPlain } from "class-transformer";
 @Controller("services")
 class ServiceController {
   @Get()
-  public async getAll(
+  public async get_all(
     @Req() req: any,
     @Res() res: any,
   ): Promise<void> {

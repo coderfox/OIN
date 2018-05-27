@@ -7,11 +7,11 @@ import * as Errors from "../lib/errors";
 @Controller("session")
 class SessionController {
   @Get()
-  public get( @SessionAuth() session: Session): Session {
+  public get(@SessionAuth() session: Session): Session {
     return session;
   }
   @Put()
-  public async create( @BasicAuth() user: User, @Body("permissions") permissions?: Roles): Promise<Session> {
+  public async create(@BasicAuth() user: User, @Body("permissions") permissions?: Roles): Promise<Session> {
     const session = new Session(user);
     for (const permission of permissions || []) {
       if (!user.permission.check(permission as Role)) {
@@ -23,8 +23,8 @@ class SessionController {
     return session;
   }
   @Delete()
-  public async delete( @SessionAuth() session: Session) {
-    session.expiresAt = new Date();
+  public async delete(@SessionAuth() session: Session) {
+    session.expires_at = new Date();
     await session.save();
     return session;
   }

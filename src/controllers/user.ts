@@ -16,12 +16,12 @@ class UserController {
       throw new Errors.BadRequestError("body:email");
     }
     const user = new User(email);
-    await user.setPassword(password);
+    await user.set_password(password);
     await user.save();
     return user;
   }
   @Get("me")
-  public getMe(@SessionAuth() session: Session): User {
+  public get_me(@SessionAuth() session: Session): User {
     return session.user;
   }
 }

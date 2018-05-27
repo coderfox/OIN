@@ -53,11 +53,11 @@ export default class Subscription extends BaseEntity {
 
   @CreateDateColumn({ name: "created_at" })
   @Expose({ name: "created_at" })
-  public createdAt!: Date;
+  public created_at!: Date;
 
   @UpdateDateColumn({ name: "updated_at" })
   @Expose({ name: "updated_at" })
-  public updatedAt!: Date;
+  public updated_at!: Date;
 
   @OneToMany(() => Message, (message) => message.subscription)
   public messages!: Promise<Message[]>;

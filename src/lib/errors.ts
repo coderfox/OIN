@@ -5,11 +5,11 @@ import Session from "../models/session";
 export class ApiError extends Error {
   public readonly code: string = "UNDEFINED_ERROR";
   public readonly status: number = 500;
-  constructor(code: string, httpCode: number) {
+  constructor(code: string, http_status: number) {
     super(code);
     this.name = code + "_Error";
     this.code = code;
-    this.status = httpCode;
+    this.status = http_status;
   }
 }
 export class InvalidRequestBodyError extends ApiError {
@@ -28,7 +28,7 @@ export class NotImplementedError extends ApiError {
   }
 }
 export class InternalServerError extends ApiError {
-  constructor(public readonly baseError: any) {
+  constructor(public readonly base_error: any) {
     super("INTERNAL_SERVER_ERROR", 500);
   }
 }
@@ -61,11 +61,11 @@ export class UserNotFoundByEmailError extends ApiError {
 }
 export class PasswordMismatchError extends ApiError {
   public readonly user: User;
-  public readonly wrongPassword: string;
-  constructor(user: User, wrongPassword: string) {
+  public readonly wrong_password: string;
+  constructor(user: User, wrong_password: string) {
     super("PASSWORD_MISMATCH", 403);
     this.user = user;
-    this.wrongPassword = wrongPassword;
+    this.wrong_password = wrong_password;
   }
 }
 export class InvalidAuthenticationTypeError extends ApiError {
@@ -108,13 +108,6 @@ export class DuplicateEmailError extends ApiError {
     this.email = email;
   }
 }
-export class ConfirmationNotFoundError extends ApiError {
-  public readonly confirmationCode: string;
-  constructor(code: string) {
-    super("CONFIRMATION_NOT_FOUND", 404);
-    this.confirmationCode = code;
-  }
-}
 export class NewEmailOrPasswordNotSuppliedError extends ApiError {
   constructor() {
     super("NEW_EMAIL_OR_PASSWORD_NOT_SUPPLIED", 400);
@@ -143,7 +136,7 @@ export class RpcError extends ApiError {
   }
 }
 export class RpcInternalServerError extends ApiError {
-  constructor(public readonly baseError: any) {
+  constructor(public readonly base_error: any) {
     super("INTERNAL_SERVER_ERROR", 503);
   }
 }
