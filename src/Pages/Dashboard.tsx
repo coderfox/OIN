@@ -1,14 +1,12 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
-import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
-import { Router, Route, Switch, Redirect, Link } from 'react-router-dom';
+import { RouterStore } from 'mobx-react-router';
+import { Route, Switch } from 'react-router-dom';
 import SessionState from '../lib/SessionStore';
-import * as Interfaces from '../lib/api_interfaces';
 
-import * as Forms from '../Forms';
 import * as Components from '../Components';
 import * as DashboardComponents from './DashboardPages';
-import { Grid, Menu, MenuItemProps, Segment, Header, Image } from 'semantic-ui-react';
+import { Grid, Menu, MenuItemProps, Header } from 'semantic-ui-react';
 
 interface Props {
   routing?: RouterStore;
@@ -23,14 +21,12 @@ class Dashboard extends React.Component<Props, States> {
   async componentWillMount() {
     try {
       await this.props.session!.loadSession();
-      await this.props.session!.retrieveLatestData();
     } catch (ex) {
       // message.error(<p>{ex.message} - {ex.response && ex.response.data && ex.response.data.code}</p>);
     }
   }
-  handleItemClick: MenuItemProps['onClick'] = (e, { route }) => this.props.routing!.push(route || '/dashboard');
+  handleItemClick: MenuItemProps['onClick'] = (_, { route }) => this.props.routing!.push(route || '/dashboard');
   render() {
-    const { messages, subscriptions } = this.props.session!;
     return (
       <Grid columns={2} container>
         <Grid.Row>

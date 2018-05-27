@@ -6,6 +6,7 @@ import {
   Form, Message, Segment,
 } from 'semantic-ui-react';
 import SessionState from '../lib/SessionStore';
+import { Service } from '../lib/api_interfaces';
 
 interface Props {
   session?: SessionState;
@@ -18,6 +19,7 @@ interface States {
   service_desc: string;
   error: string;
   loading: boolean;
+  services: Service[];
 }
 
 @inject('session')
@@ -30,14 +32,24 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
     service_desc: '',
     error: '',
     loading: false,
+    services: [],
   };
+
+  async componentDidMount() {
+    this.setState({
+      services: await this.props.session!.client!.getServices(),
+    });
+  }
 
   handleInputChange: FormInputProps['onChange'] = (_, data) =>
     this.setState({ [data.name]: data.value })
   handleTextAreaChange: FormTextAreaProps['onChange'] = (_, data) =>
     this.setState({ [data.name]: data.value })
-  handleDropdownChange: FormDropdownProps['onChange'] = (_, data) => {
-    const service = this.props.session!.services.find(s => s.id === data.value);
+  handleDropdownChange: FormDropdownProps['onChange'] = async (_, data) => {
+    const service = await this.props.session!.client!.getService(data.value as string);
+    if (!service) {
+      this.setState({ error: '未找到对应的服务' });
+    }
     this.setState({
       service: data.value as string,
       service_desc: (service && service.description) || '',
@@ -47,9 +59,7 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
     this.setState({ loading: true });
     try {
       const { name, service, config } = this.state;
-      this.props.session!.subscriptions.push(
-        await this.props.session!.client!.createSubscription(service, config, name)
-      );
+      await this.props.session!.client!.createSubscription(service, config, name);
       this.emitFinish();
     } catch (err) {
       this.setState({ error: (err.response && err.response.data && err.response.data.code) || err.message });
@@ -60,7 +70,7 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
     if (this.props.onFinish) { this.props.onFinish(); }
   }
   render() {
-    const { name, service, config } = this.state;
+    const { name, service, config, services } = this.state;
     return (
       <Form
         size="large"
@@ -87,7 +97,7 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
           placeholder="服务"
           search
           selection
-          options={this.props.session!.services.map(s => ({
+          options={services.map(s => ({
             key: s.id,
             value: s.id,
             text: s.title,
@@ -95,6 +105,7 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
           }))}
           value={service}
           onChange={this.handleDropdownChange}
+          loading={services.length === 0}
         />
         <Segment>
           {this.state.service_desc || '尚未选择服务'}

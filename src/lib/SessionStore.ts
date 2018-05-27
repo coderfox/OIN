@@ -4,14 +4,61 @@ import ApiClient from './client';
 
 const store = require('store');
 
-const TOKEN_KEY = 'token';
+export const TOKEN_KEY = 'token';
+export const CACHE_KEY = {
+  PREFIX: 'CACHE_',
+  MESSAGE: 'M_',
+  SUBSCRITPION: 'C_',
+  SERVICE: 'S_',
+  REQUEST: 'REQ_',
+};
 
-const compare = (a: { created_at: string }, b: { created_at: string }) =>
-  Date.parse(b.created_at) - Date.parse(a.created_at);
+export class Cache {
+  static get = <T>(type: string, key: string): T | null => {
+    const result: { value: T, expires: number } = store.get([CACHE_KEY.PREFIX, type, key].join(''));
+    if (!result || result.expires <= Date.now()) {
+      return null;
+    } else {
+      return result.value;
+    }
+  }
+  static set = <T>(type: string, key: string, value: T, expireInMin = 60): void => {
+    const result = {
+      value,
+      expires: Date.now() + 1000 * 60 * expireInMin,
+    };
+    store.set([CACHE_KEY.PREFIX, type, key].join(''), result);
+  }
+  static rm = (type: string, key: string): void => {
+    store.remove([CACHE_KEY.PREFIX, type, key].join(''));
+  }
+  static getMessage = (id: string): Interfaces.Message | null =>
+    Cache.get(CACHE_KEY.MESSAGE, id)
+  static setMessage = (id: string, value: Interfaces.Message) =>
+    Cache.set(CACHE_KEY.MESSAGE, id, value)
+  static rmMessage = (id: string) =>
+    Cache.rm(CACHE_KEY.MESSAGE, id)
+  static getSubscription = (id: string): Interfaces.Subscription | null =>
+    Cache.get(CACHE_KEY.SUBSCRITPION, id)
+  static setSubscription = (id: string, value: Interfaces.Subscription) =>
+    Cache.set(CACHE_KEY.SUBSCRITPION, id, value)
+  static rmSubscription = (id: string) =>
+    Cache.rm(CACHE_KEY.SUBSCRITPION, id)
+  static getService = (id: string): Interfaces.Service | null =>
+    Cache.get(CACHE_KEY.SERVICE, id)
+  static setService = (id: string, value: Interfaces.Service) =>
+    Cache.set(CACHE_KEY.SERVICE, id, value)
+  static rmService = (id: string) =>
+    Cache.rm(CACHE_KEY.SERVICE, id)
+  static getRequest = <T>(id: string): T | null =>
+    Cache.get(CACHE_KEY.REQUEST, id)
+  static setRequest = <T>(id: string, value: T) =>
+    Cache.set(CACHE_KEY.REQUEST, id, value)
+  static rmRequest = (id: string) =>
+    Cache.rm(CACHE_KEY.REQUEST, id)
+}
+
 export default class SessionState {
-  @observable public messages: Interfaces.Message[] = [];
-  @observable public subscriptions: Interfaces.Subscription[] = [];
-  @observable public services: Interfaces.Service[] = [];
   @observable public session?: Interfaces.Session;
   @computed public get authenticated() {
     if (!this.session) { return false; }
@@ -33,9 +80,6 @@ export default class SessionState {
   }
   @action removeToken() {
     store.remove(TOKEN_KEY);
-    this.messages = [];
-    this.subscriptions = [];
-    this.services = [];
     this.session = undefined;
   }
   @action login = async (email: string, password: string) => {
@@ -44,51 +88,21 @@ export default class SessionState {
     return session.token;
   }
 
-  @action retrieveMessages = async (forced = false) => {
-    if (!this.authenticated) { return; }
-    if (!forced && this.messages.length > 0) { return; }
-    this.messages = (await this.client!.getMessages()).sort(compare);
-  }
-  @action retrieveSubscriptions = async (forced = false) => {
-    if (!this.authenticated) { return; }
-    if (!forced && this.subscriptions.length > 0) { return; }
-    this.subscriptions = (await this.client!.getSubscriptions()).sort(compare);
-  }
-  @action retrieveServices = async (forced = false) => {
-    if (!this.authenticated) { return; }
-    if (!forced && this.services.length > 0) { return; }
-    this.services = await this.client!.getServices();
-  }
   @action markAsReaded = async (id: string) => {
     if (!this.authenticated) { return; }
     await this.client!.markAsReaded(id);
-    const msg = this.messages.find(value => value.id === id);
-    if (msg) { msg.readed = true; }
   }
   @action loadSession = async () => {
     if (this.authenticated && !this.session) {
       this.session = await this.client!.getSession();
     }
   }
-  @action retrieveLatestData = async () => {
-    await this.retrieveServices(true);
-    await this.retrieveSubscriptions(true);
-    await this.retrieveMessages(true);
-  }
-  @action retrieveLatestServices = async () => {
-    await this.retrieveServices(true);
-  }
   @action updateSubscription = async (id: string, config: string, name: string) => {
     if (!this.authenticated) { return; }
-    this.subscriptions[
-      this.subscriptions.findIndex(value => value.id === id)
-    ] = (await this.client!.updateSubscription(id, { config, name }));
+    await this.client!.updateSubscription(id, { config, name });
   }
   @action deleteSubscription = async (id: string) => {
     if (!this.authenticated) { return; }
     await this.client!.deleteSubscription(id);
-    this.subscriptions[
-      this.subscriptions.findIndex(value => value.id === id)
-    ].deleted = true;
   }
 }

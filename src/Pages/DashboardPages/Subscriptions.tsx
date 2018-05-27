@@ -1,18 +1,19 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Redirect } from 'react-router-dom';
 import SessionState from '../../lib/SessionStore';
-import * as Interfaces from '../../lib/api_interfaces';
 
 import * as Forms from '../../Forms';
 import * as Components from '../../Components';
-import { Card, Grid, Menu, Input, Modal, Header, Button, Icon, ModalProps, MenuItemProps } from 'semantic-ui-react';
+import { Card, Menu, Input, MenuItemProps } from 'semantic-ui-react';
+
+import * as I from '../../lib/api_interfaces';
 
 interface Props {
   session?: SessionState;
 }
 interface States {
   create_card_visible?: boolean;
+  subscriptions?: I.Subscription[];
 }
 
 @inject('session')
@@ -20,24 +21,30 @@ interface States {
 class Subscriptions extends React.Component<Props, States> {
   state: States = {};
 
+  async componentDidMount() {
+    this.setState({ subscriptions: undefined });
+    const subscriptions = await this.props.session!.client!.getSubscriptions();
+    this.setState({ subscriptions });
+  }
+
   openCreateCard: MenuItemProps['onClick'] = () =>
     this.setState({ create_card_visible: true })
   closeCreateCard = () =>
     this.setState({ create_card_visible: false })
 
   render() {
-    const { subscriptions } = this.props.session!;
+    const { subscriptions } = this.state;
     return (
       <div>
         <Menu secondary>
+          <Menu.Item position="right">
+            <Input icon="search" placeholder="搜索" />
+          </Menu.Item>
           <Menu.Item
             name="添加订阅"
             onClick={this.openCreateCard}
             disabled={this.state.create_card_visible}
           />
-          <Menu.Item position="right">
-            <Input icon="search" placeholder="搜索" />
-          </Menu.Item>
         </Menu>
         <Card.Group itemsPerRow={2}>
           {
@@ -49,7 +56,7 @@ class Subscriptions extends React.Component<Props, States> {
               </Card.Content>
             </Card>
           }
-          {subscriptions
+          {subscriptions && subscriptions
             .map(s => (
               <Components.Subscription
                 key={s.id}

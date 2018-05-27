@@ -106,14 +106,13 @@ class UpdateSubscriptionForm extends React.Component<Props, States> {
           placeholder="服务"
           search
           selection
-          options={this.props.session!.services.map(s => ({
-            key: s.id,
-            value: s.id,
-            text: s.title,
-            desc: s.description,
-          }))}
+          options={this.state.service && [{
+            key: this.state.service.id,
+            value: this.state.service.id,
+            text: this.state.service.title,
+            desc: this.state.service.description,
+          }]}
           value={this.state.service && this.state.service.id}
-          disabled
         />
         <Segment>
           {(this.state.service && this.state.service.description) || '未知服务'}
