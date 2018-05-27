@@ -24,6 +24,7 @@ class Messages extends React.Component<Props, States> {
   handleMessageClick = (id: string) => {
     this.setState({ selected_message: id });
   }
+  clearMessageSelect = () => this.setState({ selected_message: undefined });
 
   render() {
     const { messages } = this.props.session!;
@@ -49,10 +50,10 @@ class Messages extends React.Component<Props, States> {
                 onClick={this.handleMessageClick}
               />))}
           </Grid.Column>
-          <Grid.Column width={10} stretched>
-            <Segment>
-              {this.state.selected_message}
-            </Segment>
+          <Grid.Column width={10}>
+            {this.state.selected_message}
+            {this.state.selected_message &&
+              <Components.MessageComplex id={this.state.selected_message} onMarkedAsReaded={this.clearMessageSelect} />}
           </Grid.Column>
         </Grid.Row>
       </Grid>

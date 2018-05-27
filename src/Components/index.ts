@@ -3,3 +3,4 @@ export { default as UserCard } from './User';
 export { default as Subscription } from './Subscription';
 export { default as AddSubscriptionDialog } from './AddSubscriptionDialog';
 export { default as MessageCard } from './MessageCard';
+export { default as MessageComplex } from './MessageComplex';
