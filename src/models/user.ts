@@ -17,9 +17,10 @@ import { Exclude, Expose, Transform } from "class-transformer";
 @Index("email_unique_without_deletion", ["email"], { unique: true, where: "delete_token IS NULL" })
 @Exclude()
 export default class User extends BaseEntity {
-  constructor(email: string) {
+  constructor(email: string, nickname?: string) {
     super();
     this.email = email;
+    this.nickname = nickname || email;
   }
 
   @PrimaryGeneratedColumn("uuid")
@@ -72,4 +73,8 @@ export default class User extends BaseEntity {
   public delete_token?: string;
 
   public mark_deleted = () => this.delete_token = uuid();
+
+  @Expose()
+  @Column("varchar")
+  public nickname: string;
 }

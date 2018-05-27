@@ -17,6 +17,7 @@ export default class Message extends BaseEntity {
     title: string,
     abstract: string,
     content: string,
+    href?: string,
   ) {
     super();
     this.owner = owner;
@@ -24,6 +25,7 @@ export default class Message extends BaseEntity {
     this.title = title;
     this.summary = abstract;
     this.content = content;
+    this.href = href;
   }
 
   @PrimaryGeneratedColumn("uuid")
@@ -69,4 +71,8 @@ export default class Message extends BaseEntity {
   @UpdateDateColumn({ name: "updated_at" })
   @Expose({ name: "updated_at" })
   public updated_at!: Date;
+
+  @Expose()
+  @Column("varchar", { nullable: true })
+  public href?: string;
 }

@@ -16,11 +16,13 @@ export default class Subscription extends BaseEntity {
     owner: User,
     service: Service,
     config = "",
+    name?: string,
   ) {
     super();
     this.owner = owner;
     this.service = service;
     this.config = config;
+    this.name = name || this.id;
   }
 
   @PrimaryGeneratedColumn("uuid")
@@ -61,4 +63,8 @@ export default class Subscription extends BaseEntity {
 
   @OneToMany(() => Message, (message) => message.subscription)
   public messages!: Promise<Message[]>;
+
+  @Expose()
+  @Column("varchar")
+  public name: string;
 }

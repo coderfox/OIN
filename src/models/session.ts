@@ -58,7 +58,6 @@ export default class Session extends BaseEntity {
   public token!: string;
 
   @Column("varchar", {
-    length: 10,
     array: true, transformer: {
       to: (roles: Permission) => roles.roles,
       from: (value) => new Permission(value),
