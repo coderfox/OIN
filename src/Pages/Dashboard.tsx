@@ -56,7 +56,7 @@ class Dashboard extends React.Component<Props, States> {
               />
             </Menu>
           </Grid.Column>
-          <Grid.Column width={12} stretched>
+          <Grid.Column width={13} stretched>
             <Switch>
               <Route path="/dashboard" exact={true} component={DashboardComponents.Messages} />
               <Route path="/dashboard/subscriptions" component={DashboardComponents.Subscriptions} />
