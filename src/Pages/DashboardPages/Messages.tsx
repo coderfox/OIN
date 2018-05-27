@@ -105,7 +105,7 @@ class Messages extends React.Component<Props, States> {
                       id={m.id}
                       title={m.title}
                       summary={m.summary}
-                      subscription={subscription && subscription.name || '未找到对应的订阅'}
+                      subscription={(subscription && subscription.name) || '未找到对应的订阅'}
                       onClick={this.handleMessageClick}
                       onMarkedAsReaded={this.handleMessageReaded}
                     />);

@@ -16,6 +16,7 @@ interface Props {
   session?: SessionState;
 }
 interface States {
+  nickname: string;
   email: string;
   password: string;
   password_confirm: string;
@@ -28,19 +29,27 @@ interface States {
 @inject('routing', 'session')
 @observer
 class RegForm extends React.Component<Props, States> {
-  state: States = { email: '', password: '', password_confirm: '', loading: false, error: false, message: '' };
+  state: States = {
+    nickname: '',
+    email: '',
+    password: '',
+    password_confirm: '',
+    loading: false,
+    error: false,
+    message: ''
+  };
 
   handleChange = (e: React.SyntheticEvent<HTMLInputElement>, data: InputOnChangeData) =>
     this.setState({ [data.name]: data.value })
   handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    const { email, password, password_confirm } = this.state;
+    const { email, password, password_confirm, nickname } = this.state;
     this.setState({ loading: true, error: false });
     e.preventDefault();
     try {
       if (password !== password_confirm) {
         throw new Error('两次输入的密码不一致');
       }
-      const user = await ApiClient.register(email, password);
+      const user = await ApiClient.register(email, password, nickname);
       this.setState({ user });
       setTimeout(() => this.props.routing!.push('/login'), 1000);
     } catch (ex) {
@@ -52,7 +61,16 @@ class RegForm extends React.Component<Props, States> {
     this.setState({ loading: false });
   }
   render() {
-    const { email, password, password_confirm, loading, error, message, user } = this.state;
+    const {
+      nickname,
+      email,
+      password,
+      password_confirm,
+      loading,
+      error,
+      message,
+      user
+    } = this.state;
     return (
       <Form
         size="large"
@@ -70,6 +88,16 @@ class RegForm extends React.Component<Props, States> {
             error
             header="注册失败"
             content={message}
+          />
+          <Form.Input
+            fluid
+            icon="user"
+            iconPosition="left"
+            placeholder="昵称"
+            type="text"
+            name="nickname"
+            value={nickname}
+            onChange={this.handleChange}
           />
           <Form.Input
             fluid

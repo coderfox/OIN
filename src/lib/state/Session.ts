@@ -78,11 +78,11 @@ export default class SessionState {
   @action retrieveLatestServices = async () => {
     await this.retrieveServices(true);
   }
-  @action updateSubscriptionConfig = async (id: string, config: string) => {
+  @action updateSubscription = async (id: string, config: string, name: string) => {
     if (!this.authenticated) { return; }
     this.subscriptions[
       this.subscriptions.findIndex(value => value.id === id)
-    ].config = (await this.client!.updateSubscription(id, { config })).config;
+    ] = (await this.client!.updateSubscription(id, { config, name }));
   }
   @action deleteSubscription = async (id: string) => {
     if (!this.authenticated) { return; }
