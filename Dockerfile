@@ -7,6 +7,7 @@ RUN yarn
 
 ADD . .
 ENV REACT_APP_API_ROOT=https://api.oin.app
+ENV GENERATE_SOURCEMAP=false
 RUN yarn build
 
 FROM nginx:1.13.10-alpine
