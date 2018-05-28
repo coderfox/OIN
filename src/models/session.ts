@@ -67,15 +67,15 @@ export default class Session extends BaseEntity {
   @Transform((value: Permission) => value.roles)
   public permission: Permission = new Permission();
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   @Expose({ name: "created_at" })
   public created_at!: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   @Expose({ name: "updated_at" })
   public updated_at!: Date;
 
-  @Column({ name: "expires_at" })
+  @Column({ name: "expires_at", type: "timestamptz" })
   @Expose({ name: "expires_at" })
   public expires_at: Date = this._get_new_expires_at();
 

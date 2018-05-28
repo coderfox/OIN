@@ -17,7 +17,7 @@ export default class Message extends BaseEntity {
     title: string,
     abstract: string,
     content: string,
-    href?: string | null,
+    href: string | null,
   ) {
     super();
     this.owner = owner;
@@ -64,15 +64,15 @@ export default class Message extends BaseEntity {
   @Expose({ since: 1.1 })
   public content: string;
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   @Expose({ name: "created_at" })
   public created_at!: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   @Expose({ name: "updated_at" })
   public updated_at!: Date;
 
   @Expose()
   @Column("varchar", { nullable: true })
-  public href?: string | null;
+  public href: string | null;
 }

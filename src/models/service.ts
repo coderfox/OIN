@@ -32,10 +32,10 @@ export default class Service extends BaseEntity {
   @Expose({ name: "description" })
   public description?: string;
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   public created_at!: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   public updated_at!: Date;
 
   @OneToMany(() => Subscription, (subscription) => subscription.service)

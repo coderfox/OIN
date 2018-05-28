@@ -61,11 +61,11 @@ export default class User extends BaseEntity {
   @OneToMany(() => Subscription, (subscription) => subscription.owner)
   public subscriptions!: Promise<Subscription[]>;
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   @Expose({ name: "created_at" })
   public created_at!: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   @Expose({ name: "updated_at" })
   public updated_at!: Date;
 

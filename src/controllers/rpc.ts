@@ -83,7 +83,7 @@ class RpcController {
       message.title,
       message.summary || message.content,
       message.content,
-      message.href !== "" ? message.href : null);
+      message.href || null);
     await message_db.save();
     return true;
   }
