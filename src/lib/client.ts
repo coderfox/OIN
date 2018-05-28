@@ -29,6 +29,22 @@ class ApiClient {
     );
     return result.data;
   }
+  private static getWithPagination = async <T>(
+    url: string,
+    auth?: AxiosBasicCredentials | string
+  ): Promise<{
+    data: T[],
+    more: boolean,
+    count: number | null
+  }> => {
+    const result = await axios.get(
+      ApiClient.constructApiUrl(url),
+      ApiClient.constructOptions(auth)
+    );
+    const more = result.headers['x-pagination-more'] === 'true';
+    const count = parseInt(result.headers['x-pagination-count'], 10) || null;
+    return { data: result.data, more, count };
+  }
   private static post = async <TRes, TReq>(
     url: string,
     data: TReq,
@@ -68,6 +84,8 @@ class ApiClient {
   }
   public get = async <T>(url: string): Promise<T> =>
     ApiClient.get<T>(url, this.token)
+  public getWithPagination = async <T>(url: string) =>
+    ApiClient.getWithPagination<T>(url, this.token)
   public post = async <TRes, TReq>(url: string, data: TReq): Promise<TRes> =>
     ApiClient.post<TRes, TReq>(url, data, this.token)
   public put = async <TRes, TReq>(url: string, data: TReq): Promise<TRes> =>
@@ -79,6 +97,8 @@ class ApiClient {
     this.get<Interfaces.Message>('/messages/'.concat(id))
   public getMessages = () =>
     this.get<Interfaces.Message[]>('/messages/mine')
+  public getMessagesWithQuery = (query = 'readed:false') =>
+    this.getWithPagination<Interfaces.Message>(['/messages/mine', `query=${encodeURIComponent(query)}`].join('?'))
   public getServices = () =>
     this.get<Interfaces.Service[]>('/services')
   public getService = (id: string) =>

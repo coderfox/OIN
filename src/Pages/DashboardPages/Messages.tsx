@@ -8,7 +8,9 @@ import {
   Ref, RefProps,
   Button,
   Dimmer,
-  Loader
+  Loader,
+  InputProps,
+  Form,
 } from 'semantic-ui-react';
 import * as I from '../../lib/api_interfaces';
 
@@ -22,22 +24,28 @@ interface States {
   loadingMarkAllAsReaded?: boolean;
   messages?: I.Message[];
   subscriptions?: { [key: string]: I.Subscription | undefined };
+  search_query?: string;
 }
 
 @inject('session')
 @observer
 class Messages extends React.Component<Props, States> {
-  state: States = {};
+  state: States = { search_query: 'readed:false' };
 
   async componentDidMount() {
     this.setState({ messages: undefined });
-    const messages = await this.props.session!.client!.getMessages();
+    const result = await this.props.session!.client!.getMessagesWithQuery(
+      this.state.search_query || 'nop');
+    const messages = result.data;
     const subscriptionsArr = await Promise.all(
       messages.map(m =>
         this.props.session!.client!.getSubscription(m.subscription)));
     const subscriptions: { [key: string]: I.Subscription | undefined } = {};
     subscriptionsArr.map(s => subscriptions[s.id] = s);
-    this.setState({ messages, subscriptions });
+    this.setState({
+      messages, subscriptions, done_messages: messages
+        .filter(m => m.readed === true).length
+    });
   }
 
   handleMessageClick = (id: string) => {
@@ -73,6 +81,11 @@ class Messages extends React.Component<Props, States> {
     }
   }
 
+  handleSearchChange: InputProps['onChange'] = (_, data) => {
+    this.setState({ search_query: data.value });
+  }
+  search = () => this.refresh();
+
   render() {
     const { messages, subscriptions } = this.state;
     return (
@@ -80,9 +93,6 @@ class Messages extends React.Component<Props, States> {
         <Ref innerRef={this.handleContextRef}>
           <Grid.Row>
             <Grid.Column width={6}>
-              <Dimmer active={messages === undefined} inverted>
-                <Loader>Loading</Loader>
-              </Dimmer>
               <Segment>
                 {messages &&
                   <Message positive hidden={messages.length !== 0 && this.state.done_messages !== messages.length}>
@@ -93,6 +103,15 @@ class Messages extends React.Component<Props, States> {
                       您的消息已经全部处理完毕！
                   </p>
                   </Message>}
+                <Form fluid onSubmit={this.search}>
+                  <Form.Input
+                    fluid
+                    placeholder="搜索"
+                    onChange={this.handleSearchChange}
+                    action={{ icon: 'search', onClick: this.search }}
+                    value={this.state.search_query}
+                  />
+                </Form>
                 <Progress
                   percent={(messages === undefined || messages.length === 0) ? 100 :
                     (this.state.done_messages || 0) / messages.length * 100}
@@ -116,6 +135,9 @@ class Messages extends React.Component<Props, States> {
                   size="small"
                 />
               </Segment>
+              <Dimmer active={messages === undefined} inverted>
+                <Loader>Loading</Loader>
+              </Dimmer>
               {messages && messages
                 .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))
                 .map(m => {

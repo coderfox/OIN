@@ -4,9 +4,29 @@ import SessionState from '../../lib/SessionStore';
 
 import * as Forms from '../../Forms';
 import * as Components from '../../Components';
-import { Card, Menu, Input, MenuItemProps, Dimmer, Loader } from 'semantic-ui-react';
+import { Card, Menu, Input, MenuItemProps, Dimmer, Loader, Dropdown } from 'semantic-ui-react';
 
 import * as I from '../../lib/api_interfaces';
+
+const queryOptions = [
+  {
+    text: '所有订阅',
+    value: 'all',
+  },
+  // TODO
+  /* {
+    text: '有效订阅',
+    value: 'deleted:false',
+    icon: 'checkmark',
+    color: 'green'
+  },
+  {
+    text: '已删除订阅',
+    value: 'deleted:true',
+    icon: 'checkmark',
+    color: 'green'
+  }, */
+];
 
 interface Props {
   session?: SessionState;
@@ -42,6 +62,12 @@ class Subscriptions extends React.Component<Props, States> {
     return (
       <div>
         <Menu secondary>
+          <Menu.Item position="left">
+            <span>
+              显示
+              <Dropdown inline options={queryOptions} defaultValue={queryOptions[0].value} />
+            </span>
+          </Menu.Item>
           <Menu.Item position="left">
             <Input icon="search" placeholder="搜索" />
           </Menu.Item>
