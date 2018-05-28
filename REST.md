@@ -798,9 +798,9 @@ no authentication required
 
 #### Errors
 
-| HTTP Code | Error Code         | Description            |
-| --------- | ------------------ | ---------------------- |
-| 404       | SERVICE_NOT_EXISTS | message does not exist |
+| HTTP Code | Error Code        | Description            |
+| --------- | ----------------- | ---------------------- |
+| 404       | SERVICE_NOT_FOUND | message does not exist |
 
 There are error codes defined in *Conventions*.
 
@@ -917,11 +917,11 @@ Content-Type: application/json; charset=utf-8
 
 **Body**
 
-| Path    | Type    | Description                                                  |
-| ------- | ------- | ------------------------------------------------------------ |
-| service | string  | service id                                                   |
-| config  | string  | subscription settings, varies by service                     |
-| name    | string? | subscription name, defaults to the generated subscription id |
+| Path    | Type    | Description                              |
+| ------- | ------- | ---------------------------------------- |
+| service | string  | service id                               |
+| config  | string  | subscription settings, varies by service |
+| name    | string? | subscription name, defaults to `新订阅`  |
 
 **Header**: none
 
@@ -1018,7 +1018,7 @@ Content-Type: application/json; charset=utf-8
 {"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"none","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅","last_event":{"id":"23efa991-15cb-425a-96dc-4e78641986f3","subscription":"4afd65ae-d58b-4d36-b28a-202b0bf46f98","status":true,"message":"succeeded","time":"2018-02-24T00:52:06.419Z"}}
 ```
 
-### Modify Subscription Settings
+### Modify Subscription
 
 `POST` /subscription/:id
 
@@ -1045,7 +1045,7 @@ ONLY subscriptions belonging to the current user can be modified.
 
 **Header:** none
 
-**Content:** updated config
+**Content:** Subscription
 
 #### Errors
 
@@ -1075,7 +1075,7 @@ config=https://xfox.me/rss.xml
 HTTP/1.1 206 Partial Content
 Content-Type: application/json; charset=utf-8
 
-{"config":"https://xfox.me/rss.xml"}
+{"id":"ef192845-ac6a-468d-93d8-fa0a4559f646","owner":"10b44e16-7384-4edb-a77f-8e2f79de3995","service":"89ee9095-60e2-4ddd-a0ec-e431131a768a","config":"https://xfox.me/rss.xml","deleted":false,"created_at":"2018-02-24T08:52:06.4191790","updated_at":"2018-02-24T00:52:06.4191790Z","name":"测试订阅"}
 ```
 ### Delete Subscription
 
