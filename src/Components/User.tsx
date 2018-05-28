@@ -1,17 +1,11 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Redirect } from 'react-router-dom';
-import SessionState from '../lib/state/Session';
-import * as Interfaces from '../lib/api_interfaces';
+import SessionState from '../lib/SessionStore';
 const ColorHash = require('color-hash');
 const color = new ColorHash();
 import { RouterStore } from 'mobx-react-router';
 
-import * as Forms from '../Forms';
-import * as Components from '../Components';
-
-import { Card, Icon, Avatar, Button, message } from 'antd';
-const { Meta } = Card;
+import { Card, Icon, Button } from 'semantic-ui-react';
 
 interface Props {
   routing?: RouterStore;
@@ -30,17 +24,17 @@ class User extends React.Component<Props, States> {
   render() {
     const session = this.props.session!.session!;
     return (
-      <Card title="用户信息">
-        <Meta
-          avatar={<Avatar
-            style={{ backgroundColor: color.hex(session.user.id) }}
-            icon="user"
-          />}
-          title={session.user.email}
-        />
-        <div>
+      <Card>
+        <Card.Content>
+          <Card.Header>
+            <Icon name="user" style={{ color: color.hex(session.user.id) }} />
+            {session.user.nickname}
+          </Card.Header>
+          <Card.Meta>{session.user.email}</Card.Meta>
+        </Card.Content>
+        <Card.Content extra>
           <Button onClick={this.logout}>登出</Button>
-        </div>
+        </Card.Content>
       </Card>
     );
   }

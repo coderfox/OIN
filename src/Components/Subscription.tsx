@@ -1,141 +1,112 @@
 import * as React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Redirect } from 'react-router-dom';
-import SessionState from '../lib/state/Session';
+import SessionState from '../lib/SessionStore';
 import * as Interfaces from '../lib/api_interfaces';
-const ColorHash = require('color-hash');
-const color = new ColorHash();
-import { RouterStore } from 'mobx-react-router';
 import Timeage from 'timeago.js';
 var timeago = Timeage();
 
 import * as Forms from '../Forms';
-import * as Components from '../Components';
 
-import { Card, Icon, Avatar, Button, Collapse, Input, message, Form } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
-const { Meta } = Card;
-const { Panel } = Collapse;
+import {
+  Card, Label, Form, Icon, Message,
+  Dimmer, Loader
+} from 'semantic-ui-react';
 
-const FORM_FIELDS = {
-  CONFIG: 'config',
-};
-
-interface Props extends FormComponentProps {
-  id: string;
+interface Props {
   session?: SessionState;
+  id: string;
 }
 interface States {
   subscription?: Interfaces.Subscription;
   service?: Interfaces.Service;
-  loading: boolean;
+  error: string;
+  update_subscription: boolean;
 }
 
 @inject('session')
 @observer
-class Subscription extends React.Component<Props, States> {
-  state = {
-    loading: false,
-  } as States;
+class SubscriptionComponent extends React.Component<Props, States> {
+  state: States = { error: '', update_subscription: false };
 
-  componentWillMount() {
-    const subscription = this.props.session!.subscriptions.find(value => value.id === this.props.id);
-    if (!subscription) {
-      message.warning(`数据不一致，C${this.props.id} 不存在！`);
-      return;
+  async UNSAFE_componentWillMount() {
+    await this.UNSAFE_componentWillReceiveProps(this.props);
+  }
+  async UNSAFE_componentWillReceiveProps(props: Props) {
+    try {
+      const subscription = await this.props.session!.client!.getSubscription(props.id);
+      this.setState({
+        subscription,
+        service: await this.props.session!.client!.getService(subscription.service),
+      });
+    } catch (err) {
+      this.setState({ error: (err.response && err.response.data && err.response.data.code) || err.message });
     }
-    const service = this.props.session!.services.find(value =>
-      subscription !== undefined && value.id === subscription.service);
-    if (!service) {
-      message.warning(`数据不一致，S${subscription.service} 不存在！`);
-      return;
-    }
-    this.setState({
-      subscription,
-      service,
-    });
   }
 
-  updateConfig: React.FormEventHandler<void> = async (e) => {
-    this.props.form.validateFields((err, values) => {
-      if (!err) {
-        this.setState({ loading: true });
-        this.props.session!.updateSubscriptionConfig(this.props.id, values[FORM_FIELDS.CONFIG])
-          .then((data) => {
-            this.setState({
-              loading: false,
-              subscription: this.props.session!.subscriptions.find(value => value.id === this.props.id)
-            });
-            message.info('配置修改成功');
-          });
-      }
-    });
-  }
-  handleDelete: React.FormEventHandler<void> = async (e) => {
-    this.setState({ loading: true });
-    await this.props.session!.deleteSubscription(this.props.id);
-    this.setState({ loading: false });
-    message.info('删除成功');
+  openUpdateForm = () =>
+    this.setState({ update_subscription: true })
+  onUpdateFormFinish = () => {
+    this.setState({ update_subscription: false });
+    this.UNSAFE_componentWillMount();
   }
 
   render() {
     const { subscription, service } = this.state;
-    const { getFieldDecorator, getFieldsError, isFieldTouched, getFieldValue } = this.props.form;
-    const fieldsError = getFieldsError();
     return (
-      <Collapse bordered={false}>
-        <Panel
-          key={this.props.id}
-          header={subscription && subscription.id}
-        >
-          <Meta
-            avatar={<Avatar
-              style={{ backgroundColor: color.hex(service && service.id) }}
-              icon="fork"
-            />}
-            title={service && service.title}
-            description={service && service.id}
-          />
-          <div style={{ marginTop: '12px', marginBottom: '12px' }} />
-          <Form>
-            <Form.Item label="配置信息">
-              {getFieldDecorator(FORM_FIELDS.CONFIG, {
-                initialValue: subscription && subscription.config
-              })(
-                <Input.TextArea
-                  placeholder="配置"
-                  autosize={{ minRows: 2 }}
+      <Card fluid>
+        {(subscription && service) ? (
+          <Card.Content>
+            <Card.Header>{subscription.name}</Card.Header>
+            <Card.Meta>{subscription.id}</Card.Meta>
+            <Card.Description>
+              <p>
+                {subscription.deleted && <Label color="red">
+                  已删除
+                </Label>}
+                <Label color="purple">
+                  服务<Label.Detail>{service.title}</Label.Detail>
+                </Label>
+                <Label>
+                  <Icon name="clock" />
+                  {timeago.format(subscription.created_at, 'zh_CN')}
+                  <Label.Detail>创建</Label.Detail>
+                </Label>
+                <Label>
+                  <Icon name="clock" />
+                  {timeago.format(subscription.updated_at, 'zh_CN')}
+                  <Label.Detail>修改</Label.Detail>
+                </Label>
+              </p>
+              {this.state.update_subscription ?
+                <Forms.UpdateSubscription id={subscription.id} onFinish={this.onUpdateFormFinish} /> :
+                <Form>
+                  <p>配置信息</p>
+                  <Form.TextArea disabled rows={2} autoHeight placeholder="空" value={subscription.config} />
+                  <Form.Button
+                    icon="edit"
+                    content="编辑"
+                    onClick={this.openUpdateForm}
+                  />
+                </Form>
+              }
+            </Card.Description>
+          </Card.Content>) : (
+            <React.Fragment>
+              <Card.Content>
+                <Message
+                  header="加载失败"
+                  error
+                  content={this.state.error}
                 />
-              )}
-            </Form.Item>
-            <Form.Item>
-              <Button
-                type="primary"
-                disabled={
-                  (Object.keys(fieldsError).some(field => fieldsError[field]) ||
-                    !isFieldTouched(FORM_FIELDS.CONFIG)) &&
-                  getFieldValue(FORM_FIELDS.CONFIG) === (this.state.subscription && this.state.subscription.config)
-                }
-                loading={this.state.loading}
-                onClick={this.updateConfig}
-              >修改
-              </Button>
-            </Form.Item>
-            <Form.Item>
-              <Button
-                loading={this.state.loading}
-                onClick={this.handleDelete}
-              >删除
-              </Button>
-            </Form.Item>
-          </Form>
-          <p>创建于：{subscription && timeago.format(subscription.created_at, 'zh_CN')}</p>
-          <p>最近修改：{subscription && timeago.format(subscription.updated_at, 'zh_CN')}</p>
-        </Panel>
-      </Collapse>
+              </Card.Content>
+              <Dimmer active={this.state.error === '' && this.state.service === undefined} inverted>
+                <Loader />
+              </Dimmer>
+            </React.Fragment>
+          )}
+      </Card>
     );
   }
 }
-const DecoratedSubscription = Form.create()(Subscription);
 
-export default DecoratedSubscription;
+export default SubscriptionComponent;

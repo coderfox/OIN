@@ -2,11 +2,12 @@ import axios, { AxiosBasicCredentials } from 'axios';
 import * as Interfaces from './api_interfaces';
 
 class ApiClient {
-  public static register = async (email: string, password: string) => {
+  public static register = async (email: string, password: string, nickname?: string) => {
     return await ApiClient.post<Interfaces.User, {
       email: string,
       password: string,
-    }>('/users', { email, password });
+      nickname?: string,
+    }>('/users', { email, password, nickname });
   }
   public static login = async (email: string, password: string) => {
     return await ApiClient.put<Interfaces.Session, {}>('/session', {}, { username: email, password: password });
@@ -27,6 +28,22 @@ class ApiClient {
       ApiClient.constructOptions(auth)
     );
     return result.data;
+  }
+  private static getWithPagination = async <T>(
+    url: string,
+    auth?: AxiosBasicCredentials | string
+  ): Promise<{
+    data: T[],
+    more: boolean,
+    count: number | null
+  }> => {
+    const result = await axios.get(
+      ApiClient.constructApiUrl(url),
+      ApiClient.constructOptions(auth)
+    );
+    const more = result.headers['x-pagination-more'] === 'true';
+    const count = parseInt(result.headers['x-pagination-count'], 10) || null;
+    return { data: result.data, more, count };
   }
   private static post = async <TRes, TReq>(
     url: string,
@@ -67,6 +84,8 @@ class ApiClient {
   }
   public get = async <T>(url: string): Promise<T> =>
     ApiClient.get<T>(url, this.token)
+  public getWithPagination = async <T>(url: string) =>
+    ApiClient.getWithPagination<T>(url, this.token)
   public post = async <TRes, TReq>(url: string, data: TReq): Promise<TRes> =>
     ApiClient.post<TRes, TReq>(url, data, this.token)
   public put = async <TRes, TReq>(url: string, data: TReq): Promise<TRes> =>
@@ -78,21 +97,34 @@ class ApiClient {
     this.get<Interfaces.Message>('/messages/'.concat(id))
   public getMessages = () =>
     this.get<Interfaces.Message[]>('/messages/mine')
+  public getMessagesWithQuery = (query = 'readed:false') =>
+    this.getWithPagination<Interfaces.Message>(['/messages/mine', `query=${encodeURIComponent(query)}`].join('?'))
   public getServices = () =>
     this.get<Interfaces.Service[]>('/services')
+  public getService = (id: string) =>
+    this.get<Interfaces.Service>('/services/'.concat(id))
   public getSubscriptions = () =>
     this.get<Interfaces.Subscription[]>('/subscriptions/mine')
+  public getSubscription = (id: string) =>
+    this.get<Interfaces.Subscription>('/subscriptions/'.concat(id))
   public markAsReaded = (id: string) =>
     this.post<{ readed: boolean }, { readed: true }>('/messages/'.concat(id), { readed: true })
   public getSession = () =>
     this.get<Interfaces.Session>('/session')
-  public createSubscription = (service: string, config: string) =>
+  public createSubscription = (service: string, config: string, name: string) =>
     this.post<Interfaces.Subscription, {
       service: string,
-      config: string
-    }>('/subscriptions', { service, config })
-  public updateSubscription = (subscription: string, config: string) =>
-    this.post<{ config: string }, { config: string }>('/subscriptions/'.concat(subscription), { config })
+      config: string,
+      name: string,
+    }>('/subscriptions', { service, config, name })
+  public updateSubscription = (subscription: string, updateQuery: {
+    config?: string,
+    name?: string
+  }) =>
+    this.post<Interfaces.Subscription, {
+      config?: string,
+      name?: string
+    }>('/subscriptions/'.concat(subscription), updateQuery)
   public deleteSubscription = (id: string) =>
     this.delete<Interfaces.Subscription>('/subscriptions/'.concat(id))
 }

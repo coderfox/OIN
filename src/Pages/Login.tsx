@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { Row, Col } from 'antd';
+
+import { Grid, Header, Message } from 'semantic-ui-react';
+import { Link } from 'react-router-dom';
 
 import EnsureAnonymous from '../Routes/EnsureAnonymous';
-
 import * as Forms from '../Forms';
 
 interface Props {
@@ -13,12 +14,21 @@ interface States {
 class LoginPage extends React.Component<Props, States> {
   render() {
     return (
-      <Row style={{ height: '100%' }} type="flex" justify="space-around" align="middle">
-        <Col md={12} xs={24}>
-          <EnsureAnonymous />
+      <Grid
+        textAlign="center"
+        style={{ height: '100%' }}
+        verticalAlign="middle"
+      >
+        <Grid.Column style={{ maxWidth: 450 }}>
+          <Header as="h2" textAlign="center">
+            登入<EnsureAnonymous />
+          </Header>
           <Forms.Login />
-        </Col>
-      </Row>
+          <Message>
+            没有账户？<Link to="/reg">马上注册</Link>
+          </Message>
+        </Grid.Column>
+      </Grid>
     );
   }
 }
