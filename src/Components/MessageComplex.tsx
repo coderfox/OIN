@@ -37,9 +37,9 @@ class MessageComplexComponent extends React.Component<Props, States> {
       error: undefined,
     });
     try {
-      const message = await newProps.session!.client!.getMessage(newProps.id);
-      const subscription = await newProps.session!.client!.getSubscription(message.subscription);
-      const service = await newProps.session!.client!.getService(subscription.service);
+      const message = await newProps.session!.getMessage(newProps.id);
+      const subscription = await newProps.session!.getSubscription(message.subscription);
+      const service = await newProps.session!.getService(subscription.service);
       this.setState({
         message,
         service,

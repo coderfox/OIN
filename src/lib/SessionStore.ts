@@ -2,61 +2,10 @@ import { observable, action, computed } from 'mobx';
 import * as Interfaces from './api_interfaces';
 import ApiClient from './client';
 
-const store = require('store');
+import store from 'store';
+import * as cache from './cache';
 
 export const TOKEN_KEY = 'token';
-export const CACHE_KEY = {
-  PREFIX: 'CACHE_',
-  MESSAGE: 'M_',
-  SUBSCRITPION: 'C_',
-  SERVICE: 'S_',
-  REQUEST: 'REQ_',
-};
-
-export class Cache {
-  static get = <T>(type: string, key: string): T | null => {
-    const result: { value: T, expires: number } = store.get([CACHE_KEY.PREFIX, type, key].join(''));
-    if (!result || result.expires <= Date.now()) {
-      return null;
-    } else {
-      return result.value;
-    }
-  }
-  static set = <T>(type: string, key: string, value: T, expireInMin = 60): void => {
-    const result = {
-      value,
-      expires: Date.now() + 1000 * 60 * expireInMin,
-    };
-    store.set([CACHE_KEY.PREFIX, type, key].join(''), result);
-  }
-  static rm = (type: string, key: string): void => {
-    store.remove([CACHE_KEY.PREFIX, type, key].join(''));
-  }
-  static getMessage = (id: string): Interfaces.Message | null =>
-    Cache.get(CACHE_KEY.MESSAGE, id)
-  static setMessage = (id: string, value: Interfaces.Message) =>
-    Cache.set(CACHE_KEY.MESSAGE, id, value)
-  static rmMessage = (id: string) =>
-    Cache.rm(CACHE_KEY.MESSAGE, id)
-  static getSubscription = (id: string): Interfaces.Subscription | null =>
-    Cache.get(CACHE_KEY.SUBSCRITPION, id)
-  static setSubscription = (id: string, value: Interfaces.Subscription) =>
-    Cache.set(CACHE_KEY.SUBSCRITPION, id, value)
-  static rmSubscription = (id: string) =>
-    Cache.rm(CACHE_KEY.SUBSCRITPION, id)
-  static getService = (id: string): Interfaces.Service | null =>
-    Cache.get(CACHE_KEY.SERVICE, id)
-  static setService = (id: string, value: Interfaces.Service) =>
-    Cache.set(CACHE_KEY.SERVICE, id, value)
-  static rmService = (id: string) =>
-    Cache.rm(CACHE_KEY.SERVICE, id)
-  static getRequest = <T>(id: string): T | null =>
-    Cache.get(CACHE_KEY.REQUEST, id)
-  static setRequest = <T>(id: string, value: T) =>
-    Cache.set(CACHE_KEY.REQUEST, id, value)
-  static rmRequest = (id: string) =>
-    Cache.rm(CACHE_KEY.REQUEST, id)
-}
 
 export default class SessionState {
   @observable public session?: Interfaces.Session;
@@ -88,21 +37,70 @@ export default class SessionState {
     return session.token;
   }
 
-  @action markAsReaded = async (id: string) => {
+  markAsReaded = async (id: string) => {
     if (!this.authenticated) { return; }
     await this.client!.markAsReaded(id);
+    cache.rmMessage(id);
   }
   @action loadSession = async () => {
     if (this.authenticated && !this.session) {
       this.session = await this.client!.getSession();
     }
   }
-  @action updateSubscription = async (id: string, config: string, name: string) => {
+  updateSubscription = async (id: string, config: string, name: string) => {
     if (!this.authenticated) { return; }
     await this.client!.updateSubscription(id, { config, name });
+    cache.rmSubscription(id);
   }
-  @action deleteSubscription = async (id: string) => {
+  deleteSubscription = async (id: string) => {
     if (!this.authenticated) { return; }
     await this.client!.deleteSubscription(id);
+    cache.rmSubscription(id);
+  }
+
+  getMessage = async (id: string) => {
+    const cached = cache.getMessage(id);
+    if (cached) {
+      return cached;
+    } else {
+      if (!this.authenticated) { throw new Error('未登入'); }
+      const result = await this.client!.getMessage(id);
+      cache.setMessage(result);
+      return result;
+    }
+  }
+  getSubscription = async (id: string) => {
+    const cached = cache.getSubscription(id);
+    if (cached) {
+      return cached;
+    } else {
+      if (!this.authenticated) { throw new Error('未登入'); }
+      const result = await this.client!.getSubscription(id);
+      cache.setSubscription(result);
+      return result;
+    }
+  }
+  getService = async (id: string) => {
+    const cached = cache.getService(id);
+    if (cached) {
+      return cached;
+    } else {
+      if (!this.authenticated) { throw new Error('未登入'); }
+      const result = await this.client!.getService(id);
+      cache.setService(result);
+      return result;
+    }
+  }
+  cacheSubscriptions = async (ids: string[]) => {
+    const subscriptions = await Promise.all(
+      Array.from(new Set(ids))
+        .map(this.getSubscription));
+    subscriptions.forEach(cache.setSubscription);
+  }
+  cacheServices = async (ids: string[]) => {
+    const services = await Promise.all(
+      Array.from(new Set(ids))
+        .map(this.getService));
+    services.forEach(cache.setService);
   }
 }

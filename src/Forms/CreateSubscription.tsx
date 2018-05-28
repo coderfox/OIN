@@ -47,7 +47,7 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
   handleTextAreaChange: FormTextAreaProps['onChange'] = (_, data) =>
     this.setState({ [data.name]: data.value })
   handleDropdownChange: FormDropdownProps['onChange'] = async (_, data) => {
-    const service = await this.props.session!.client!.getService(data.value as string);
+    const service = await this.props.session!.getService(data.value as string);
     if (!service) {
       this.setState({ error: '未找到对应的服务' });
     }

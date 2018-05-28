@@ -33,10 +33,10 @@ class SubscriptionComponent extends React.Component<Props, States> {
   }
   async UNSAFE_componentWillReceiveProps(props: Props) {
     try {
-      const subscription = await this.props.session!.client!.getSubscription(props.id);
+      const subscription = await this.props.session!.getSubscription(props.id);
       this.setState({
         subscription,
-        service: await this.props.session!.client!.getService(subscription.service),
+        service: await this.props.session!.getService(subscription.service),
       });
     } catch (err) {
       this.setState({ error: (err.response && err.response.data && err.response.data.code) || err.message });

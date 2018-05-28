@@ -39,9 +39,10 @@ class Messages extends React.Component<Props, States> {
     const result = await this.props.session!.client!.getMessagesWithQuery(
       this.state.search_query || 'nop');
     const messages = result.data;
+    await this.props.session!.cacheSubscriptions(messages.map(m => m.subscription));
     const subscriptionsArr = await Promise.all(
       messages.map(m =>
-        this.props.session!.client!.getSubscription(m.subscription)));
+        this.props.session!.getSubscription(m.subscription)));
     const subscriptions: { [key: string]: I.Subscription | undefined } = {};
     subscriptionsArr.map(s => subscriptions[s.id] = s);
     this.setState({

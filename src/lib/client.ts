@@ -107,10 +107,11 @@ class ApiClient {
     this.get<Interfaces.Subscription[]>('/subscriptions/mine')
   public getSubscription = (id: string) =>
     this.get<Interfaces.Subscription>('/subscriptions/'.concat(id))
-  public markAsReaded = (id: string) =>
-    this.post<{ readed: boolean }, { readed: true }>('/messages/'.concat(id), { readed: true })
   public getSession = () =>
     this.get<Interfaces.Session>('/session')
+
+  public markAsReaded = (id: string) =>
+    this.post<{ readed: boolean }, { readed: true }>('/messages/'.concat(id), { readed: true })
   public createSubscription = (service: string, config: string, name: string) =>
     this.post<Interfaces.Subscription, {
       service: string,
