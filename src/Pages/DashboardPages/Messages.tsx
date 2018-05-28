@@ -134,7 +134,19 @@ class Messages extends React.Component<Props, States> {
                   <Loader>Loading</Loader>
                 </Dimmer>
                 {messages && messages
-                  .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))
+                  .sort((a, b) => {
+                    if (!a.readed && !b.readed) {
+                      return Date.parse(b.updated_at) - Date.parse(a.updated_at);
+                    } else if (a.readed && b.readed) {
+                      return 0;
+                    } else if (a.readed && !b.readed) {
+                      return -1;
+                    } else if (!a.readed && b.readed) {
+                      return 1;
+                    } else {
+                      return 0;
+                    }
+                  })
                   .map(m => {
                     const subscription = subscriptions && subscriptions[m.subscription];
                     return (
