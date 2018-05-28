@@ -4,12 +4,14 @@ import SessionState from '../../lib/SessionStore';
 import * as Components from '../../Components';
 
 import {
-  Grid, Progress, Segment, Message,
+  Grid, Progress,
+  Message,
   Ref, RefProps,
-  Button,
   Dimmer,
   Loader,
   InputProps,
+  Menu,
+  Input,
   Form,
 } from 'semantic-ui-react';
 import * as I from '../../lib/api_interfaces';
@@ -89,83 +91,76 @@ class Messages extends React.Component<Props, States> {
   render() {
     const { messages, subscriptions } = this.state;
     return (
-      <Grid columns={2}>
-        <Ref innerRef={this.handleContextRef}>
-          <Grid.Row>
-            <Grid.Column width={6}>
-              <Segment>
-                {messages &&
-                  <Message positive hidden={messages.length !== 0 && this.state.done_messages !== messages.length}>
-                    <Message.Header>
-                      没有消息
-                  </Message.Header>
-                    <p>
-                      您的消息已经全部处理完毕！
-                  </p>
-                  </Message>}
-                <Form fluid onSubmit={this.search}>
-                  <Form.Input
-                    fluid
-                    placeholder="搜索"
-                    onChange={this.handleSearchChange}
-                    action={{ icon: 'search', onClick: this.search }}
-                    value={this.state.search_query}
-                  />
-                </Form>
+      <React.Fragment>
+        <Menu secondary>
+          <Menu.Item
+            onClick={this.markAllAsReaded}
+            name="全部标为已读"
+            disabled={messages === undefined || messages.length === 0}
+            loading={this.state.loadingMarkAllAsReaded}
+          />
+          <Menu.Item
+            onClick={this.refresh}
+            name="刷新"
+          />
+          <Menu.Item position="right">
+            <Form onSubmit={this.search}>
+              <Input
+                action={{ type: 'submit', icon: 'search', onClick: this.search }}
+                placeholder="搜索"
+                onChange={this.handleSearchChange}
+                value={this.state.search_query}
+                onSubmit={this.search}
+              />
+            </Form>
+          </Menu.Item>
+        </Menu>
+        <Grid columns={2}>
+          <Ref innerRef={this.handleContextRef}>
+            <Grid.Row>
+              <Grid.Column width={6}>
                 <Progress
-                  percent={(messages === undefined || messages.length === 0) ? 100 :
-                    (this.state.done_messages || 0) / messages.length * 100}
                   color="olive"
                   value={this.state.done_messages || 0}
                   total={messages === undefined ? '-' : messages.length}
                   progress="ratio"
                 />
-                <Button
-                  onClick={this.markAllAsReaded}
-                  color="green"
-                  content="全部标为已读"
-                  disabled={messages === undefined || messages.length === 0}
-                  size="small"
-                  loading={this.state.loadingMarkAllAsReaded}
-                />
-                <Button
-                  onClick={this.refresh}
-                  color="pink"
-                  content="刷新"
-                  size="small"
-                />
-              </Segment>
-              <Dimmer active={messages === undefined} inverted>
-                <Loader>Loading</Loader>
-              </Dimmer>
-              {messages && messages
-                .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))
-                .map(m => {
-                  const subscription = subscriptions && subscriptions[m.subscription];
-                  return (
-                    <Components.MessageSimple
-                      key={m.id}
-                      id={m.id}
-                      title={m.title}
-                      summary={m.summary}
-                      subscription={(subscription && subscription.name) || '未找到对应的订阅'}
-                      onClick={this.handleMessageClick}
-                      onMarkedAsReaded={this.handleMessageReaded}
-                      readed={m.readed}
-                    />);
-                })}
-            </Grid.Column>
-            <Grid.Column width={10}>
-              {this.state.selected_message &&
-                <Components.MessageComplex
-                  id={this.state.selected_message}
-                  onMarkedAsReaded={this.handleMessageReaded}
-                />
-              }
-            </Grid.Column>
-          </Grid.Row>
-        </Ref>
-      </Grid>
+                {messages &&
+                  <Message positive hidden={messages.length !== 0 && this.state.done_messages !== messages.length}>
+                    您的消息已经全部处理完毕！
+                </Message>}
+                <Dimmer active={messages === undefined} inverted>
+                  <Loader>Loading</Loader>
+                </Dimmer>
+                {messages && messages
+                  .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))
+                  .map(m => {
+                    const subscription = subscriptions && subscriptions[m.subscription];
+                    return (
+                      <Components.MessageSimple
+                        key={m.id}
+                        id={m.id}
+                        title={m.title}
+                        summary={m.summary}
+                        subscription={(subscription && subscription.name) || '未找到对应的订阅'}
+                        onClick={this.handleMessageClick}
+                        onMarkedAsReaded={this.handleMessageReaded}
+                        readed={m.readed}
+                      />);
+                  })}
+              </Grid.Column>
+              <Grid.Column width={10}>
+                {this.state.selected_message &&
+                  <Components.MessageComplex
+                    id={this.state.selected_message}
+                    onMarkedAsReaded={this.handleMessageReaded}
+                  />
+                }
+              </Grid.Column>
+            </Grid.Row>
+          </Ref>
+        </Grid>
+      </React.Fragment>
     );
   }
 }

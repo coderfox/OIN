@@ -62,21 +62,20 @@ class Subscriptions extends React.Component<Props, States> {
     return (
       <div>
         <Menu secondary>
-          <Menu.Item position="left">
+          <Menu.Item>
             <span>
               显示
               <Dropdown inline options={queryOptions} defaultValue={queryOptions[0].value} />
             </span>
           </Menu.Item>
-          <Menu.Item position="left">
-            <Input icon="search" placeholder="搜索" />
-          </Menu.Item>
           <Menu.Item
             name="添加订阅"
             onClick={this.openCreateCard}
             disabled={this.state.create_card_visible}
-            position="right"
           />
+          <Menu.Item position="right">
+            <Input icon="search" placeholder="搜索" />
+          </Menu.Item>
         </Menu>
         <Card.Group itemsPerRow={2}>
           <Dimmer active={subscriptions === undefined} inverted>

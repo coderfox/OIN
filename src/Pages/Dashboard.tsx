@@ -6,7 +6,7 @@ import SessionState from '../lib/SessionStore';
 
 import * as Components from '../Components';
 import * as DashboardComponents from './DashboardPages';
-import { Grid, Menu, MenuItemProps, Header } from 'semantic-ui-react';
+import { Grid, Menu, MenuItemProps, Header, Image, Segment } from 'semantic-ui-react';
 
 interface Props {
   routing?: RouterStore;
@@ -29,13 +29,13 @@ class Dashboard extends React.Component<Props, States> {
   render() {
     return (
       <Grid columns={2} container>
-        <Grid.Row>
-          <Header as="h1">
-            OIN
-          </Header>
-        </Grid.Row>
-        <Grid.Row>
+        <Grid.Row verticalAlign="top">
           <Grid.Column width={3}>
+            <Segment>
+              <Header as="h1">
+                <Image src="/assets/oin.svg" /> beta
+              </Header>
+            </Segment>
             <Components.UserCard />
             <Menu pointing secondary vertical fluid>
               <Menu.Item
@@ -52,7 +52,7 @@ class Dashboard extends React.Component<Props, States> {
               />
             </Menu>
           </Grid.Column>
-          <Grid.Column width={13} stretched>
+          <Grid.Column width={13}>
             <Switch>
               <Route path="/dashboard" exact={true} component={DashboardComponents.Messages} />
               <Route path="/dashboard/subscriptions" component={DashboardComponents.Subscriptions} />
