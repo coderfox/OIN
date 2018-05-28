@@ -6,11 +6,11 @@ import {
   Form, Message, Segment,
 } from 'semantic-ui-react';
 import SessionState from '../lib/SessionStore';
-import { Service } from '../lib/api_interfaces';
+import { Service, Subscription } from '../lib/api_interfaces';
 
 interface Props {
   session?: SessionState;
-  onFinish?: () => void;
+  onFinish?: (subscription?: Subscription) => void;
 }
 interface States {
   name: string;
@@ -20,6 +20,7 @@ interface States {
   error: string;
   loading: boolean;
   services: Service[];
+  subscription?: Subscription;
 }
 
 @inject('session')
@@ -59,7 +60,8 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
     this.setState({ loading: true });
     try {
       const { name, service, config } = this.state;
-      await this.props.session!.client!.createSubscription(service, config, name);
+      const subscription = await this.props.session!.client!.createSubscription(service, config, name);
+      this.setState({ subscription });
       this.emitFinish();
     } catch (err) {
       this.setState({ error: (err.response && err.response.data && err.response.data.code) || err.message });
@@ -67,7 +69,7 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
     this.setState({ loading: false });
   }
   emitFinish = () => {
-    if (this.props.onFinish) { this.props.onFinish(); }
+    if (this.props.onFinish) { this.props.onFinish(this.state.subscription); }
   }
   render() {
     const { name, service, config, services } = this.state;

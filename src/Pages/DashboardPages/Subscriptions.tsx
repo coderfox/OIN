@@ -29,8 +29,13 @@ class Subscriptions extends React.Component<Props, States> {
 
   openCreateCard: MenuItemProps['onClick'] = () =>
     this.setState({ create_card_visible: true })
-  closeCreateCard = () =>
-    this.setState({ create_card_visible: false })
+  closeCreateCard = (subscription?: I.Subscription) => {
+    this.setState({ create_card_visible: false });
+    if (subscription) {
+      this.setState(prev =>
+        ({ subscriptions: [subscription, ...prev.subscriptions || []] }));
+    }
+  }
 
   render() {
     const { subscriptions } = this.state;
@@ -61,6 +66,19 @@ class Subscriptions extends React.Component<Props, States> {
             </Card>
           }
           {subscriptions && subscriptions
+            .sort((a, b) => {
+              if (!a.deleted && !b.deleted) {
+                return Date.parse(b.updated_at) - Date.parse(a.updated_at);
+              } else if (a.deleted && b.deleted) {
+                return 0;
+              } else if (a.deleted && !b.deleted) {
+                return 1;
+              } else if (!a.deleted && b.deleted) {
+                return -1;
+              } else {
+                return 0;
+              }
+            })
             .map(s => (
               <Components.Subscription
                 key={s.id}

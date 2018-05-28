@@ -45,7 +45,7 @@ class SubscriptionComponent extends React.Component<Props, States> {
 
   openUpdateForm = () =>
     this.setState({ update_subscription: true })
-  closeUpdateForm = () => {
+  onUpdateFormFinish = () => {
     this.setState({ update_subscription: false });
     this.UNSAFE_componentWillMount();
   }
@@ -78,7 +78,7 @@ class SubscriptionComponent extends React.Component<Props, States> {
                 </Label>
               </p>
               {this.state.update_subscription ?
-                <Forms.UpdateSubscription id={subscription.id} onFinish={this.closeUpdateForm} /> :
+                <Forms.UpdateSubscription id={subscription.id} onFinish={this.onUpdateFormFinish} /> :
                 <Form>
                   <p>配置信息</p>
                   <Form.TextArea disabled rows={2} autoHeight placeholder="空" value={subscription.config} />

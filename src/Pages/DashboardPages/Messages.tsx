@@ -43,8 +43,11 @@ class Messages extends React.Component<Props, States> {
   handleMessageClick = (id: string) => {
     this.setState(({ selected_message: id }));
   }
-  handleMessageReaded = () =>
-    this.setState(prev => ({ done_messages: (prev.done_messages || 0) + 1 }))
+  handleMessageReaded = (id: string) => {
+    this.setState(prev => ({ done_messages: (prev.done_messages || 0) + 1 }));
+    const messages = this.state.messages!.map(m => m.id === id ? { ...m, readed: true } : m);
+    this.setState({ messages });
+  }
   handleContextRef: RefProps['innerRef'] = contextRef => this.setState({ contextRef });
   markAllAsReaded = async () => {
     this.setState({ loadingMarkAllAsReaded: true });
@@ -54,7 +57,7 @@ class Messages extends React.Component<Props, States> {
           .filter(m => m.readed === false)
           .map(async m => {
             await this.props.session!.markAsReaded(m.id);
-            this.handleMessageReaded();
+            this.handleMessageReaded(m.id);
           }) : []);
     } catch (ex) {
       // nop, TODO
@@ -114,7 +117,7 @@ class Messages extends React.Component<Props, States> {
                 />
               </Segment>
               {messages && messages
-                .filter(m => m.readed === false)
+                .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))
                 .map(m => {
                   const subscription = subscriptions && subscriptions[m.subscription];
                   return (
@@ -126,6 +129,7 @@ class Messages extends React.Component<Props, States> {
                       subscription={(subscription && subscription.name) || '未找到对应的订阅'}
                       onClick={this.handleMessageClick}
                       onMarkedAsReaded={this.handleMessageReaded}
+                      readed={m.readed}
                     />);
                 })}
             </Grid.Column>

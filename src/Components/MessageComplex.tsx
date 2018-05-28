@@ -10,7 +10,7 @@ import { Card, Segment, Header, Button, Dimmer, Loader, Message, Label, Icon } f
 interface Props {
   session?: SessionState;
   id: string;
-  onMarkedAsReaded?: () => void;
+  onMarkedAsReaded?: (id: string) => void;
 }
 interface States {
   loading: boolean;
@@ -60,7 +60,9 @@ class MessageComplexComponent extends React.Component<Props, States> {
     this.setState({ loading: true });
     await this.props.session!.markAsReaded(this.props.id);
     this.setState({ loading: false });
-    if (this.props.onMarkedAsReaded) { this.props.onMarkedAsReaded(); }
+    if (this.props.onMarkedAsReaded) {
+      this.props.onMarkedAsReaded(this.props.id);
+    }
   }
 
   render() {

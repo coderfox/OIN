@@ -10,8 +10,9 @@ interface Props {
   title: string;
   subscription: string;
   summary: string;
+  readed: boolean;
   onClick: (id: string) => void;
-  onMarkedAsReaded?: () => void;
+  onMarkedAsReaded?: (id: string) => void;
 }
 interface States {
   loading: boolean;
@@ -27,7 +28,9 @@ class MessageSimple extends React.PureComponent<Props, States> {
     this.setState({ loading: true });
     await this.props.session!.markAsReaded(this.props.id);
     this.setState({ loading: false });
-    if (this.props.onMarkedAsReaded) { this.props.onMarkedAsReaded(); }
+    if (this.props.onMarkedAsReaded) {
+      this.props.onMarkedAsReaded(this.props.id);
+    }
   }
   render() {
     const { title, subscription, summary } = this.props;
@@ -41,8 +44,19 @@ class MessageSimple extends React.PureComponent<Props, States> {
           </Card.Description>
         </Card.Content>
         <Card.Content>
-          <Button onClick={this.markAsRead} color="olive" content="标为已读" size="mini" />
-          <Button onClick={this.onClick} color="blue" content="查看详情" size="mini" />
+          <Button
+            onClick={this.markAsRead}
+            color="olive"
+            content="标为已读"
+            size="mini"
+            disabled={this.props.readed}
+          />
+          <Button
+            onClick={this.onClick}
+            color="blue"
+            content="查看详情"
+            size="mini"
+          />
         </Card.Content>
       </Card>
     );
