@@ -5,6 +5,7 @@ import {
   RegisterServiceRequest, RegisterServiceResponse,
   GetChannelsRequest, GetChannelsResponse,
   CreateMessageRequest, CreateMessageResponse,
+  ReportEventRequest, ReportEventResponse,
 } from "./types";
 
 class ApiClient {
@@ -48,6 +49,14 @@ class ApiClient {
       token: this.token,
       channel_id: channel,
       message: { title, summary, content },
+    });
+  }
+  public reportEvent = async (channel: string, status = true, message = "succeed") => {
+    if (!this.token) { throw new ApiError("SERVICE_NOT_REGISTERED"); }
+    return await ApiClient.call<ReportEventRequest, ReportEventResponse>("report_event", {
+      token: this.token,
+      channel_id: channel,
+      event: { status, message },
     });
   }
 }

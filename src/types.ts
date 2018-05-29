@@ -34,3 +34,12 @@ export interface CreateMessageRequest {
   };
 }
 export type CreateMessageResponse = true;
+export interface ReportEventRequest {
+  token: string;
+  channel_id: string;
+  event: {
+    status: boolean;
+    message?: string;
+  };
+}
+export type ReportEventResponse = true;
