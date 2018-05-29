@@ -29,5 +29,15 @@
     "tslint-consistent-codestyle": "^1.13.0",
     "tslint-eslint-rules": "^5.3.1",
     "tslint-language-service": "^0.9.9"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:bin": "pkg -o sandra dist/index.js",
+    "pretest": "tsc",
+    "lint": "tslint -p .",
+    "test": "nyc -r html ava",
+    "test-cov": "nyc -r lcovonly -r html ava",
+    "start": "node dist/index",
+    "start:dev": "supervisor -i coverage dist/index"
   }
 }
