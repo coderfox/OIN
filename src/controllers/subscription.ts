@@ -16,7 +16,12 @@ class SubscriptionController {
   ): Promise<void> {
     const { skip, take } = getPagination(req);
     const where: Partial<Subscription> = { owner: session.user };
-    const [subscriptions, count] = await Subscription.findAndCount({ where, skip, take });
+    const [subscriptions, count] = await Subscription.findAndCount({
+      where,
+      skip,
+      take,
+      order: { updated_at: "DESC" },
+    });
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
       res.set("X-Pagination-Total", count);

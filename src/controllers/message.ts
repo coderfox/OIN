@@ -39,7 +39,12 @@ class MessageController {
         }
       }
     } else { where.readed = false; }
-    const [messages, count] = await Message.findAndCount({ where, skip, take });
+    const [messages, count] = await Message.findAndCount({
+      where,
+      skip,
+      take,
+      order: { updated_at: "DESC" },
+    });
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
       res.set("X-Pagination-Total", count);

@@ -12,7 +12,11 @@ class ServiceController {
     @Res() res: any,
   ): Promise<void> {
     const { skip, take } = getPagination(req);
-    const [services, count] = await Service.findAndCount({ skip, take });
+    const [services, count] = await Service.findAndCount({
+      skip,
+      take,
+      order: { updated_at: "DESC" },
+    });
     if (count > skip + take) {
       res.set("X-Pagination-More", "true");
       res.set("X-Pagination-Total", count);
