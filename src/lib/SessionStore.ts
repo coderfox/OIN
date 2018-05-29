@@ -103,4 +103,9 @@ export default class SessionState {
         .map(this.getService));
     services.forEach(cache.setService);
   }
+
+  purgeSubscriptionCache = () =>
+    cache.clearSubscription()
+  purgeServiceCache = () =>
+    cache.clearSubscription()
 }

@@ -43,6 +43,8 @@ class Subscriptions extends React.Component<Props, States> {
 
   async componentDidMount() {
     this.setState({ subscriptions: undefined });
+    this.props.session!.purgeServiceCache();
+    this.props.session!.purgeSubscriptionCache();
     const subscriptions = await this.props.session!.client!.getSubscriptions();
     await this.props.session!.cacheServices(subscriptions.map(s => s.service));
     this.setState({ subscriptions });
