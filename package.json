@@ -1,7 +1,7 @@
 {
   "name": "sandra.server.api.rest",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "dist/entry",
   "dependencies": {
     "@nestjs/common": "^5.0.0",
@@ -42,7 +42,6 @@
     "axios": "^0.18.0",
     "axiosist": "^0.1.0",
     "coveralls": "^3.0.1",
-    "nexe": "^2.0.0-rc.28",
     "nyc": "^11.7.3",
     "supervisor": "^0.12.0",
     "tslint": "^5.10.0",
@@ -51,18 +50,14 @@
     "tslint-language-service": "^0.9.8"
   },
   "scripts": {
-    "compile": "tsc && tslint -p . && node dist/bin/buildOrmConfig",
+    "build": "tsc",
+    "build:bin": "pkg -o sandra dist/entry.js",
+    "pretest": "tsc",
+    "lint": "tslint -p .",
     "test": "nyc -r html ava",
     "test-cov": "nyc -r lcovonly -r html ava",
-    "postinstall": "tsc",
-    "pretest": "tsc&& tslint -p .",
-    "dev": "supervisor -i coverage dist/entry",
     "start": "node dist/entry",
-    "lint": "tslint -p .",
-    "test-nocompile": "nyc -r html ava",
-    "db:migrate": "typeorm migration:run",
-    "db:revert": "typeorm migration:revert",
-    "build:bin": "pkg -o sandra dist/entry.js"
+    "start:dev": "supervisor -i coverage dist/entry"
   },
   "ava": {
     "files": [

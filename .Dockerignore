@@ -8,5 +8,5 @@ ormconfig.json
 .env
 .git
 .gitignore
-.travis.yml
+.gitlab-ci.yml
 sandra
