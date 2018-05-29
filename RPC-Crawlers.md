@@ -128,8 +128,8 @@ report_event(token: string, channel_id: string, event: IEvent) -> true
 | :-----------: | :-----------: | :-------------------------: |
 |     token     |    string     |        SERVICE_TOKEN        |
 |  channel_id   | string (uuid) |                             |
-|     event     |    IEvent     | whether the event succeeded |
-| event/status  |    string     |        message title        |
+|     event     |    IEvent     |                             |
+| event/status  |    boolean    | whether the event succeeded |
 | event/message |    string?    |  event result explanation   |
 
 ### Return Value

@@ -481,18 +481,18 @@ Content-Type: application/json
 
 ### Describing Message
 
-| Path         | Type    | Description                                      |
-| ------------ | ------- | ------------------------------------------------ |
-| id           | string  | message id in UUID, unique at website level      |
-| readed       | boolean |                                                  |
-| owner        | string  | owner user id in UUID                            |
-| subscription | string  | subscription id in UUID                          |
-| title        | string  | message title                                    |
-| summary      | string  | biref introduction to the message, in plain text |
-| content      | string  | message content, in `text/html`                  |
-| created_at   | string  | time of creation, in conventional time format    |
-| updated_at   | string  | time of last update, in conventional time format |
-| href         | string? | link to external source                          |
+| Path         | Type           | Description                                      |
+| ------------ | -------------- | ------------------------------------------------ |
+| id           | string         | message id in UUID, unique at website level      |
+| readed       | boolean        |                                                  |
+| owner        | string         | owner user id in UUID                            |
+| subscription | string         | subscription id in UUID                          |
+| title        | string         | message title                                    |
+| summary      | string         | biref introduction to the message, in plain text |
+| content      | string         | message content, in `text/html`                  |
+| created_at   | string         | time of creation, in conventional time format    |
+| updated_at   | string         | time of last update, in conventional time format |
+| href         | string \| null | link to external source                          |
 
 Example:
 
@@ -825,17 +825,17 @@ Content-Type: application/json; charset=utf-8
 
 ### Describing Subscription
 
-| Path       | Type    | Description                                      |
-| ---------- | ------- | ------------------------------------------------ |
-| id         | string  | subscription id, unique at website level         |
-| service    | string  | service id                                       |
-| owner      | string  | owner user id                                    |
-| config     | string  | settings, varies by service                      |
-| created_at | string  | time of creation, in conventional time format    |
-| updated_at | string  | time of last update, in conventional time format |
-| deleted    | boolean |                                                  |
-| name       | string  | name of the subscription                         |
-| last_event | Event?  | last execution event of subscription             |
+| Path       | Type          | Description                                      |
+| ---------- | ------------- | ------------------------------------------------ |
+| id         | string        | subscription id, unique at website level         |
+| service    | string        | service id                                       |
+| owner      | string        | owner user id                                    |
+| config     | string        | settings, varies by service                      |
+| created_at | string        | time of creation, in conventional time format    |
+| updated_at | string        | time of last update, in conventional time format |
+| deleted    | boolean       |                                                  |
+| name       | string        | name of the subscription                         |
+| last_event | Event \| null | *optional* last execution event of subscription  |
 
 Example:
 
@@ -935,7 +935,7 @@ Content-Type: application/json; charset=utf-8
 | -------- | ------------------------------- |
 | Location | location of the created message |
 
-**Content:** the created subscription
+**Content:** Subscription without `last_event`
 
 #### Errors
 
