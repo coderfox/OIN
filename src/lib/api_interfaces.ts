@@ -40,4 +40,12 @@ export interface Subscription {
   service: string;
   updated_at: string;
   name: string;
+  last_event?: SubscriptionEvent | null;
+}
+export interface SubscriptionEvent {
+  id: string;
+  message: string;
+  status: true;
+  subscription: boolean;
+  time: string;
 }

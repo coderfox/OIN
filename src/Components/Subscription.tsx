@@ -52,6 +52,7 @@ class SubscriptionComponent extends React.Component<Props, States> {
 
   render() {
     const { subscription, service } = this.state;
+    const lastEvent = subscription && subscription.last_event;
     return (
       <Card fluid>
         {(subscription && service) ? (
@@ -66,6 +67,7 @@ class SubscriptionComponent extends React.Component<Props, States> {
                 <Label color="purple">
                   服务<Label.Detail>{service.title}</Label.Detail>
                 </Label>
+              </p><p>
                 <Label>
                   <Icon name="clock" />
                   {timeago.format(subscription.created_at, 'zh_CN')}
@@ -76,6 +78,25 @@ class SubscriptionComponent extends React.Component<Props, States> {
                   {timeago.format(subscription.updated_at, 'zh_CN')}
                   <Label.Detail>修改</Label.Detail>
                 </Label>
+              </p><p>
+                {lastEvent ?
+                  (lastEvent.status ?
+                    <Label color="green">
+                      <Icon name="checkmark" />
+                      {timeago.format(lastEvent.time, 'zh_CN')}
+                      <Label.Detail>成功</Label.Detail>
+                    </Label> :
+                    <Label color="red">
+                      <Icon name="warning" />
+                      失败
+                      <Label.Detail>于{timeago.format(lastEvent.time, 'zh_CN')}: {lastEvent.message} </Label.Detail>
+                    </Label>
+                  ) :
+                  <Label color="olive">
+                    <Icon name="info" />
+                    暂未被执行过
+                  </Label>
+                }
               </p>
               {this.state.update_subscription ?
                 <Forms.UpdateSubscription id={subscription.id} onFinish={this.onUpdateFormFinish} /> :

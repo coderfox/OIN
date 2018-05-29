@@ -13,18 +13,22 @@ before_script:
 build-master:
   stage: build
   script:
-    - docker build  --cache-from $CI_REGISTRY_IMAGE --pull -t "$CI_REGISTRY_IMAGE" .
+    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
     - docker push "$CI_REGISTRY_IMAGE"
   only:
     - master
+  tags:
+    - shell
 
 build:
   stage: build
   script:
-    - docker build  --cache-from $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   except:
     - master
+  tags:
+    - shell
 
 plain_make:
   stage: build
