@@ -8,6 +8,7 @@ import User from "./user";
 import Service from "./service";
 import Message from "./message";
 import { Exclude, Expose, Transform } from "class-transformer";
+import SubscriptionEvent from "./subscription_event";
 
 @Entity()
 @Exclude()
@@ -30,7 +31,7 @@ export default class Subscription extends BaseEntity {
   public id!: string;
 
   @ManyToOne(() => User, (user) => user.subscriptions, {
-    eager: true,
+    eager: true, nullable: false,
   })
   @JoinColumn({ name: "owner_id" })
   @Expose()
@@ -38,7 +39,7 @@ export default class Subscription extends BaseEntity {
   public owner: User;
 
   @ManyToOne(() => Service, (service) => service.subscriptions, {
-    eager: true,
+    eager: true, nullable: false,
   })
   @JoinColumn({ name: "service_id" })
   @Expose()
@@ -67,4 +68,7 @@ export default class Subscription extends BaseEntity {
   @Expose()
   @Column("varchar")
   public name: string;
+
+  @OneToMany(() => SubscriptionEvent, (event) => event.subscription)
+  public events!: Promise<Message[]>;
 }

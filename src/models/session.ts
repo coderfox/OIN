@@ -47,7 +47,7 @@ export default class Session extends BaseEntity {
     new Date(Date.now() + ms(TOKEN_EXPIRES))
 
   @ManyToOne(() => User, (user) => user.sessions, {
-    eager: true,
+    eager: true, nullable: false,
   })
   @JoinColumn({ name: "user_id" })
   @Expose()

@@ -14,7 +14,7 @@ import MessageController from "./controllers/message";
 import ServiceController from "./controllers/service";
 import SubscriptionController from "./controllers/subscription";
 import RpcController from "./controllers/rpc";
-import { SENTRY_DSN } from "./lib/config";
+import { SENTRY_DSN, SERVER_UA } from "./lib/config";
 
 @Module({
   imports: [],
@@ -59,7 +59,7 @@ export const buildApplication = async () => {
     new SerializeInterceptor(),
   );
   app.use(((_: any, res: any, next: any) => {
-    res.set("Server", "sandra.server.api.rest/0.2.0 (REST/0.4)");
+    res.set("Server", SERVER_UA);
     next();
   }));
   app.enableCors({

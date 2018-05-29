@@ -6,3 +6,4 @@ export const LOG_LEVEL = process.env.LOG_LEVEL || "info";
 export const DEPLOY_TOKEN = process.env.DEPLOY_TOKEN || "1b26f5e2fd217297a50e5a31aeedc48a";
 export const DEBUG = process.env.NODE_ENV === "dev";
 export const SENTRY_DSN = process.env.SENTRY_DSN || "";
+export const SERVER_UA = "sandra.server.api/0.3.0 (REST/0.4.3; RPC Crawler/0.4.0)";

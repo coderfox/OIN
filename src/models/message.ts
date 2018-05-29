@@ -37,7 +37,7 @@ export default class Message extends BaseEntity {
   public readed: boolean = false;
 
   @ManyToOne(() => User, (user) => user.messages, {
-    eager: true,
+    eager: true, nullable: false,
   })
   @JoinColumn({ name: "owner_id" })
   @Expose()
@@ -45,7 +45,7 @@ export default class Message extends BaseEntity {
   public owner: User;
 
   @ManyToOne(() => Subscription, (subscription) => subscription.messages, {
-    eager: true,
+    eager: true, nullable: false,
   })
   @JoinColumn({ name: "subscription_id" })
   @Expose()
