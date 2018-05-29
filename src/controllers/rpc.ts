@@ -1,5 +1,5 @@
 import { Controller, Post, Body, UseInterceptors, HttpCode, HttpStatus } from "@nestjs/common";
-import { Subscription, Service, Message } from "../models";
+import { Subscription, Service, Message, SubscriptionEvent } from "../models";
 import * as Errors from "../lib/errors";
 import RpcInterceptor, { RpcErrorInterceptor } from "../middlewares/rpc";
 import { DEPLOY_TOKEN } from "../lib/config";
@@ -85,6 +85,35 @@ class RpcController {
       message.content,
       message.href || null);
     await message_db.save();
+    return true;
+  }
+  @HttpCode(HttpStatus.OK)
+  @Post("report_event")
+  public async report_event(
+    @Body("token") token?: string,
+    @Body("channel_id") channel?: string,
+    @Body("event") event?: {
+      status?: boolean,
+      message?: string,
+    },
+  ): Promise<true> {
+    if (!token || !channel || !event || !event.status || typeof event.status !== "boolean") {
+      throw new Errors.RpcInvalidParametersError("body:param");
+    }
+    const service = await Service.findOne({ token });
+    if (!service) {
+      throw new Errors.RpcInvalidTokenError(token);
+    }
+    const subscription = await Subscription.findOne(channel);
+    if (!subscription) {
+      throw new Errors.RpcChannelNotFoundError(channel);
+    }
+    const event_db = new SubscriptionEvent(
+      subscription,
+      event.status,
+      event.message || (event.status ? "成功" : "失败"),
+    );
+    await event_db.save();
     return true;
   }
 }

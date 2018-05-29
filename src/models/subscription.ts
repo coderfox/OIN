@@ -7,8 +7,8 @@ import {
 import User from "./user";
 import Service from "./service";
 import Message from "./message";
-import { Exclude, Expose, Transform } from "class-transformer";
 import SubscriptionEvent from "./subscription_event";
+import { Exclude, Expose, Transform } from "class-transformer";
 
 @Entity()
 @Exclude()

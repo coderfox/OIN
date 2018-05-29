@@ -1,10 +1,9 @@
 import { Get, Controller, Req, Res, Param, Post, Body, HttpCode, HttpStatus, Delete } from "@nestjs/common";
 import { SessionAuth } from "../middlewares/authentication";
-import { Session, Subscription, Service } from "../models";
+import { Session, Subscription, Service, SubscriptionEvent } from "../models";
 import * as Errors from "../lib/errors";
 import getPagination from "../lib/pagination";
 import { classToPlain } from "class-transformer";
-import SubscriptionEvent from "../models/subscription_event";
 
 @Controller("subscriptions")
 class SubscriptionController {
