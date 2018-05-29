@@ -97,7 +97,8 @@ class RpcController {
       message?: string,
     },
   ): Promise<true> {
-    if (!token || !channel || !event || !event.status || typeof event.status !== "boolean") {
+    if (!token || !channel || !event ||
+      event.status === undefined || typeof event.status !== "boolean") {
       throw new Errors.RpcInvalidParametersError("body:param");
     }
     const service = await Service.findOne({ token });
