@@ -76,6 +76,9 @@ export default class Subscription extends BaseEntity {
   public last_event?: SubscriptionEvent | null;
 
   public fetch_last_event = async () => {
-    this.last_event = await SubscriptionEvent.findOne({ subscription: this }) || null;
+    this.last_event = await SubscriptionEvent.findOne({
+      where: { subscription: this },
+      order: { time: "DESC" },
+    }) || null;
   }
 }

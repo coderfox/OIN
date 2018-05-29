@@ -4,6 +4,7 @@ import { Session, Subscription, Service } from "../models";
 import * as Errors from "../lib/errors";
 import getPagination from "../lib/pagination";
 import { classToPlain } from "class-transformer";
+import SubscriptionEvent from "../models/subscription_event";
 
 @Controller("subscriptions")
 class SubscriptionController {
@@ -93,6 +94,33 @@ class SubscriptionController {
     }
     await subscription.fetch_last_event();
     return subscription;
+  }
+  @Get(":id/events")
+  public async get_one_events(
+    @SessionAuth() session: Session,
+    @Param("id") id: string,
+    @Req() req: any,
+    @Res() res: any,
+  ): Promise<void> {
+    const subscription = await Subscription.findOne(id);
+    if (!subscription) {
+      throw new Errors.MessageNotExistsError(id);
+    }
+    if (subscription.owner.id !== session.user.id) {
+      throw new Errors.InsufficientPermissionError(session, "admin");
+    }
+    const { skip, take } = getPagination(req);
+    const [events, count] = await SubscriptionEvent.findAndCount({
+      where: { subscription },
+      skip,
+      take,
+      order: { time: "DESC" },
+    });
+    if (count > skip + take) {
+      res.set("X-Pagination-More", "true");
+      res.set("X-Pagination-Total", count);
+    }
+    res.send(classToPlain(events));
   }
 }
 
