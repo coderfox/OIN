@@ -70,5 +70,12 @@ export default class Subscription extends BaseEntity {
   public name: string;
 
   @OneToMany(() => SubscriptionEvent, (event) => event.subscription)
-  public events!: Promise<Message[]>;
+  public events!: Promise<SubscriptionEvent[]>;
+
+  @Expose()
+  public last_event?: SubscriptionEvent | null;
+
+  public fetch_last_event = async () => {
+    this.last_event = await SubscriptionEvent.findOne({ subscription: this }) || null;
+  }
 }

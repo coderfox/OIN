@@ -20,6 +20,8 @@ class SubscriptionController {
       res.set("X-Pagination-More", "true");
       res.set("X-Pagination-Total", count);
     }
+    // TODO: improve performance
+    await Promise.all(subscriptions.map(s => s.fetch_last_event()));
     res.send(classToPlain(subscriptions));
   }
   @Post()
@@ -61,7 +63,7 @@ class SubscriptionController {
     if (name !== undefined) {
       subscription.name = name;
     }
-    await subscription.save();
+    await Promise.all([subscription.save(), subscription.fetch_last_event()]);
     return subscription;
   }
   @Delete(":id")
@@ -77,7 +79,7 @@ class SubscriptionController {
       throw new Errors.InsufficientPermissionError(session, "admin");
     }
     subscription.deleted = true;
-    await subscription.save();
+    await Promise.all([subscription.save(), subscription.fetch_last_event()]);
     return subscription;
   }
   @Get(":id")
@@ -89,6 +91,7 @@ class SubscriptionController {
     if (subscription.owner.id !== session.user.id) {
       throw new Errors.InsufficientPermissionError(session, "admin");
     }
+    await subscription.fetch_last_event();
     return subscription;
   }
 }
