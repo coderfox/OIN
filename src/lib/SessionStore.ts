@@ -1,14 +1,19 @@
 import { observable, action, computed } from 'mobx';
-import * as Interfaces from './api_interfaces';
+import * as I from './api_interfaces';
 import ApiClient from './client';
 
-import store from 'store';
 import * as cache from './cache';
+import forage from 'localforage';
+
+forage.config({
+  name: 'sandra',
+  storeName: 'kv',
+});
 
 export const TOKEN_KEY = 'token';
 
 export default class SessionState {
-  @observable public session?: Interfaces.Session;
+  @observable public session?: I.Session;
   @computed public get authenticated() {
     if (!this.session) { return false; }
     if (Date.parse(this.session.expires_at) < Date.now()) { return false; }
@@ -18,29 +23,35 @@ export default class SessionState {
   public client?: ApiClient;
 
   constructor() {
-    const savedToken = store.get(TOKEN_KEY);
-    if (savedToken) { this.setToken(savedToken); }
+    forage.getItem<I.Session>(TOKEN_KEY)
+      .then(this.setToken);
   }
 
-  @action setToken(session: Interfaces.Session) {
+  @action setToken = async (session: I.Session) => {
     this.client = new ApiClient(session.token);
-    store.set(TOKEN_KEY, session);
+    await forage.setItem(TOKEN_KEY, session);
     this.session = session;
   }
-  @action removeToken() {
-    store.remove(TOKEN_KEY);
+  @action removeToken = async () => {
+    await forage.removeItem(TOKEN_KEY);
     this.session = undefined;
   }
+
   @action login = async (email: string, password: string) => {
     const session = await ApiClient.login(email, password);
-    this.setToken(session);
+    // tslint:disable-next-line:no-console
+    console.log(session);
+    await this.setToken(session);
     return session.token;
+  }
+  @action logout = async () => {
+    await this.removeToken();
   }
 
   markAsReaded = async (id: string) => {
     if (!this.authenticated) { return; }
     await this.client!.markAsReaded(id);
-    cache.rmMessage(id);
+    await cache.rmMessage(id);
   }
   @action loadSession = async () => {
     if (this.authenticated && !this.session) {
@@ -50,62 +61,64 @@ export default class SessionState {
   updateSubscription = async (id: string, config: string, name: string) => {
     if (!this.authenticated) { return; }
     await this.client!.updateSubscription(id, { config, name });
-    cache.rmSubscription(id);
+    await cache.rmSubscription(id);
   }
   deleteSubscription = async (id: string) => {
     if (!this.authenticated) { return; }
     await this.client!.deleteSubscription(id);
-    cache.rmSubscription(id);
+    await cache.rmSubscription(id);
   }
 
   getMessage = async (id: string) => {
-    const cached = cache.getMessage(id);
-    if (cached) {
+    const cached = await cache.getMessage(id);
+    if (cached !== null) {
       return cached;
     } else {
       if (!this.authenticated) { throw new Error('未登入'); }
       const result = await this.client!.getMessage(id);
-      cache.setMessage(result);
+      await cache.setMessage(result);
       return result;
     }
   }
   getSubscription = async (id: string) => {
-    const cached = cache.getSubscription(id);
-    if (cached) {
+    const cached = await cache.getSubscription(id);
+    if (cached !== null) {
       return cached;
     } else {
       if (!this.authenticated) { throw new Error('未登入'); }
       const result = await this.client!.getSubscription(id);
-      cache.setSubscription(result);
+      await cache.setSubscription(result);
       return result;
     }
   }
   getService = async (id: string) => {
-    const cached = cache.getService(id);
-    if (cached) {
+    const cached = await cache.getService(id);
+    if (cached !== null) {
       return cached;
     } else {
       if (!this.authenticated) { throw new Error('未登入'); }
       const result = await this.client!.getService(id);
-      cache.setService(result);
+      await cache.setService(result);
       return result;
     }
   }
   cacheSubscriptions = async (ids: string[]) => {
     const subscriptions = await Promise.all(
       Array.from(new Set(ids))
-        .map(this.getSubscription));
-    subscriptions.forEach(cache.setSubscription);
+        .map(this.getSubscription)
+        .filter(s => s !== null)) as I.Subscription[];
+    subscriptions.map(await cache.setSubscription);
   }
   cacheServices = async (ids: string[]) => {
     const services = await Promise.all(
       Array.from(new Set(ids))
-        .map(this.getService));
-    services.forEach(cache.setService);
+        .map(this.getService)
+        .filter(s => s !== null)) as I.Service[];
+    services.map(await cache.setService);
   }
 
-  purgeSubscriptionCache = () =>
+  purgeSubscriptionCache = async () =>
     cache.clearSubscription()
-  purgeServiceCache = () =>
-    cache.clearSubscription()
+  purgeServiceCache = async () =>
+    cache.clearService()
 }

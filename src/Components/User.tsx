@@ -18,7 +18,7 @@ interface States {
 @observer
 class User extends React.Component<Props, States> {
   logout = async () => {
-    this.props.session!.removeToken();
+    await this.props.session!.logout();
     this.props.routing!.push('/login');
   }
   render() {
