@@ -10,10 +10,19 @@ cache:
 before_script:
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
+variables:
+  SENTRY_DSN: https://c9040f99c1c44deab891aa2b58d42a95@sentry.io/1216029
+  API_ROOT: https://api.oin.app
+
 build-master:
   stage: build
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
+    - >
+      docker build 
+      --pull -t "$CI_REGISTRY_IMAGE"
+      --build-arg SENTRY_DSN=$REACT_APP_SENTRY_DSN
+      --build-arg API_ROOT=$REACT_APP_API_ROOT
+      --build-arg COMMIT_SHA=$CI_COMMIT_SHA .
     - docker push "$CI_REGISTRY_IMAGE"
   only:
     - master
@@ -23,7 +32,12 @@ build-master:
 build:
   stage: build
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - >
+      docker build 
+      --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+      --build-arg SENTRY_DSN=$REACT_APP_SENTRY_DSN
+      --build-arg API_ROOT=$REACT_APP_API_ROOT
+      --build-arg COMMIT_SHA=$CI_COMMIT_SHA .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   except:
     - master

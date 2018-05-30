@@ -35,7 +35,11 @@
     <noscript>
         You need to enable JavaScript to run this app.
     </noscript>
-    <div id="root">loading</div>
+    <div id="root">loading %REACT_APP_COMMIT_SHA%</div>
+    <script src="https://cdn.ravenjs.com/3.25.2/raven.min.js" crossorigin="anonymous"></script>
+    <script>
+        Raven.config('%REACT_APP_SENTRY_DSN%').install()
+    </script>
     <!--
   This HTML file is a template.
   If you open it directly in the browser, you will see an empty page.
