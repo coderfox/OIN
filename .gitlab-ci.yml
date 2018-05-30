@@ -20,8 +20,8 @@ build-master:
     - >
       docker build 
       --pull -t "$CI_REGISTRY_IMAGE"
-      --build-arg SENTRY_DSN=$REACT_APP_SENTRY_DSN
-      --build-arg API_ROOT=$REACT_APP_API_ROOT
+      --build-arg SENTRY_DSN=$SENTRY_DSN
+      --build-arg API_ROOT=$API_ROOT
       --build-arg COMMIT_SHA=$CI_COMMIT_SHA .
     - docker push "$CI_REGISTRY_IMAGE"
   only:
@@ -35,8 +35,8 @@ build:
     - >
       docker build 
       --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-      --build-arg SENTRY_DSN=$REACT_APP_SENTRY_DSN
-      --build-arg API_ROOT=$REACT_APP_API_ROOT
+      --build-arg SENTRY_DSN=$SENTRY_DSN
+      --build-arg API_ROOT=$API_ROOT
       --build-arg COMMIT_SHA=$CI_COMMIT_SHA .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   except:
