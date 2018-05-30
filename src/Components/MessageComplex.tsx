@@ -112,6 +112,7 @@ class MessageComplexComponent extends React.Component<Props, States> {
             />
           </p>
           <Card.Description
+            className="sandra-message-content"
             dangerouslySetInnerHTML={{
               __html: message && message.content
             }}
