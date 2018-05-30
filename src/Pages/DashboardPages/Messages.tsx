@@ -12,9 +12,10 @@ import {
   InputProps,
   Menu,
   Input,
-  Form,
+  Responsive,
 } from 'semantic-ui-react';
 import * as I from '../../lib/api_interfaces';
+import * as responsive from '../../lib/responsive';
 
 interface Props {
   session?: SessionState;
@@ -71,84 +72,100 @@ class Messages extends React.Component<Props, States> {
             this.handleMessageReaded(m.id);
           }) : []);
     } catch (ex) {
-      // nop, TODO
+      this.setState({ loadingMarkAllAsReaded: false });
+      throw ex; // TODO
     }
-    this.setState({ loadingMarkAllAsReaded: false });
   }
   refresh = async () => {
     this.setState({ done_messages: 0 });
-    try {
-      await this.componentDidMount();
-    } catch (ex) {
-      // nop, TODO
-    }
+    await this.componentDidMount(); // TODO: catch
   }
 
   handleSearchChange: InputProps['onChange'] = (_, data) => {
     this.setState({ search_query: data.value });
   }
-  search = () => this.refresh();
+  search = (e?: React.FormEvent<{}>) => {
+    if (e) { e.preventDefault(); }
+    this.refresh();
+  }
+
+  closeSelectedMessage = () => {
+    this.setState({ selected_message: undefined });
+  }
 
   render() {
     const { messages, subscriptions } = this.state;
     return (
-      <React.Fragment>
-        <Menu secondary>
-          <Menu.Item
-            onClick={this.markAllAsReaded}
-            name="全部标为已读"
-            disabled={messages === undefined || messages.length === 0}
-            loading={this.state.loadingMarkAllAsReaded}
-          />
-          <Menu.Item
-            onClick={this.refresh}
-            name="刷新"
-          />
-          <Menu.Item position="right">
-            <Form onSubmit={this.search}>
-              <Input
-                action={{ type: 'submit', icon: 'search', onClick: this.search }}
-                placeholder="搜索"
-                onChange={this.handleSearchChange}
-                value={this.state.search_query}
-                onSubmit={this.search}
-              />
-            </Form>
-          </Menu.Item>
-        </Menu>
-        <Grid columns={2}>
-          <Ref innerRef={this.handleContextRef}>
-            <Grid.Row>
-              <Grid.Column width={6}>
-                <Progress
-                  color="olive"
-                  value={this.state.done_messages || 0}
-                  total={messages === undefined ? '-' : messages.length}
-                  progress="ratio"
+      <Ref innerRef={this.handleContextRef}>
+        <Grid>
+          <Grid.Row>
+            <Grid.Column>
+              <Menu secondary stackable fluid>
+                <Menu.Item
+                  onClick={this.markAllAsReaded}
+                  name="全部标为已读"
+                  disabled={messages === undefined || messages.length === 0}
+                  loading={this.state.loadingMarkAllAsReaded}
                 />
-                {messages &&
-                  <Message positive hidden={messages.length !== 0 && this.state.done_messages !== messages.length}>
-                    您的消息已经全部处理完毕！
+                <Menu.Item
+                  onClick={this.refresh}
+                  name="刷新"
+                />
+                <Menu.Item position="right">
+                  <Input
+                    as="form"
+                    onSubmit={this.search}
+                    action={{
+                      type: 'submit', icon: 'search'
+                    }}
+                    placeholder="搜索"
+                    onChange={this.handleSearchChange}
+                    value={this.state.search_query}
+                  />
+                </Menu.Item>
+              </Menu>
+            </Grid.Column>
+          </Grid.Row>
+          <Grid.Row>
+            <Grid.Column mobile={16} tablet={16} computer={6}>
+              <Progress
+                color="olive"
+                value={messages === undefined ? -1 : (this.state.done_messages || 0)}
+                total={messages === undefined ? -1 : messages.length}
+                progress="ratio"
+              />
+              {messages &&
+                <Message positive hidden={messages.length !== 0 && this.state.done_messages !== messages.length}>
+                  您的消息已经全部处理完毕！
                 </Message>}
-                <Dimmer active={messages === undefined} inverted>
-                  <Loader>Loading</Loader>
-                </Dimmer>
-                {messages && messages
-                  .sort((a, b) => {
-                    if (!a.readed && !b.readed) {
-                      return Date.parse(b.updated_at) - Date.parse(a.updated_at);
-                    } else if (a.readed && b.readed) {
-                      return 0;
-                    } else if (a.readed && !b.readed) {
-                      return -1;
-                    } else if (!a.readed && b.readed) {
-                      return 1;
-                    } else {
-                      return 0;
-                    }
-                  })
-                  .map(m => {
-                    const subscription = subscriptions && subscriptions[m.subscription];
+              <Dimmer active={messages === undefined} inverted>
+                <Loader>Loading</Loader>
+              </Dimmer>
+              {messages && messages
+                .sort((a, b) => {
+                  if (!a.readed && !b.readed) {
+                    return Date.parse(b.updated_at) - Date.parse(a.updated_at);
+                  } else if (a.readed && b.readed) {
+                    return 0;
+                  } else if (a.readed && !b.readed) {
+                    return -1;
+                  } else if (!a.readed && b.readed) {
+                    return 1;
+                  } else {
+                    return 0;
+                  }
+                })
+                .map(m => {
+                  const subscription = subscriptions && subscriptions[m.subscription];
+                  if (m.id === this.state.selected_message && responsive.isMobileOrTablet()) {
+                    return (
+                      <Components.MessageComplex
+                        id={this.state.selected_message}
+                        onMarkedAsReaded={this.handleMessageReaded}
+                        onClose={this.closeSelectedMessage}
+                      />
+                    );
+                  } else {
                     return (
                       <Components.MessageSimple
                         key={m.id}
@@ -159,21 +176,25 @@ class Messages extends React.Component<Props, States> {
                         onClick={this.handleMessageClick}
                         onMarkedAsReaded={this.handleMessageReaded}
                         readed={m.readed}
-                      />);
-                  })}
-              </Grid.Column>
-              <Grid.Column width={10}>
+                      />
+                    );
+                  }
+                })}
+            </Grid.Column>
+            <Grid.Column computer={10}>
+              <Responsive {...responsive.onlyComputer}>
                 {this.state.selected_message &&
                   <Components.MessageComplex
                     id={this.state.selected_message}
                     onMarkedAsReaded={this.handleMessageReaded}
+                    onClose={this.closeSelectedMessage}
                   />
                 }
-              </Grid.Column>
-            </Grid.Row>
-          </Ref>
+              </Responsive>
+            </Grid.Column>
+          </Grid.Row>
         </Grid>
-      </React.Fragment>
+      </Ref>
     );
   }
 }

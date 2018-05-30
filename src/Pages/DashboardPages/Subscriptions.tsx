@@ -66,7 +66,7 @@ class Subscriptions extends React.Component<Props, States> {
     const { subscriptions } = this.state;
     return (
       <div>
-        <Menu secondary>
+        <Menu secondary stackable>
           <Menu.Item>
             <span>
               显示
@@ -82,7 +82,7 @@ class Subscriptions extends React.Component<Props, States> {
             <Input icon="search" placeholder="搜索" />
           </Menu.Item>
         </Menu>
-        <Card.Group itemsPerRow={2}>
+        <Card.Group itemsPerRow={2} stackable>
           <Dimmer active={subscriptions === undefined} inverted>
             <Loader>Loading</Loader>
           </Dimmer>

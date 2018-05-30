@@ -20,7 +20,7 @@ interface States {
 
 @inject('session')
 @observer
-class MessageSimple extends React.PureComponent<Props, States> {
+class MessageSimple extends React.Component<Props, States> {
   onClick: ButtonProps['onClick'] = () => {
     this.props.onClick(this.props.id);
   }
@@ -36,7 +36,7 @@ class MessageSimple extends React.PureComponent<Props, States> {
     const { title, subscription, summary } = this.props;
     return (
       <Card fluid>
-        <Card.Content>
+        <Card.Content as="a" onClick={this.onClick}>
           <Card.Header>{title}</Card.Header>
           <Card.Meta>{subscription}</Card.Meta>
           <Card.Description>
