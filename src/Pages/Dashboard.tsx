@@ -36,6 +36,7 @@ class Dashboard extends React.Component<Props, States> {
                 <Image src="/assets/oin.svg" /> beta
               </Header>
             </Segment>
+            {process.env.REACT_APP_SANDRA_STAGE === 'true' && `${process.env.REACT_APP_COMMIT_SHA}`.slice(0, 6)}
             <Components.UserCard />
             <Menu pointing secondary vertical fluid>
               <Menu.Item
