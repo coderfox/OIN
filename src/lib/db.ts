@@ -12,5 +12,8 @@ const config: ConnectionOptions = {
     `${__dirname}/../migrations/*.js`,
   ],
   synchronize: false,
+  cli: {
+    migrationsDir: `${__dirname}/../migrations/`,
+  },
 };
 export default () => createConnection(config);
