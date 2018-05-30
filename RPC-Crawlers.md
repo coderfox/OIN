@@ -1,4 +1,6 @@
-# tocdBackend RPC APIs for Crawlers
+# Backend RPC APIs for Crawlers
+
+**version** 0.4
 
 ## Conventions
 
@@ -98,7 +100,7 @@ get_channels(token: string) -> IChannel[]
 
 ## create_message
 
-get_channels(token: string, channel_id: string, message: IMessage) -> true
+create_message(token: string, channel_id: string, message: IMessage) -> true
 
 ### Parameters
 
@@ -110,6 +112,25 @@ get_channels(token: string, channel_id: string, message: IMessage) -> true
 |  message/title  |    string     |           message title           |
 | message/summary |    string?    | biref introduction to the message |
 | message/content |    string     |           content data            |
+|  message/href   |    string?    |            source link            |
+
+### Return Value
+
+`true`
+
+## report_event
+
+report_event(token: string, channel_id: string, event: IEvent) -> true
+
+### Parameters
+
+|     name      |     type      |         description         |
+| :-----------: | :-----------: | :-------------------------: |
+|     token     |    string     |        SERVICE_TOKEN        |
+|  channel_id   | string (uuid) |                             |
+|     event     |    IEvent     |                             |
+| event/status  |    boolean    | whether the event succeeded |
+| event/message |    string?    |  event result explanation   |
 
 ### Return Value
 
