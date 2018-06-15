@@ -3,8 +3,8 @@ use actix::prelude::*;
 use diesel;
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
+use diesel::result::Error;
 
-use error::{ApiError, Result};
 use model::{NewUser, User};
 use std::env;
 
@@ -19,18 +19,18 @@ impl Actor for DbExecutor {
     type Context = SyncContext<Self>;
 }
 
-struct CreateUser {
-    email: String,
-    password: String,
-    nickname: Option<String>,
+pub struct CreateUser {
+    pub email: String,
+    pub password: String,
+    pub nickname: Option<String>,
 }
 
 impl Message for CreateUser {
-    type Result = Result<User>;
+    type Result = Result<User, Error>;
 }
 
 impl Handler<CreateUser> for DbExecutor {
-    type Result = Result<User>;
+    type Result = Result<User, Error>;
 
     fn handle(&mut self, msg: CreateUser, _: &mut Self::Context) -> Self::Result {
         use schema::user::dsl::*;
@@ -38,17 +38,16 @@ impl Handler<CreateUser> for DbExecutor {
         let new_user = NewUser {
             email: &msg.email,
             password: &msg.password,
-            nickname: msg.nickname.as_ref().unwrap_or(&msg.password),
+            nickname: msg.nickname.as_ref().unwrap_or(&msg.email),
         };
 
         let conn: &PgConnection = &self.0.get().unwrap();
 
         // normal diesel operations
-        let mut result = diesel::insert_into(user)
+        let result = diesel::insert_into(user)
             .values(&new_user)
-            .get_results(conn)
-            .map_err(|e| ApiError::from_error_boxed(Box::new(e)))?;
+            .get_result(conn)?;
 
-        Ok(result.pop().unwrap())
+        Ok(result)
     }
 }

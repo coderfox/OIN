@@ -2,31 +2,32 @@ extern crate actix;
 extern crate actix_web;
 extern crate chrono;
 extern crate dotenv;
+extern crate futures;
 extern crate r2d2;
+extern crate serde;
 extern crate uuid;
 
 #[macro_use]
 extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
+#[macro_use]
+extern crate serde_derive;
 
 mod db;
 mod error;
 mod model;
+mod route;
 mod schema;
 mod state;
 
 use actix::prelude::*;
-use actix_web::{server, App, HttpRequest};
+use actix_web::{server, App};
 use db::DbExecutor;
 use dotenv::dotenv;
 use state::AppState;
 
 embed_migrations!();
-
-fn index(_req: HttpRequest<AppState>) -> &'static str {
-    "Hello world!"
-}
 
 fn main() {
     dotenv().ok();
@@ -46,8 +47,9 @@ fn main() {
     let addr = SyncArbiter::start(3, move || DbExecutor(pool.clone()));
 
     server::new(move || {
-        App::with_state(AppState { db: addr.clone() }).resource("/", |r| r.f(index))
-    }).bind("127.0.0.1:8088")
+        App::with_state(AppState { db: addr.clone() })
+            .resource("/users", |r| r.post().f(route::users::post_all))
+    }).bind("127.0.0.1:8080")
         .unwrap()
         .start();
 

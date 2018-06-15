@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use schema::user;
 use uuid::Uuid;
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct User {
     pub id: Uuid,
     pub email: String,

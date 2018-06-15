@@ -1,8 +1,10 @@
+use futures;
 use std;
 use std::error;
 use std::fmt;
 
 pub type Result<T> = std::result::Result<T, ApiError>;
+// pub type Future<T> = futures::Future<Item = T, Error = ApiError>;
 
 #[derive(Debug)]
 // Define our error types. These may be customized for our error handling cases.
