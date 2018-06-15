@@ -1,0 +1,14 @@
+[package]
+name = "sandra-backend"
+version = "0.1.0"
+authors = ["Yuze Fu <git@xfox.me>"]
+
+[dependencies]
+actix-web = "0.6.13"
+diesel = { version = "1.3.0", features = ["postgres", "chrono", "r2d2", "uuid"] }
+diesel_migrations = "1.3.0"
+dotenv = "0.13.0"
+actix = "0.5.8"
+uuid = "0.6.5"
+chrono = "0.4.3"
+r2d2 = "0.8.2"
