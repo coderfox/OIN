@@ -47,6 +47,7 @@ pub fn post_all((req, raw_data): (HttpRequest<AppState>, Json<PostAllRequest>)) 
         .responder()
 }
 
+// TODO: remove this
 pub fn get_all(req: State<AppState>) -> FutureResponse {
     use schema::user::dsl::user;
     req.db

@@ -1,5 +1,6 @@
 extern crate actix;
 extern crate actix_web;
+extern crate base64;
 extern crate bcrypt;
 extern crate chrono;
 extern crate dotenv;
@@ -18,6 +19,7 @@ extern crate diesel_migrations;
 extern crate serde_derive;
 
 mod actor;
+mod auth;
 mod model;
 mod response;
 mod route;
