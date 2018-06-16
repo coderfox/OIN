@@ -1,4 +1,4 @@
-use bcrypt::{hash, BcryptError, DEFAULT_COST};
+use bcrypt::{hash, verify, BcryptError, DEFAULT_COST};
 use chrono::{DateTime, Utc};
 use schema::user;
 use uuid::Uuid;
@@ -34,14 +34,20 @@ impl<'a> NewUser<'a> {
         Ok(NewUser {
             email,
             nickname,
-            hashed_password: hash(
-                password,
-                if cfg!(debug_assertions) {
-                    4
-                } else {
-                    DEFAULT_COST
-                },
-            )?,
+            hashed_password: NewUser::hash_password(password)?,
         })
+    }
+    pub fn hash_password(password: &str) -> Result<String, BcryptError> {
+        hash(
+            password,
+            if cfg!(debug_assertions) {
+                4
+            } else {
+                DEFAULT_COST
+            },
+        )
+    }
+    pub fn validate_password(password: &str, hashed: &str) -> Result<bool, BcryptError> {
+        verify(password, hashed)
     }
 }

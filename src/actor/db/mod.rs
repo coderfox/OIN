@@ -1,5 +1,5 @@
-use actix::prelude::*;
-use diesel::prelude::*;
+use actix::prelude::{Actor, SyncContext};
+use diesel::prelude::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
 use std::env;
 
@@ -16,3 +16,6 @@ impl Actor for DbExecutor {
 
 mod create_user;
 pub use self::create_user::*;
+
+mod query;
+pub use self::query::*;

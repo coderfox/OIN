@@ -1,8 +1,10 @@
-use actix_web::{AsyncResponder, HttpRequest, HttpResponse, Json};
-use actor::db::{CreateUser, CreateUserError};
+use actix_web::{AsyncResponder, HttpRequest, HttpResponse, Json, State};
+use actor::db::{CreateUser, CreateUserError, Query, QueryResult};
 use diesel::result::{DatabaseErrorKind, Error as DieselError};
+use diesel::QueryDsl;
 use failure::Fail;
 use futures::Future;
+use model::User;
 use response::{ApiError, FutureResponse};
 use state::AppState;
 
@@ -41,6 +43,20 @@ pub fn post_all((req, raw_data): (HttpRequest<AppState>, Json<PostAllRequest>)) 
             } else {
                 ApiError::from_error_boxed(Box::new(err))
             }),
+        })
+        .responder()
+}
+
+pub fn get_all(req: State<AppState>) -> FutureResponse {
+    use schema::user::dsl::user;
+    req.db
+        .send(Query::new(user.limit(20)))
+        .map_err(|e| ApiError::from_error_boxed(Box::new(e.compat())))
+        .and_then(|res: QueryResult<User>| match res {
+            Ok(users) => Ok(HttpResponse::Ok()
+                // .header("location", user.id.hyphenated().to_string())
+                .json(users)),
+            Err(err) => Err(ApiError::from_error_boxed(Box::new(err))),
         })
         .responder()
 }
