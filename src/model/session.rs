@@ -15,6 +15,12 @@ pub struct Session {
     pub user_id: Uuid,
 }
 
+impl Session {
+    pub fn is_valid(&self) -> bool {
+        self.expires_at >= Utc::now()
+    }
+}
+
 #[derive(Insertable)]
 #[table_name = "session"]
 pub struct NewSession {

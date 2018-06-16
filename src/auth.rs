@@ -192,11 +192,16 @@ mod bearer {
                             ))
                             .map_err(|e| ApiError::from_error(e.compat()))
                             .and_then(move |res: QueryResult<Session>| {
-                                res.map_err(ApiError::from_error)?
-                                    .pop()
-                                    .map_or(Err(ApiError::BearerAuthInvalidToken), |u| {
-                                        Ok(BearerAuth(u))
-                                    })
+                                res.map_err(ApiError::from_error)?.pop().map_or(
+                                    Err(ApiError::BearerAuthInvalidToken),
+                                    |u| {
+                                        if u.is_valid() {
+                                            Ok(BearerAuth(u))
+                                        } else {
+                                            Err(ApiError::BearerAuthInvalidToken)
+                                        }
+                                    },
+                                )
                             })
                     })
                     .map_err(|e| e.into()),
