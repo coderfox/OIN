@@ -2,6 +2,7 @@ extern crate actix;
 extern crate actix_web;
 extern crate chrono;
 extern crate dotenv;
+extern crate failure;
 extern crate futures;
 extern crate r2d2;
 extern crate serde;
@@ -14,16 +15,16 @@ extern crate diesel_migrations;
 #[macro_use]
 extern crate serde_derive;
 
-mod db;
-mod error;
+mod actor;
 mod model;
+mod response;
 mod route;
 mod schema;
 mod state;
 
 use actix::prelude::*;
 use actix_web::{server, App};
-use db::DbExecutor;
+use actor::db::DbExecutor;
 use dotenv::dotenv;
 use state::AppState;
 
@@ -36,7 +37,7 @@ fn main() {
 
     // Start 3 db executor actors
     let pool = r2d2::Pool::builder()
-        .build(db::establish_connection())
+        .build(actor::db::establish_connection())
         .expect("Failed to create pool.");
 
     embedded_migrations::run_with_output(
@@ -49,6 +50,7 @@ fn main() {
     server::new(move || {
         App::with_state(AppState { db: addr.clone() })
             .resource("/users", |r| r.post().f(route::users::post_all))
+            .default_resource(|r| r.f(route::default_route))
     }).bind("127.0.0.1:8080")
         .unwrap()
         .start();

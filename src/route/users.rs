@@ -1,15 +1,11 @@
-use actix::prelude::*;
-use actix_web::{http, middleware, server, App, AsyncResponder, FutureResponse, HttpRequest,
-                HttpResponse, Path, State};
-
-use diesel::prelude::*;
-use diesel::r2d2::ConnectionManager;
+use actix_web::{AsyncResponder, HttpRequest, HttpResponse};
+use actor::db::CreateUser;
+use failure::Fail;
 use futures::Future;
-
-use db::CreateUser;
+use response::{ApiError, FutureResponse};
 use state::AppState;
 
-pub fn post_all(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
+pub fn post_all(req: HttpRequest<AppState>) -> FutureResponse {
     req.state()
         .db
         .send(CreateUser {
@@ -17,10 +13,10 @@ pub fn post_all(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
             password: "test".to_owned(),
             nickname: Some("coderfox".to_owned()),
         })
-        .from_err()
+        .map_err(|e| ApiError::from_error_boxed(Box::new(e.compat())))
         .and_then(|res| match res {
             Ok(user) => Ok(HttpResponse::Ok().json(user)),
-            Err(_) => Ok(HttpResponse::InternalServerError().into()),
+            Err(err) => Err(ApiError::from_error_boxed(Box::new(err))),
         })
         .responder()
 }
