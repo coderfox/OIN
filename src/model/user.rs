@@ -3,7 +3,8 @@ use chrono::{DateTime, Utc};
 use schema::user;
 use uuid::Uuid;
 
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Identifiable)]
+#[table_name = "user"]
 pub struct User {
     pub id: Uuid,
     pub email: String,
@@ -14,6 +15,12 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
     pub delete_token: Option<Uuid>,
     pub nickname: String,
+}
+
+impl User {
+    pub fn validate_password(&self, password: &str) -> Result<bool, BcryptError> {
+        verify(password, &self.hashed_password)
+    }
 }
 
 #[derive(Insertable)]
@@ -46,8 +53,5 @@ impl<'a> NewUser<'a> {
                 DEFAULT_COST
             },
         )
-    }
-    pub fn validate_password(password: &str, hashed: &str) -> Result<bool, BcryptError> {
-        verify(password, hashed)
     }
 }

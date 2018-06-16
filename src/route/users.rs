@@ -24,7 +24,7 @@ pub fn post_all((req, raw_data): (HttpRequest<AppState>, Json<PostAllRequest>)) 
             password: data.password,
             nickname: data.nickname,
         })
-        .map_err(|e| ApiError::from_error_boxed(Box::new(e.compat())))
+        .map_err(|e| ApiError::from_error(e.compat()))
         .and_then(|res| match res {
             Ok(user) => Ok(HttpResponse::Ok()
                 // .header("location", user.id.hyphenated().to_string())
@@ -35,13 +35,13 @@ pub fn post_all((req, raw_data): (HttpRequest<AppState>, Json<PostAllRequest>)) 
                     if let DatabaseErrorKind::UniqueViolation = ek {
                         ApiError::DuplicatedEmail
                     } else {
-                        ApiError::from_error_boxed(Box::new(DieselError::DatabaseError(ek, ei)))
+                        ApiError::from_error(DieselError::DatabaseError(ek, ei))
                     }
                 } else {
-                    ApiError::from_error_boxed(Box::new(derr))
+                    ApiError::from_error(derr)
                 }
             } else {
-                ApiError::from_error_boxed(Box::new(err))
+                ApiError::from_error(err)
             }),
         })
         .responder()
@@ -52,12 +52,12 @@ pub fn get_all(req: State<AppState>) -> FutureResponse {
     use schema::user::dsl::user;
     req.db
         .send(Query::new(user.limit(20)))
-        .map_err(|e| ApiError::from_error_boxed(Box::new(e.compat())))
+        .map_err(|e| ApiError::from_error(e.compat()))
         .and_then(|res: QueryResult<User>| match res {
             Ok(users) => Ok(HttpResponse::Ok()
                 // .header("location", user.id.hyphenated().to_string())
                 .json(users)),
-            Err(err) => Err(ApiError::from_error_boxed(Box::new(err))),
+            Err(err) => Err(ApiError::from_error(err)),
         })
         .responder()
 }

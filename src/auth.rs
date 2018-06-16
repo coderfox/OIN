@@ -2,6 +2,7 @@ use actix_web::http::header;
 use actix_web::*;
 use base64::decode;
 use futures::Future;
+use model::User;
 use response::ApiError;
 use state::AppState;
 
@@ -9,27 +10,21 @@ trait AuthHeader
 where
     Self: Sized,
 {
-    fn from_header_value(header: &str) -> Option<Self>;
+    fn from_header_value(header: &str) -> Result<Self, ApiError>;
     fn schema() -> &'static str;
-    fn from_header(header: &str) -> Option<Self> {
+    fn from_header(header: &str) -> Result<Self, ApiError> {
         header
             .find(' ')
-            .map(|loc| header.split_at(loc))
+            .map_or(Err(ApiError::CorruptedAuthorizationHeader), |loc| {
+                Ok(header.split_at(loc))
+            })
             .and_then(|(schema, value)| {
                 if schema == Self::schema() {
-                    Self::from_header_value(&value[1..])
+                    Ok(Self::from_header_value(&value[1..])?)
                 } else {
-                    None
+                    Err(ApiError::BasicAuthInvalidAuthType)
                 }
             })
-    }
-}
-
-pub struct BasicAuthConfig;
-
-impl Default for BasicAuthConfig {
-    fn default() -> Self {
-        BasicAuthConfig
     }
 }
 
@@ -40,18 +35,18 @@ pub struct BasicAuthHeader {
 }
 
 impl AuthHeader for BasicAuthHeader {
-    fn from_header_value(header: &str) -> Option<Self> {
+    fn from_header_value(header: &str) -> Result<Self, ApiError> {
         decode(header)
-            .ok()
-            .and_then(|v| String::from_utf8(v).ok())
+            .map_err(|_| ApiError::CorruptedAuthorizationHeader)
+            .and_then(|v| String::from_utf8(v).map_err(|_| ApiError::CorruptedAuthorizationHeader))
             .and_then(|t| {
                 let mut parts = t.split(':');
                 let username = parts.next();
                 let password = parts.next();
                 if username == None || password == None {
-                    None
+                    Err(ApiError::CorruptedAuthorizationHeader)
                 } else {
-                    Some(BasicAuthHeader {
+                    Ok(BasicAuthHeader {
                         username: username.unwrap().to_owned(),
                         password: password.unwrap().to_owned(),
                     })
@@ -64,6 +59,16 @@ impl AuthHeader for BasicAuthHeader {
 }
 
 /*
+pub struct BasicAuthConfig;
+
+impl Default for BasicAuthConfig {
+    fn default() -> Self {
+        BasicAuthConfig
+    }
+}
+
+pub struct BasicAuth(User);
+
 impl FromRequest<AppState> for BasicAuth {
     type Config = BasicAuthConfig;
     type Result = Result<Self, Error>; // Box<Future<Item = Self, Error = Error>>;
@@ -74,14 +79,12 @@ impl FromRequest<AppState> for BasicAuth {
             user_id: auth_header
                 .unwrap()
                 .to_str()
-                .map_err(|e| ApiError::from_error_boxed(Box::new(e)))?
+                .map_err(ApiError::from_error)?
                 .to_string(),
         })
     }
 }
-*/
 
-/*
 pub struct TokenAuth {
     token: String,
     user_id: String,
@@ -92,6 +95,7 @@ pub struct TokenAuth {
 mod tests {
     mod basic_basic {
         use base64::encode;
+        use response::ApiError;
 
         use super::super::AuthHeader;
         use super::super::BasicAuthHeader;
@@ -100,7 +104,7 @@ mod tests {
         fn test_basic_auth() {
             assert_eq!(
                 BasicAuthHeader::from_header_value(&encode("username:password")),
-                Some(BasicAuthHeader {
+                Ok(BasicAuthHeader {
                     username: "username".to_owned(),
                     password: "password".to_owned()
                 })
@@ -111,7 +115,7 @@ mod tests {
         fn test_basic_auth_no_password() {
             assert_eq!(
                 BasicAuthHeader::from_header_value(&encode("username:")),
-                Some(BasicAuthHeader {
+                Ok(BasicAuthHeader {
                     username: "username".to_owned(),
                     password: "".to_owned()
                 })
@@ -122,7 +126,7 @@ mod tests {
         fn test_basic_auth_no_username() {
             assert_eq!(
                 BasicAuthHeader::from_header_value(&encode(":password")),
-                Some(BasicAuthHeader {
+                Ok(BasicAuthHeader {
                     username: "".to_owned(),
                     password: "password".to_owned()
                 })
@@ -133,7 +137,7 @@ mod tests {
         fn test_basic_auth_corrupted_header_1() {
             assert_eq!(
                 BasicAuthHeader::from_header_value("SOMETHING_NOT_BASE64"),
-                None
+                Err(ApiError::CorruptedAuthorizationHeader)
             );
         }
 
@@ -141,13 +145,14 @@ mod tests {
         fn test_basic_auth_corrupted_header_2() {
             assert_eq!(
                 BasicAuthHeader::from_header_value(&encode("NOT_CORRECT_HEADER")),
-                None
+                Err(ApiError::CorruptedAuthorizationHeader)
             );
         }
     }
 
     mod auth_header {
         use base64::encode;
+        use response::ApiError;
 
         use super::super::AuthHeader;
         use super::super::BasicAuthHeader;
@@ -156,7 +161,7 @@ mod tests {
         fn parse_basic() {
             assert_eq!(
                 BasicAuthHeader::from_header(&format!("Basic {}", &encode("username:password"))),
-                Some(BasicAuthHeader {
+                Ok(BasicAuthHeader {
                     username: "username".to_owned(),
                     password: "password".to_owned(),
                 })
@@ -167,7 +172,7 @@ mod tests {
         fn parse_basic_mismatch() {
             assert_eq!(
                 BasicAuthHeader::from_header("Bearer 4e240c20-f95c-4adc-99c4-1a42e5492dcc"),
-                None
+                Err(ApiError::BasicAuthInvalidAuthType)
             );
         }
     }

@@ -13,7 +13,6 @@ pub type FutureResponse = Box<Future<Item = HttpResponse, Error = ApiError>>;
 pub struct ErrorResponse {
     pub code: String,
 }
-
 #[derive(Debug)]
 pub enum ApiError {
     InternalServerError(Box<error::Error + Send + Sync>),
@@ -21,12 +20,20 @@ pub enum ApiError {
     ApiEndpointNotFound,
     BadRequest,
     DuplicatedEmail,
+    BasicAuthUserNotExists,
+    BasicAuthPasswordMismatch,
+    BasicAuthInvalidAuthType,
+    NotAuthenticated,
+    CorruptedAuthorizationHeader,
     // UserNotFound,
 }
 
 impl ApiError {
     pub fn from_error_boxed(err: Box<error::Error + Send + Sync>) -> Self {
         ApiError::InternalServerError(err)
+    }
+    pub fn from_error<T: 'static + error::Error + Send + Sync>(err: T) -> Self {
+        ApiError::from_error_boxed(Box::new(err))
     }
     pub fn code(&self) -> &'static str {
         use self::ApiError::*;
@@ -36,6 +43,11 @@ impl ApiError {
             InternalServerErrorWithoutReason => "INTERNAL_SERVER_ERROR",
             BadRequest => "BAD_REQUEST",
             DuplicatedEmail => "DUPLICATED_EMAIL",
+            BasicAuthUserNotExists => "USER_NOT_EXIST",
+            BasicAuthPasswordMismatch => "PASSWORD_MISMATCH",
+            BasicAuthInvalidAuthType => "INVALID_AUTHENTICATION_TYPE",
+            NotAuthenticated => "NOT_AUTHENTICATED",
+            CorruptedAuthorizationHeader => "CORRUPTED_AUTHORIZATION_HEADER",
             // UserNotFound => "USER_NOT_FOUND",
         }
     }
@@ -47,6 +59,11 @@ impl ApiError {
             InternalServerErrorWithoutReason => StatusCode::INTERNAL_SERVER_ERROR,
             BadRequest => StatusCode::BAD_REQUEST,
             DuplicatedEmail => StatusCode::CONFLICT,
+            BasicAuthUserNotExists => StatusCode::FORBIDDEN,
+            BasicAuthPasswordMismatch => StatusCode::FORBIDDEN,
+            BasicAuthInvalidAuthType => StatusCode::UNAUTHORIZED,
+            NotAuthenticated => StatusCode::UNAUTHORIZED,
+            CorruptedAuthorizationHeader => StatusCode::BAD_REQUEST,
             // UserNotFound => StatusCode::NOT_FOUND,
         }
     }
@@ -95,5 +112,11 @@ impl ResponseError for ApiError {
         HttpResponse::build(self.status()).json(ErrorResponse {
             code: self.code().to_owned(),
         })
+    }
+}
+
+impl PartialEq<ApiError> for ApiError {
+    fn eq(&self, other: &Self) -> bool {
+        self.code() == other.code()
     }
 }
