@@ -1,5 +1,5 @@
 use actix_web::{AsyncResponder, HttpRequest, HttpResponse};
-use actor::db::{Query, QueryResult};
+use actor::db::{Query, QueryResult, QuerySingle, QuerySingleResult};
 use auth::{BasicAuth, BearerAuth};
 use chrono::{Duration, Utc};
 use diesel;
@@ -68,5 +68,40 @@ pub fn get((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -> F
                 }),
             Err(e) => Err(ApiError::from_error(e)),
         })
+        .responder()
+}
+
+pub fn delete((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -> FutureResponse {
+    use schema::session::dsl as sdsl;
+    use schema::user::dsl as udsl;
+
+    req.state()
+        .db
+        .send(QuerySingle::new(
+            diesel::update(sdsl::session.find(session.token))
+                .set(sdsl::expires_at.eq(Utc::now()))
+                .as_query(),
+        ))
+        .map_err(|e| ApiError::from_error(e.compat()))
+        .and_then(move |res: QuerySingleResult<Session>| match res {
+            Ok(session) => Ok(req.state()
+                .db
+                .send(QuerySingle::new(
+                    udsl::user.limit(1).filter(udsl::id.eq(session.user_id)),
+                ))
+                .map_err(|e| ApiError::from_error(e.compat()))
+                .and_then(move |result: QuerySingleResult<User>| match result {
+                    Ok(user) => Ok(HttpResponse::Ok().json(SessionView {
+                        token: &session.token,
+                        user: &user,
+                        created_at: &session.created_at,
+                        updated_at: &session.updated_at,
+                        expires_at: &session.expires_at,
+                    })),
+                    Err(err) => Err(ApiError::from_error(err)),
+                })),
+            Err(err) => Err(ApiError::from_error(err)),
+        })
+        .and_then(|future| future)
         .responder()
 }

@@ -41,7 +41,6 @@ fn main() {
 
     let sys = actix::System::new("diesel-example");
 
-    // Start 3 db executor actors
     let pool = r2d2::Pool::builder()
         .build(actor::db::establish_connection())
         .expect("Failed to create pool.");
@@ -51,7 +50,13 @@ fn main() {
         &mut std::io::stdout(),
     ).expect("run migration failed");
 
-    let addr = SyncArbiter::start(3, move || DbExecutor(pool.clone()));
+    let addr = SyncArbiter::start(
+        std::env::var("DBEXECUTOR_COUNT")
+            .unwrap_or("3".to_string())
+            .parse()
+            .expect("invalid value for DBEXECUTOR_COUNT"),
+        move || DbExecutor(pool.clone()),
+    );
 
     let mut listenfd = ListenFd::from_env();
 
@@ -73,7 +78,8 @@ fn main() {
             .resource("/session", |r| {
                 r.name("session");
                 r.put().with(route::session::post);
-                r.get().with(route::session::get)
+                r.get().with(route::session::get);
+                r.delete().with(route::session::delete);
             })
             .default_resource(|r| r.f(route::default_route))
     });

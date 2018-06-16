@@ -22,11 +22,10 @@ pub enum ApiError {
     DuplicatedEmail,              // POST /users
     BasicAuthUserNotExists,       // basic auth
     BasicAuthPasswordMismatch,    // basic auth
-    BasicAuthInvalidAuthType,     // basic auth
     NotAuthenticated,             // generic auth
     CorruptedAuthorizationHeader, // generic auth
+    InvalidAuthType,              // generic auth
     BearerAuthInvalidToken,       // bearer auth
-    BearerAuthInvalidAuthType,    // bearer auth
 }
 
 impl ApiError {
@@ -46,11 +45,10 @@ impl ApiError {
             DuplicatedEmail => "DUPLICATED_EMAIL",
             BasicAuthUserNotExists => "USER_NOT_EXIST",
             BasicAuthPasswordMismatch => "PASSWORD_MISMATCH",
-            BasicAuthInvalidAuthType => "INVALID_AUTHENTICATION_TYPE",
+            InvalidAuthType => "INVALID_AUTHENTICATION_TYPE",
             NotAuthenticated => "NOT_AUTHENTICATED",
             CorruptedAuthorizationHeader => "CORRUPTED_AUTHORIZATION_HEADER",
             BearerAuthInvalidToken => "INVALID_TOKEN",
-            BearerAuthInvalidAuthType => "INVALID_AUTHENTICATION_TYPE",
         }
     }
     pub fn status(&self) -> StatusCode {
@@ -63,11 +61,10 @@ impl ApiError {
             DuplicatedEmail => StatusCode::CONFLICT,
             BasicAuthUserNotExists => StatusCode::FORBIDDEN,
             BasicAuthPasswordMismatch => StatusCode::FORBIDDEN,
-            BasicAuthInvalidAuthType => StatusCode::UNAUTHORIZED,
+            InvalidAuthType => StatusCode::UNAUTHORIZED,
             NotAuthenticated => StatusCode::UNAUTHORIZED,
             CorruptedAuthorizationHeader => StatusCode::BAD_REQUEST,
             BearerAuthInvalidToken => StatusCode::FORBIDDEN,
-            BearerAuthInvalidAuthType => StatusCode::UNAUTHORIZED,
         }
     }
 }

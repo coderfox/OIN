@@ -19,3 +19,6 @@ pub use self::create_user::*;
 
 mod query;
 pub use self::query::*;
+
+mod query_single;
+pub use self::query_single::*;

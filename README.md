@@ -2,10 +2,11 @@
 
 ## Configuration
 
-| env var      | default    | description                          |
-| ------------ | ---------- | ------------------------------------ |
-| DATABASE_URL | _required_ | connect uri of a PostgreSQL instance |
-| BIND_ADDRESS | [::]:3000  | bind address                         |
+| env var          | default    | description                          |
+| ---------------- | ---------- | ------------------------------------ |
+| DATABASE_URL     | _required_ | connect uri of a PostgreSQL instance |
+| BIND_ADDRESS     | [::]:3000  | bind address                         |
+| DBEXECUTOR_COUNT | 3          | count of database executors          |
 
 ## Run
 

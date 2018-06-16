@@ -20,7 +20,7 @@ where
                 if schema == Self::schema() {
                     Ok(Self::from_header_value(&value[1..])?)
                 } else {
-                    Err(ApiError::BasicAuthInvalidAuthType)
+                    Err(ApiError::InvalidAuthType)
                 }
             })
     }
@@ -318,7 +318,7 @@ mod tests {
         fn basic_mismatch() {
             assert_eq!(
                 BasicAuthHeader::from_header("Bearer 4e240c20-f95c-4adc-99c4-1a42e5492dcc"),
-                Err(ApiError::BasicAuthInvalidAuthType)
+                Err(ApiError::InvalidAuthType)
             );
         }
 
@@ -335,7 +335,7 @@ mod tests {
         fn bearer_mismatch() {
             assert_eq!(
                 BearerAuthHeader::from_header(&format!("Basic {}", &encode("username:password"))),
-                Err(ApiError::BearerAuthInvalidAuthType)
+                Err(ApiError::InvalidAuthType)
             );
         }
     }
