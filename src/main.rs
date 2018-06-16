@@ -5,6 +5,7 @@ extern crate chrono;
 extern crate dotenv;
 extern crate failure;
 extern crate futures;
+extern crate listenfd;
 extern crate r2d2;
 extern crate serde;
 extern crate uuid;
@@ -28,6 +29,7 @@ use actix_web::middleware::ErrorHandlers;
 use actix_web::{http, server, App};
 use actor::db::DbExecutor;
 use dotenv::dotenv;
+use listenfd::ListenFd;
 use state::AppState;
 
 embed_migrations!();
@@ -49,7 +51,9 @@ fn main() {
 
     let addr = SyncArbiter::start(3, move || DbExecutor(pool.clone()));
 
-    server::new(move || {
+    let mut listenfd = ListenFd::from_env();
+
+    let mut server = server::new(move || {
         App::with_state(AppState { db: addr.clone() })
             .middleware(route::LogError)
             .middleware(
@@ -65,10 +69,18 @@ fn main() {
                 r.post().with(route::users::post_all);
             })
             .default_resource(|r| r.f(route::default_route))
-    }).bind("127.0.0.1:8080")
-        .unwrap()
-        .start();
+    });
 
-    println!("Started http server: 127.0.0.1:8080");
+    server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
+        server.listen(l)
+    } else {
+        server
+            .bind(std::env::var("BIND_ADDRESS").unwrap_or("127.0.0.1:3000".to_string()))
+            .unwrap()
+    };
+
+    println!("Started http server: {:?}", server.addrs());
+    server.start();
+
     let _ = sys.run();
 }

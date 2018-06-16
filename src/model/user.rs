@@ -34,7 +34,14 @@ impl<'a> NewUser<'a> {
         Ok(NewUser {
             email,
             nickname,
-            hashed_password: hash(password, DEFAULT_COST)?,
+            hashed_password: hash(
+                password,
+                if cfg!(debug_assertions) {
+                    4
+                } else {
+                    DEFAULT_COST
+                },
+            )?,
         })
     }
 }
