@@ -23,7 +23,8 @@ mod schema;
 mod state;
 
 use actix::prelude::*;
-use actix_web::{server, App};
+use actix_web::middleware::ErrorHandlers;
+use actix_web::{http, server, App};
 use actor::db::DbExecutor;
 use dotenv::dotenv;
 use state::AppState;
@@ -49,7 +50,20 @@ fn main() {
 
     server::new(move || {
         App::with_state(AppState { db: addr.clone() })
-            .resource("/users", |r| r.post().f(route::users::post_all))
+            .middleware(route::LogError)
+            .middleware(
+                ErrorHandlers::new()
+                    .handler(
+                        http::StatusCode::INTERNAL_SERVER_ERROR,
+                        route::error::render_500,
+                    )
+                    .handler(http::StatusCode::BAD_REQUEST, route::error::render_400)
+                    .handler(http::StatusCode::NOT_FOUND, route::error::render_404),
+            )
+            .resource("/users", |r| {
+                r.post().with(route::users::post_all);
+                r.get().with(route::users::get_all);
+            })
             .default_resource(|r| r.f(route::default_route))
     }).bind("127.0.0.1:8080")
         .unwrap()

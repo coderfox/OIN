@@ -24,7 +24,7 @@ impl Handler<CreateUser> for DbExecutor {
         let new_user = NewUser {
             email: &msg.email,
             password: &msg.password,
-            nickname: msg.nickname.as_ref().unwrap_or(&msg.email),
+            nickname: &msg.nickname.unwrap_or(msg.email.clone()),
         };
 
         let conn: &PgConnection = &self.0.get().unwrap();

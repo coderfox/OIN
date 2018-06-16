@@ -17,7 +17,10 @@ pub struct ErrorResponse {
 #[derive(Debug)]
 pub enum ApiError {
     InternalServerError(Box<error::Error + Send + Sync>),
+    InternalServerErrorWithoutReason,
     ApiEndpointNotFound,
+    BadRequest,
+    UserNotFound,
 }
 
 impl ApiError {
@@ -25,15 +28,23 @@ impl ApiError {
         ApiError::InternalServerError(err)
     }
     pub fn code(&self) -> &'static str {
+        use self::ApiError::*;
         match self {
-            ApiError::InternalServerError(_) => "INTERNAL_SERVER_ERROR",
-            ApiError::ApiEndpointNotFound => "API_ENDPOINT_NOT_FOUND",
+            InternalServerError(_) => "INTERNAL_SERVER_ERROR",
+            ApiEndpointNotFound => "API_ENDPOINT_NOT_FOUND",
+            InternalServerErrorWithoutReason => "INTERNAL_SERVER_ERROR",
+            BadRequest => "BAD_REQUEST",
+            UserNotFound => "USER_NOT_FOUND",
         }
     }
     pub fn status(&self) -> StatusCode {
+        use self::ApiError::*;
         match self {
-            ApiError::InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            ApiError::ApiEndpointNotFound => StatusCode::NOT_FOUND,
+            InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            ApiEndpointNotFound => StatusCode::NOT_FOUND,
+            InternalServerErrorWithoutReason => StatusCode::INTERNAL_SERVER_ERROR,
+            BadRequest => StatusCode::BAD_REQUEST,
+            UserNotFound => StatusCode::NOT_FOUND,
         }
     }
 }
@@ -42,11 +53,11 @@ impl fmt::Display for ApiError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "api error {}",
+            "{}",
             if let ApiError::InternalServerError(ref base_error) = self {
-                base_error.as_ref().description()
+                format!("internal error: {}", base_error.as_ref().description())
             } else {
-                self.code()
+                format!("handled error: {}", self.code())
             }
         )
     }

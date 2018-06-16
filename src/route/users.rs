@@ -1,17 +1,25 @@
-use actix_web::{AsyncResponder, HttpRequest, HttpResponse};
+use actix_web::{AsyncResponder, HttpRequest, HttpResponse, Json};
 use actor::db::CreateUser;
 use failure::Fail;
 use futures::Future;
-use response::{ApiError, FutureResponse};
+use response::{ApiError, FutureResponse, Result};
 use state::AppState;
 
-pub fn post_all(req: HttpRequest<AppState>) -> FutureResponse {
+#[derive(Deserialize)]
+pub struct PostAllRequest {
+    pub email: String,
+    pub password: String,
+    pub nickname: Option<String>,
+}
+
+pub fn post_all((req, raw_data): (HttpRequest<AppState>, Json<PostAllRequest>)) -> FutureResponse {
+    let data = raw_data.into_inner();
     req.state()
         .db
         .send(CreateUser {
-            email: "i@xfox.me".to_owned(),
-            password: "test".to_owned(),
-            nickname: Some("coderfox".to_owned()),
+            email: data.email,
+            password: data.password,
+            nickname: data.nickname,
         })
         .map_err(|e| ApiError::from_error_boxed(Box::new(e.compat())))
         .and_then(|res| match res {
@@ -19,4 +27,8 @@ pub fn post_all(req: HttpRequest<AppState>) -> FutureResponse {
             Err(err) => Err(ApiError::from_error_boxed(Box::new(err))),
         })
         .responder()
+}
+
+pub fn get_all(_: HttpRequest<AppState>) -> Result<&'static str> {
+    Err(ApiError::UserNotFound)
 }
