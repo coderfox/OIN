@@ -1,5 +1,6 @@
 extern crate actix;
 extern crate actix_web;
+extern crate bcrypt;
 extern crate chrono;
 extern crate dotenv;
 extern crate failure;
@@ -62,7 +63,6 @@ fn main() {
             )
             .resource("/users", |r| {
                 r.post().with(route::users::post_all);
-                r.get().with(route::users::get_all);
             })
             .default_resource(|r| r.f(route::default_route))
     }).bind("127.0.0.1:8080")

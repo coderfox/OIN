@@ -1,3 +1,4 @@
+use bcrypt::{hash, BcryptError, DEFAULT_COST};
 use chrono::{DateTime, Utc};
 use schema::user;
 use uuid::Uuid;
@@ -6,7 +7,9 @@ use uuid::Uuid;
 pub struct User {
     pub id: Uuid,
     pub email: String,
-    pub password: String,
+    #[column_name = "password"]
+    #[serde(skip_serializing)]
+    pub hashed_password: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub delete_token: Option<Uuid>,
@@ -17,6 +20,21 @@ pub struct User {
 #[table_name = "user"]
 pub struct NewUser<'a> {
     pub email: &'a str,
-    pub password: &'a str,
+    #[column_name = "password"]
+    pub hashed_password: String,
     pub nickname: &'a str,
+}
+
+impl<'a> NewUser<'a> {
+    pub fn new(
+        email: &'a str,
+        password: &'a str,
+        nickname: &'a str,
+    ) -> Result<NewUser<'a>, BcryptError> {
+        Ok(NewUser {
+            email,
+            nickname,
+            hashed_password: hash(password, DEFAULT_COST)?,
+        })
+    }
 }

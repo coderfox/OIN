@@ -20,7 +20,8 @@ pub enum ApiError {
     InternalServerErrorWithoutReason,
     ApiEndpointNotFound,
     BadRequest,
-    UserNotFound,
+    DuplicatedEmail,
+    // UserNotFound,
 }
 
 impl ApiError {
@@ -34,7 +35,8 @@ impl ApiError {
             ApiEndpointNotFound => "API_ENDPOINT_NOT_FOUND",
             InternalServerErrorWithoutReason => "INTERNAL_SERVER_ERROR",
             BadRequest => "BAD_REQUEST",
-            UserNotFound => "USER_NOT_FOUND",
+            DuplicatedEmail => "DUPLICATED_EMAIL",
+            // UserNotFound => "USER_NOT_FOUND",
         }
     }
     pub fn status(&self) -> StatusCode {
@@ -44,7 +46,8 @@ impl ApiError {
             ApiEndpointNotFound => StatusCode::NOT_FOUND,
             InternalServerErrorWithoutReason => StatusCode::INTERNAL_SERVER_ERROR,
             BadRequest => StatusCode::BAD_REQUEST,
-            UserNotFound => StatusCode::NOT_FOUND,
+            DuplicatedEmail => StatusCode::CONFLICT,
+            // UserNotFound => StatusCode::NOT_FOUND,
         }
     }
 }
