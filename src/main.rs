@@ -69,9 +69,8 @@ fn main() {
             )
             .resource("/users", |r| {
                 r.post().with(route::users::post_all);
-                r.get().with(route::users::get_all);
             })
-            .resource("/session_test", |r| {
+            .resource("/session", |r| {
                 r.post().with(route::session::post_body);
             })
             .default_resource(|r| r.f(route::default_route))

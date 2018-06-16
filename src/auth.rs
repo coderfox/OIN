@@ -1,6 +1,11 @@
 use actix_web::http::header;
-use actix_web::*;
+use actix_web::{Error, FromRequest, HttpMessage, HttpRequest, Result};
+use actor::db::{Query, QueryResult};
 use base64::decode;
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
+use failure::Fail;
+use futures::future::result;
 use futures::Future;
 use model::User;
 use response::ApiError;
@@ -58,7 +63,6 @@ impl AuthHeader for BasicAuthHeader {
     }
 }
 
-/*
 pub struct BasicAuthConfig;
 
 impl Default for BasicAuthConfig {
@@ -67,24 +71,52 @@ impl Default for BasicAuthConfig {
     }
 }
 
-pub struct BasicAuth(User);
+pub struct BasicAuth(pub User);
 
 impl FromRequest<AppState> for BasicAuth {
     type Config = BasicAuthConfig;
-    type Result = Result<Self, Error>; // Box<Future<Item = Self, Error = Error>>;
-    fn from_request(req: &HttpRequest<AppState>, cfg: &Self::Config) -> Self::Result {
-        let auth_header = req.headers().get(header::AUTHORIZATION);
-        // println!("{:?}", auth_header.unwrap());
-        Ok(BasicAuth {
-            user_id: auth_header
-                .unwrap()
-                .to_str()
-                .map_err(ApiError::from_error)?
-                .to_string(),
-        })
+    type Result = Box<Future<Item = Self, Error = Error>>;
+    fn from_request(req: &HttpRequest<AppState>, _: &Self::Config) -> Self::Result {
+        use schema::user::dsl as udsl;
+
+        let cloned_req = req.clone();
+        let header_result = req.headers()
+            .get(header::AUTHORIZATION)
+            .map_or(Err(ApiError::NotAuthenticated), |v| {
+                v.to_str()
+                    .map_err(|_| ApiError::CorruptedAuthorizationHeader)
+            })
+            .and_then(BasicAuthHeader::from_header);
+        Box::new(
+            result(header_result)
+                .and_then(move |header| {
+                    let BasicAuthHeader { username, password } = header;
+                    cloned_req
+                        .state()
+                        .db
+                        .send(Query::new(
+                            udsl::user.limit(1).filter(udsl::email.eq(username)),
+                        ))
+                        .map_err(|e| ApiError::from_error(e.compat()))
+                        .and_then(move |res: QueryResult<User>| {
+                            let user = res.map_err(ApiError::from_error)?
+                                .pop()
+                                .map_or(Err(ApiError::BasicAuthUserNotExists), |u| Ok(u))?;
+                            let verify_result = user.validate_password(&password)
+                                .map_err(ApiError::from_error)?;
+                            if !verify_result {
+                                Err(ApiError::BasicAuthPasswordMismatch)
+                            } else {
+                                Ok(BasicAuth(user))
+                            }
+                        })
+                })
+                .map_err(|e| e.into()),
+        )
     }
 }
 
+/*
 pub struct TokenAuth {
     token: String,
     user_id: String,
