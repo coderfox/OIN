@@ -71,7 +71,9 @@ fn main() {
                 r.post().with(route::users::post_all);
             })
             .resource("/session", |r| {
-                r.post().with(route::session::post_body);
+                r.name("session");
+                r.put().with(route::session::post);
+                r.get().with(route::session::get)
             })
             .default_resource(|r| r.f(route::default_route))
     });

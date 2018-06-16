@@ -1,10 +1,12 @@
 use actix_web::{AsyncResponder, HttpRequest, HttpResponse};
-use actor::db::Query;
-use auth::BasicAuth;
+use actor::db::{Query, QueryResult};
+use auth::{BasicAuth, BearerAuth};
 use chrono::{Duration, Utc};
 use diesel;
 use diesel::query_builder::AsQuery;
 use diesel::result::Error as DieselError;
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
 use failure::Fail;
 use futures::Future;
 use model::User;
@@ -12,14 +14,7 @@ use model::{NewSession, Session, SessionView};
 use response::{ApiError, FutureResponse};
 use state::AppState;
 
-#[derive(Deserialize)]
-pub struct PostRequest {
-    pub email: String,
-    pub password: String,
-}
-
-// TODO: drop this
-pub fn post_body((req, BasicAuth(user)): (HttpRequest<AppState>, BasicAuth)) -> FutureResponse {
+pub fn post((req, BasicAuth(user)): (HttpRequest<AppState>, BasicAuth)) -> FutureResponse {
     use schema::session::dsl as sdsl;
 
     req.state()
@@ -46,6 +41,32 @@ pub fn post_body((req, BasicAuth(user)): (HttpRequest<AppState>, BasicAuth)) -> 
                 updated_at: &session.updated_at,
                 expires_at: &session.expires_at,
             }))
+        })
+        .responder()
+}
+
+pub fn get((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -> FutureResponse {
+    use schema::user::dsl as udsl;
+
+    req.state()
+        .db
+        .send(Query::new(
+            udsl::user.limit(1).filter(udsl::id.eq(session.user_id)),
+        ))
+        .map_err(|e| ApiError::from_error(e.compat()))
+        .and_then(move |res: QueryResult<User>| match res {
+            Ok(mut users) => users
+                .pop()
+                .map_or(Err(ApiError::BearerAuthInvalidToken), |v| {
+                    Ok(HttpResponse::Ok().json(SessionView {
+                        token: &session.token,
+                        user: &v,
+                        created_at: &session.created_at,
+                        updated_at: &session.updated_at,
+                        expires_at: &session.expires_at,
+                    }))
+                }),
+            Err(e) => Err(ApiError::from_error(e)),
         })
         .responder()
 }

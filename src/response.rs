@@ -19,13 +19,14 @@ pub enum ApiError {
     InternalServerErrorWithoutReason,
     ApiEndpointNotFound,
     BadRequest,
-    DuplicatedEmail,
-    BasicAuthUserNotExists,
-    BasicAuthPasswordMismatch,
-    BasicAuthInvalidAuthType,
-    NotAuthenticated,
-    CorruptedAuthorizationHeader,
-    // UserNotFound,
+    DuplicatedEmail,              // POST /users
+    BasicAuthUserNotExists,       // basic auth
+    BasicAuthPasswordMismatch,    // basic auth
+    BasicAuthInvalidAuthType,     // basic auth
+    NotAuthenticated,             // generic auth
+    CorruptedAuthorizationHeader, // generic auth
+    BearerAuthInvalidToken,       // bearer auth
+    BearerAuthInvalidAuthType,    // bearer auth
 }
 
 impl ApiError {
@@ -48,7 +49,8 @@ impl ApiError {
             BasicAuthInvalidAuthType => "INVALID_AUTHENTICATION_TYPE",
             NotAuthenticated => "NOT_AUTHENTICATED",
             CorruptedAuthorizationHeader => "CORRUPTED_AUTHORIZATION_HEADER",
-            // UserNotFound => "USER_NOT_FOUND",
+            BearerAuthInvalidToken => "INVALID_TOKEN",
+            BearerAuthInvalidAuthType => "INVALID_AUTHENTICATION_TYPE",
         }
     }
     pub fn status(&self) -> StatusCode {
@@ -64,7 +66,8 @@ impl ApiError {
             BasicAuthInvalidAuthType => StatusCode::UNAUTHORIZED,
             NotAuthenticated => StatusCode::UNAUTHORIZED,
             CorruptedAuthorizationHeader => StatusCode::BAD_REQUEST,
-            // UserNotFound => StatusCode::NOT_FOUND,
+            BearerAuthInvalidToken => StatusCode::FORBIDDEN,
+            BearerAuthInvalidAuthType => StatusCode::UNAUTHORIZED,
         }
     }
 }
