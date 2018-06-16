@@ -2,9 +2,10 @@
 
 ## Configuration
 
-- `DATABASE_URL` **required** connect uri of a PostgreSQL instance
-
-- `BIND_ADDRESS` **optional** bind address, defaults to `127.0.0.1:3000`
+| env var      | default    | description                          |
+| ------------ | ---------- | ------------------------------------ |
+| DATABASE_URL | _required_ | connect uri of a PostgreSQL instance |
+| BIND_ADDRESS | [::]:3000  | bind address                         |
 
 ## Run
 
