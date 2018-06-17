@@ -1,8 +1,8 @@
-use actix_web::{middleware::Response, Body, Error, HttpRequest, HttpResponse, ResponseError};
+use actix_web::{middleware::Response, Error, HttpRequest, HttpResponse, ResponseError};
 use response::ApiError;
 
 fn render(res: HttpResponse, replace: ApiError) -> Result<Response, Error> {
-    if let Body::Empty = res.body() {
+    if res.body().is_empty() {
         Ok(Response::Done(replace.error_response()))
     } else {
         Ok(Response::Done(res))

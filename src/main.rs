@@ -7,6 +7,7 @@ extern crate dotenv;
 extern crate failure;
 extern crate futures;
 extern crate listenfd;
+extern crate pretty_env_logger;
 extern crate r2d2;
 extern crate serde;
 extern crate uuid;
@@ -15,6 +16,8 @@ extern crate uuid;
 extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
+#[macro_use]
+extern crate log;
 #[macro_use]
 extern crate serde_derive;
 
@@ -39,7 +42,18 @@ embed_migrations!();
 fn main() {
     dotenv().ok();
 
-    let sys = actix::System::new("diesel-example");
+    std::env::set_var(
+        "RUST_LOG",
+        format!(
+            "{},sandra_backend={}",
+            std::env::var("RUST_LOG").unwrap_or("".to_string()),
+            std::env::var("SANDRA_LOG").unwrap_or("info".to_string())
+        ),
+    );
+    // log level in increasing order: trace! debug! info! warn! error!
+    pretty_env_logger::init();
+
+    let sys = actix::System::new("sandra");
 
     let pool = r2d2::Pool::builder()
         .build(actor::db::establish_connection())
@@ -49,6 +63,7 @@ fn main() {
         &pool.get().expect("Failed to connect to database."),
         &mut std::io::stdout(),
     ).expect("run migration failed");
+    info!("database migrations executed successfully");
 
     let addr = SyncArbiter::start(
         std::env::var("DBEXECUTOR_COUNT")
@@ -103,7 +118,16 @@ fn main() {
             .unwrap()
     };
 
-    println!("Started http server: {:?}", server.addrs());
+    info!(
+        "server listening on {}",
+        server
+            .addrs_with_scheme()
+            .iter()
+            .map(|&(a, s)| format!("{}://{}", s, a))
+            .collect::<Vec<String>>()
+            .join(", ")
+    );
+
     server.start();
 
     let _ = sys.run();
