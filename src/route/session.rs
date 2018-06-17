@@ -53,7 +53,7 @@ pub fn get((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -> F
         .send(Query::new(
             udsl::user.limit(1).filter(udsl::id.eq(session.user_id)),
         ))
-        .map_err(|e| ApiError::from_error(e.compat()))
+        .from_err()
         .and_then(move |res: QueryResult<User>| match res {
             Ok(mut users) => users
                 .pop()
@@ -82,14 +82,14 @@ pub fn delete((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -
                 .set(sdsl::expires_at.eq(Utc::now()))
                 .as_query(),
         ))
-        .map_err(|e| ApiError::from_error(e.compat()))
+        .from_err()
         .and_then(move |res: QuerySingleResult<Session>| match res {
             Ok(session) => Ok(req.state()
                 .db
                 .send(QuerySingle::new(
                     udsl::user.limit(1).filter(udsl::id.eq(session.user_id)),
                 ))
-                .map_err(|e| ApiError::from_error(e.compat()))
+                .from_err()
                 .and_then(move |result: QuerySingleResult<User>| match result {
                     Ok(user) => Ok(HttpResponse::Ok().json(SessionView {
                         token: &session.token,
@@ -102,6 +102,6 @@ pub fn delete((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -
                 })),
             Err(err) => Err(ApiError::from_error(err)),
         })
-        .and_then(|future| future)
+        .flatten()
         .responder()
 }

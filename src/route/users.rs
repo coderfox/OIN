@@ -1,7 +1,6 @@
 use actix_web::{AsyncResponder, HttpRequest, HttpResponse, Json};
 use actor::db::{CreateUser, CreateUserError};
 use diesel::result::{DatabaseErrorKind, Error as DieselError};
-use failure::Fail;
 use futures::Future;
 use response::{ApiError, FutureResponse};
 use state::AppState;
@@ -22,11 +21,10 @@ pub fn post_all((req, raw_data): (HttpRequest<AppState>, Json<PostAllRequest>)) 
             password: data.password,
             nickname: data.nickname,
         })
-        .map_err(|e| ApiError::from_error(e.compat()))
+        .from_err()
         .and_then(|res| match res {
-            Ok(user) => Ok(HttpResponse::Ok()
-                // .header("location", user.id.hyphenated().to_string())
-                .json(user)),
+            // .header("location", user.id.hyphenated().to_string())
+            Ok(user) => Ok(HttpResponse::Ok().json(user)),
             // TODO: refactor this after `if let combination` is supported
             Err(err) => Err(if let CreateUserError::DieselError(derr) = err {
                 if let DieselError::DatabaseError(ek, ei) = derr {

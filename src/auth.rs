@@ -34,7 +34,6 @@ mod basic {
     use base64::decode;
     use diesel::ExpressionMethods;
     use diesel::QueryDsl;
-    use failure::Fail;
     use futures::future::result;
     use futures::Future;
     use model::User;
@@ -107,7 +106,7 @@ mod basic {
                             .send(Query::new(
                                 sdsl::user.limit(1).filter(sdsl::email.eq(username)),
                             ))
-                            .map_err(|e| ApiError::from_error(e.compat()))
+                            .from_err()
                             .and_then(move |res: QueryResult<User>| {
                                 let user = res.map_err(ApiError::from_error)?
                                     .pop()
@@ -134,7 +133,6 @@ mod bearer {
     use actor::db::{Query, QueryResult};
     use diesel::ExpressionMethods;
     use diesel::QueryDsl;
-    use failure::Fail;
     use futures::future::result;
     use futures::Future;
     use model::Session;
@@ -190,7 +188,7 @@ mod bearer {
                             .send(Query::new(
                                 sdsl::session.limit(1).filter(sdsl::token.eq(token)),
                             ))
-                            .map_err(|e| ApiError::from_error(e.compat()))
+                            .from_err()
                             .and_then(move |res: QueryResult<Session>| {
                                 res.map_err(ApiError::from_error)?.pop().map_or(
                                     Err(ApiError::BearerAuthInvalidToken),

@@ -1,5 +1,8 @@
+use actix;
 use actix_web::error::ResponseError;
 use actix_web::{http::StatusCode, HttpResponse};
+use diesel::result::Error as DieselError;
+use failure::Fail;
 use futures::Future;
 use std;
 use std::error;
@@ -118,5 +121,17 @@ impl ResponseError for ApiError {
 impl PartialEq<ApiError> for ApiError {
     fn eq(&self, other: &Self) -> bool {
         self.code() == other.code()
+    }
+}
+
+impl From<actix::MailboxError> for ApiError {
+    fn from(err: actix::MailboxError) -> Self {
+        Self::from_error(err.compat())
+    }
+}
+
+impl From<DieselError> for ApiError {
+    fn from(err: DieselError) -> Self {
+        Self::from_error(err)
     }
 }
