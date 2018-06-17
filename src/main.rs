@@ -27,7 +27,7 @@ mod schema;
 mod state;
 
 use actix::prelude::*;
-use actix_web::middleware::ErrorHandlers;
+use actix_web::middleware::{self, ErrorHandlers};
 use actix_web::{http, server, App};
 use actor::db::DbExecutor;
 use dotenv::dotenv;
@@ -62,6 +62,10 @@ fn main() {
 
     let mut server = server::new(move || {
         App::with_state(AppState { db: addr.clone() })
+            .middleware(middleware::DefaultHeaders::new().header(
+                "Server",
+                "sandra-backend/0.3.0 (REST/0.4.3; RPC Crawler/0.4.0)",
+            ))
             .middleware(route::LogError)
             .middleware(
                 ErrorHandlers::new()
@@ -74,6 +78,9 @@ fn main() {
             )
             .resource("/users", |r| {
                 r.post().with(route::users::post_all);
+            })
+            .resource("/users/me", |r| {
+                r.get().with(route::users::get_me);
             })
             .resource("/session", |r| {
                 r.name("session");
