@@ -7,12 +7,6 @@ use actix_web::{middleware::{Middleware, Response},
                 Error,
                 HttpRequest,
                 HttpResponse};
-use response::ApiError;
-use state::AppState;
-
-pub fn default_route(_: HttpRequest<AppState>) -> Result<&'static str, ApiError> {
-    Err(ApiError::ApiEndpointNotFound)
-}
 
 pub struct LogError;
 

@@ -76,19 +76,23 @@ fn main() {
                     .handler(http::StatusCode::BAD_REQUEST, route::error::render_400)
                     .handler(http::StatusCode::NOT_FOUND, route::error::render_404),
             )
-            .resource("/users", |r| {
-                r.post().with(route::users::post_all);
+            .configure(|app| {
+                middleware::cors::Cors::for_app(app)
+                    .supports_credentials()
+                    .resource("/users", |r| {
+                        r.post().with(route::users::post_all);
+                    })
+                    .resource("/users/me", |r| {
+                        r.get().with(route::users::get_me);
+                    })
+                    .resource("/session", |r| {
+                        r.name("session");
+                        r.put().with(route::session::post);
+                        r.get().with(route::session::get);
+                        r.delete().with(route::session::delete);
+                    })
+                    .register()
             })
-            .resource("/users/me", |r| {
-                r.get().with(route::users::get_me);
-            })
-            .resource("/session", |r| {
-                r.name("session");
-                r.put().with(route::session::post);
-                r.get().with(route::session::get);
-                r.delete().with(route::session::delete);
-            })
-            .default_resource(|r| r.f(route::default_route))
     });
 
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {

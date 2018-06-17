@@ -1,4 +1,15 @@
 table! {
+    service (id) {
+        id -> Uuid,
+        name -> Varchar,
+        token -> Uuid,
+        description -> Nullable<Varchar>,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+table! {
     session (token) {
         token -> Uuid,
         created_at -> Timestamptz,
@@ -22,4 +33,4 @@ table! {
 
 joinable!(session -> user (user_id));
 
-allow_tables_to_appear_in_same_query!(session, user,);
+allow_tables_to_appear_in_same_query!(service, session, user,);

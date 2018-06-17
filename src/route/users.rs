@@ -8,7 +8,6 @@ use futures::Future;
 use model::User;
 use response::{ApiError, FutureResponse};
 use state::AppState;
-use uuid::Uuid;
 
 #[derive(Deserialize)]
 pub struct PostAllRequest {
@@ -56,7 +55,7 @@ pub fn get_me((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -
         .send(QuerySingle::new(
             dsl::user
                 .find(session.user_id)
-                .filter(dsl::delete_token.eq(None::<Uuid>)),
+                .filter(dsl::delete_token.is_null()),
         ))
         .from_err()
         .and_then(|res: QuerySingleResult<User>| {

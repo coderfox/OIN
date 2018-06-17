@@ -104,7 +104,10 @@ mod basic {
                             .state()
                             .db
                             .send(Query::new(
-                                sdsl::user.limit(1).filter(sdsl::email.eq(username)),
+                                sdsl::user
+                                    .limit(1)
+                                    .filter(sdsl::email.eq(username))
+                                    .filter(sdsl::delete_token.is_null()),
                             ))
                             .from_err()
                             .and_then(move |res: QueryResult<User>| {
