@@ -105,6 +105,9 @@ fn main() {
                         r.get().with(route::session::get);
                         r.delete().with(route::session::delete);
                     })
+                    .resource("/subscriptions/mine", |r| {
+                        r.get().with(route::subscription::get_mine)
+                    })
                     .register()
             })
     });

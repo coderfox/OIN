@@ -1,4 +1,5 @@
 pub mod session;
+pub mod subscription;
 pub mod users;
 
 pub mod error;
@@ -20,7 +21,7 @@ impl<S> Middleware<S> for LogError {
     }
     fn response(&self, req: &mut HttpRequest<S>, res: HttpResponse) -> Result<Response, Error> {
         debug!(
-            "{} {}b {} {} {}ms",
+            "{} {}b {} {} {}us",
             res.status(),
             res.response_size(),
             req.method(),
