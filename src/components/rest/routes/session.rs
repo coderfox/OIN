@@ -1,6 +1,7 @@
+use super::super::auth::{BasicAuth, BearerAuth};
+use super::super::response::{ApiError, FutureResponse};
 use actix_web::{AsyncResponder, HttpRequest, HttpResponse};
 use actor::db::{Query, QueryResult, QuerySingle, QuerySingleResult};
-use auth::{BasicAuth, BearerAuth};
 use chrono::Utc;
 use diesel;
 use diesel::query_builder::AsQuery;
@@ -11,7 +12,6 @@ use failure::Fail;
 use futures::Future;
 use model::User;
 use model::{NewSession, Session, SessionView};
-use response::{ApiError, FutureResponse};
 use state::AppState;
 
 pub fn post((req, BasicAuth(user)): (HttpRequest<AppState>, BasicAuth)) -> FutureResponse {
@@ -31,7 +31,12 @@ pub fn post((req, BasicAuth(user)): (HttpRequest<AppState>, BasicAuth)) -> Futur
             let session = sessions
                 .pop()
                 .map_or(Err(ApiError::InternalServerErrorWithoutReason), |s| Ok(s))?;
-            Ok(HttpResponse::Ok().json::<SessionView>((&session, &user).into()))
+            Ok(HttpResponse::Ok()
+                .header(
+                    "x-warning",
+                    "deprecated(drop=0.6; alternative=\"POST /sessions\")",
+                )
+                .json::<SessionView>((&session, &user).into()))
         })
         .responder()
 }

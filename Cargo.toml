@@ -2,6 +2,18 @@
 name = "sandra-backend"
 version = "0.1.0"
 authors = ["Yuze Fu <git@xfox.me>"]
+publish = false
+
+[badges]
+maintenance = { status = "experimental" }
+
+
+[features]
+default = ["rest", "rpc-crawler", "rpc-client"]
+
+rest = []
+rpc-crawler = []
+rpc-client = []
 
 [dependencies]
 actix-web = "0.6.13"

@@ -1,9 +1,3 @@
-pub mod session;
-pub mod subscription;
-pub mod users;
-
-pub mod error;
-
 use actix_web::{middleware::{Middleware, Response, Started},
                 Error,
                 HttpRequest,

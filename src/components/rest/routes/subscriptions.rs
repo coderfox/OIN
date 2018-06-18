@@ -1,11 +1,10 @@
+use super::super::auth::BearerAuth;
+use super::super::response::{ApiError, FutureResponse};
 use actix_web::{AsyncResponder, HttpRequest, HttpResponse};
 use actor::db::{Query, QueryResult};
-use auth::BearerAuth;
-use diesel;
 use diesel::{ExpressionMethods, QueryDsl};
 use futures::Future;
 use model::{Subscription, SubscriptionEvent, SubscriptionView};
-use response::{ApiError, FutureResponse};
 use state::AppState;
 
 pub fn get_mine((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -> FutureResponse {

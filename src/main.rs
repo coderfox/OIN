@@ -25,22 +25,18 @@ extern crate serde_derive;
 extern crate diesel_derive_enum;
 
 mod actor;
-mod auth;
+mod components;
 mod db;
 mod model;
-mod response;
-mod route;
 #[allow(unused_imports)]
 mod schema;
 mod state;
 
-use actix::prelude::*;
-use actix_web::middleware::{self, ErrorHandlers};
-use actix_web::{http, server, App};
+use actix::prelude::SyncArbiter;
+use actix_web::server;
 use actor::db::DbExecutor;
 use dotenv::dotenv;
 use listenfd::ListenFd;
-use state::AppState;
 
 fn main() {
     dotenv().ok();
@@ -72,45 +68,15 @@ fn main() {
         move || DbExecutor(pool.clone()),
     );
 
+    #[cfg(feature = "rest")]
+    info!("enabled rest api server at /rest");
+    #[cfg(feature = "rpc-client")]
+    info!("enabled rpc-client api server at /rpc-client");
+    #[cfg(feature = "rpc-crawler")]
+    info!("enabled rpc-crawler api server at /rpc-crawler");
     let mut listenfd = ListenFd::from_env();
 
-    let mut server = server::new(move || {
-        App::with_state(AppState { db: addr.clone() })
-            .middleware(middleware::DefaultHeaders::new().header(
-                "Server",
-                "sandra-backend/0.3.0 (REST/0.4.3; RPC Crawler/0.4.0)",
-            ))
-            .middleware(route::LogError)
-            .middleware(
-                ErrorHandlers::new()
-                    .handler(
-                        http::StatusCode::INTERNAL_SERVER_ERROR,
-                        route::error::render_500,
-                    )
-                    .handler(http::StatusCode::BAD_REQUEST, route::error::render_400)
-                    .handler(http::StatusCode::NOT_FOUND, route::error::render_404),
-            )
-            .configure(|app| {
-                middleware::cors::Cors::for_app(app)
-                    .supports_credentials()
-                    .resource("/users", |r| {
-                        r.post().with(route::users::post_all);
-                    })
-                    .resource("/users/me", |r| {
-                        r.get().with(route::users::get_me);
-                    })
-                    .resource("/session", |r| {
-                        r.name("session");
-                        r.put().with(route::session::post);
-                        r.get().with(route::session::get);
-                        r.delete().with(route::session::delete);
-                    })
-                    .resource("/subscriptions/mine", |r| {
-                        r.get().with(route::subscription::get_mine)
-                    })
-                    .register()
-            })
-    });
+    let mut server = server::new(move || components::build_app(addr.clone()));
 
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
         server.listen(l)

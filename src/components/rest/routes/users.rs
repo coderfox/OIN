@@ -1,12 +1,12 @@
+use super::super::auth::BearerAuth;
+use super::super::response::{ApiError, FutureResponse};
 use actix_web::{AsyncResponder, HttpRequest, HttpResponse, Json};
 use actor::db::{CreateUser, CreateUserError, QuerySingle, QuerySingleResult};
-use auth::BearerAuth;
 use diesel::result::{DatabaseErrorKind, Error as DieselError};
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use futures::Future;
 use model::User;
-use response::{ApiError, FutureResponse};
 use state::AppState;
 
 #[derive(Deserialize)]

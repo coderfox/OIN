@@ -1,5 +1,5 @@
+use super::response::ApiError;
 use actix_web::Result;
-use response::ApiError;
 
 pub use self::basic::{BasicAuth, BasicAuthHeader};
 pub use self::bearer::{BearerAuth, BearerAuthHeader};
@@ -27,6 +27,7 @@ where
 }
 
 mod basic {
+    use super::ApiError;
     use super::AuthHeader;
     use actix_web::http::header;
     use actix_web::{Error, FromRequest, HttpMessage, HttpRequest, Result};
@@ -37,7 +38,6 @@ mod basic {
     use futures::future::result;
     use futures::Future;
     use model::User;
-    use response::ApiError;
     use state::AppState;
 
     #[derive(Debug, PartialEq)]
@@ -130,6 +130,7 @@ mod basic {
 }
 
 mod bearer {
+    use super::ApiError;
     use super::AuthHeader;
     use actix_web::http::header;
     use actix_web::{Error, FromRequest, HttpMessage, HttpRequest, Result};
@@ -140,7 +141,6 @@ mod bearer {
     use futures::future::result;
     use futures::Future;
     use model::Session;
-    use response::ApiError;
     use state::AppState;
     use uuid::Uuid;
 
@@ -213,8 +213,8 @@ mod bearer {
 #[cfg(test)]
 mod tests {
     mod basic {
+        use super::super::ApiError;
         use base64::encode;
-        use response::ApiError;
 
         use super::super::AuthHeader;
         use super::super::BasicAuthHeader;
@@ -270,7 +270,7 @@ mod tests {
     }
 
     mod bearer {
-        use response::ApiError;
+        use super::super::ApiError;
         use uuid::Uuid;
 
         use super::super::AuthHeader;
@@ -295,8 +295,8 @@ mod tests {
     }
 
     mod auth_header {
+        use super::super::ApiError;
         use base64::encode;
-        use response::ApiError;
         use uuid::Uuid;
 
         use super::super::AuthHeader;

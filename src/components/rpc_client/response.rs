@@ -10,25 +10,21 @@ use std::fmt;
 
 #[allow(dead_code)] // TODO: remove this
 pub type Result<T> = std::result::Result<T, ApiError>;
+#[allow(dead_code)] // TODO: remove this
 pub type FutureResponse = Box<Future<Item = HttpResponse, Error = ApiError>>;
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
     pub code: String,
 }
+
 #[derive(Debug)]
 pub enum ApiError {
     InternalServerError(Box<error::Error + Send + Sync>),
     InternalServerErrorWithoutReason,
     ApiEndpointNotFound,
-    BadRequest,
-    DuplicatedEmail,              // POST /users
-    BasicAuthUserNotExists,       // basic auth
-    BasicAuthPasswordMismatch,    // basic auth
-    NotAuthenticated,             // generic auth
-    CorruptedAuthorizationHeader, // generic auth
-    InvalidAuthType,              // generic auth
-    BearerAuthInvalidToken,       // bearer auth
+    InvalidParameters,
+    NotImplemented, // TODO: drop this
 }
 
 impl ApiError {
@@ -42,32 +38,20 @@ impl ApiError {
         use self::ApiError::*;
         match self {
             InternalServerError(_) => "INTERNAL_SERVER_ERROR",
-            ApiEndpointNotFound => "API_ENDPOINT_NOT_FOUND",
             InternalServerErrorWithoutReason => "INTERNAL_SERVER_ERROR",
-            BadRequest => "BAD_REQUEST",
-            DuplicatedEmail => "DUPLICATED_EMAIL",
-            BasicAuthUserNotExists => "USER_NOT_EXIST",
-            BasicAuthPasswordMismatch => "PASSWORD_MISMATCH",
-            InvalidAuthType => "INVALID_AUTHENTICATION_TYPE",
-            NotAuthenticated => "NOT_AUTHENTICATED",
-            CorruptedAuthorizationHeader => "CORRUPTED_AUTHORIZATION_HEADER",
-            BearerAuthInvalidToken => "INVALID_TOKEN",
+            ApiEndpointNotFound => "API_ENDPOINT_NOT_FOUND",
+            InvalidParameters => "INVALID_PARAMETERS",
+            NotImplemented => "NOT_IMPLEMENTED",
         }
     }
     pub fn status(&self) -> StatusCode {
         use self::ApiError::*;
         match self {
-            InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            ApiEndpointNotFound => StatusCode::NOT_FOUND,
-            InternalServerErrorWithoutReason => StatusCode::INTERNAL_SERVER_ERROR,
-            BadRequest => StatusCode::BAD_REQUEST,
-            DuplicatedEmail => StatusCode::CONFLICT,
-            BasicAuthUserNotExists => StatusCode::FORBIDDEN,
-            BasicAuthPasswordMismatch => StatusCode::FORBIDDEN,
-            InvalidAuthType => StatusCode::UNAUTHORIZED,
-            NotAuthenticated => StatusCode::UNAUTHORIZED,
-            CorruptedAuthorizationHeader => StatusCode::BAD_REQUEST,
-            BearerAuthInvalidToken => StatusCode::FORBIDDEN,
+            InternalServerError(_) => StatusCode::SERVICE_UNAVAILABLE,
+            InternalServerErrorWithoutReason => StatusCode::SERVICE_UNAVAILABLE,
+            ApiEndpointNotFound => StatusCode::INTERNAL_SERVER_ERROR,
+            InvalidParameters => StatusCode::INTERNAL_SERVER_ERROR,
+            NotImplemented => StatusCode::NOT_IMPLEMENTED,
         }
     }
 }
