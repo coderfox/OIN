@@ -31,13 +31,7 @@ pub fn post((req, BasicAuth(user)): (HttpRequest<AppState>, BasicAuth)) -> Futur
             let session = sessions
                 .pop()
                 .map_or(Err(ApiError::InternalServerErrorWithoutReason), |s| Ok(s))?;
-            Ok(HttpResponse::Ok().json(SessionView {
-                token: &session.token,
-                user: &user,
-                created_at: &session.created_at,
-                updated_at: &session.updated_at,
-                expires_at: &session.expires_at,
-            }))
+            Ok(HttpResponse::Ok().json::<SessionView>((&session, &user).into()))
         })
         .responder()
 }
@@ -54,14 +48,8 @@ pub fn get((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -> F
         .and_then(move |res: QueryResult<User>| match res {
             Ok(mut users) => users
                 .pop()
-                .map_or(Err(ApiError::BearerAuthInvalidToken), |v| {
-                    Ok(HttpResponse::Ok().json(SessionView {
-                        token: &session.token,
-                        user: &v,
-                        created_at: &session.created_at,
-                        updated_at: &session.updated_at,
-                        expires_at: &session.expires_at,
-                    }))
+                .map_or(Err(ApiError::BearerAuthInvalidToken), |user| {
+                    Ok(HttpResponse::Ok().json::<SessionView>((&session, &user).into()))
                 }),
             Err(e) => Err(ApiError::from_error(e)),
         })
@@ -88,13 +76,9 @@ pub fn delete((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -
                 ))
                 .from_err()
                 .and_then(move |result: QuerySingleResult<User>| match result {
-                    Ok(user) => Ok(HttpResponse::Ok().json(SessionView {
-                        token: &session.token,
-                        user: &user,
-                        created_at: &session.created_at,
-                        updated_at: &session.updated_at,
-                        expires_at: &session.expires_at,
-                    })),
+                    Ok(user) => {
+                        Ok(HttpResponse::Ok().json::<SessionView>((&session, &user).into()))
+                    }
                     Err(err) => Err(ApiError::from_error(err)),
                 })),
             Err(err) => Err(ApiError::from_error(err)),

@@ -1,3 +1,4 @@
+use super::PermissionEnum;
 use bcrypt::{hash, verify, BcryptError, DEFAULT_COST};
 use chrono::{DateTime, Utc};
 use schema::user;
@@ -13,8 +14,10 @@ pub struct User {
     pub hashed_password: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    #[serde(skip_serializing)]
     pub delete_token: Option<Uuid>,
     pub nickname: String,
+    pub permissions: Vec<PermissionEnum>,
 }
 
 impl User {

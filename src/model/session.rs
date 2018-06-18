@@ -1,4 +1,5 @@
 use super::user::User;
+use super::PermissionEnum;
 use chrono::{DateTime, Utc};
 use schema::session;
 use uuid::Uuid;
@@ -13,6 +14,7 @@ pub struct Session {
     pub updated_at: DateTime<Utc>,
     pub expires_at: DateTime<Utc>,
     pub user_id: Uuid,
+    pub permissions: Vec<PermissionEnum>,
 }
 
 impl Session {
@@ -34,4 +36,18 @@ pub struct SessionView<'a> {
     pub created_at: &'a DateTime<Utc>,
     pub updated_at: &'a DateTime<Utc>,
     pub expires_at: &'a DateTime<Utc>,
+    pub permissions: &'a Vec<PermissionEnum>,
+}
+
+impl<'a> From<(&'a Session, &'a User)> for SessionView<'a> {
+    fn from((session, user): (&'a Session, &'a User)) -> Self {
+        Self {
+            token: &session.token,
+            user: &user,
+            created_at: &session.created_at,
+            updated_at: &session.updated_at,
+            expires_at: &session.expires_at,
+            permissions: &session.permissions,
+        }
+    }
 }

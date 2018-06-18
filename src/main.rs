@@ -21,12 +21,16 @@ extern crate diesel_migrations;
 extern crate log;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate diesel_derive_enum;
 
 mod actor;
 mod auth;
+mod db;
 mod model;
 mod response;
 mod route;
+#[allow(unused_imports)]
 mod schema;
 mod state;
 
@@ -37,8 +41,6 @@ use actor::db::DbExecutor;
 use dotenv::dotenv;
 use listenfd::ListenFd;
 use state::AppState;
-
-embed_migrations!();
 
 fn main() {
     dotenv().ok();
@@ -57,14 +59,10 @@ fn main() {
     let sys = actix::System::new("sandra");
 
     let pool = r2d2::Pool::builder()
-        .build(actor::db::establish_connection())
+        .build(db::establish_connection())
         .expect("Failed to create pool.");
 
-    embedded_migrations::run_with_output(
-        &pool.get().expect("Failed to connect to database."),
-        &mut std::io::stdout(),
-    ).expect("run migration failed");
-    info!("database migrations executed successfully");
+    db::run_migrations(&pool);
 
     let addr = SyncArbiter::start(
         std::env::var("DBEXECUTOR_COUNT")
