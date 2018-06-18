@@ -26,7 +26,7 @@ CREATE TABLE "session" (
     token uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now(),
-    expires_at timestamptz NOT NULL,
+    expires_at timestamptz NOT NULL DEFAULT now() + '7 days' ::interval,
     user_id uuid NOT NULL REFERENCES "user" (id)
 );
 

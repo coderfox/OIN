@@ -25,7 +25,6 @@ impl Session {
 #[table_name = "session"]
 pub struct NewSession {
     pub user_id: Uuid,
-    pub expires_at: DateTime<Utc>,
 }
 
 #[derive(Serialize)]

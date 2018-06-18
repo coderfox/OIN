@@ -1,7 +1,7 @@
 use actix_web::{AsyncResponder, HttpRequest, HttpResponse};
 use actor::db::{Query, QueryResult, QuerySingle, QuerySingleResult};
 use auth::{BasicAuth, BearerAuth};
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use diesel;
 use diesel::query_builder::AsQuery;
 use diesel::result::Error as DieselError;
@@ -21,10 +21,7 @@ pub fn post((req, BasicAuth(user)): (HttpRequest<AppState>, BasicAuth)) -> Futur
         .db
         .send(Query::new(
             diesel::insert_into(sdsl::session)
-                .values(NewSession {
-                    user_id: user.id,
-                    expires_at: Utc::now() + Duration::days(7),
-                })
+                .values(NewSession { user_id: user.id })
                 .as_query(),
         ))
         .map_err(|e| ApiError::from_error_boxed(Box::new(e.compat())))

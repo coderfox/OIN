@@ -86,7 +86,7 @@ mod basic {
         type Config = BasicAuthConfig;
         type Result = Box<Future<Item = Self, Error = Error>>;
         fn from_request(req: &HttpRequest<AppState>, _: &Self::Config) -> Self::Result {
-            use schema::user::dsl as sdsl;
+            use schema::user::dsl as udsl;
 
             let cloned_req = req.clone();
             let header_result = req.headers()
@@ -104,10 +104,10 @@ mod basic {
                             .state()
                             .db
                             .send(Query::new(
-                                sdsl::user
+                                udsl::user
                                     .limit(1)
-                                    .filter(sdsl::email.eq(username))
-                                    .filter(sdsl::delete_token.is_null()),
+                                    .filter(udsl::email.eq(username))
+                                    .filter(udsl::delete_token.is_null()),
                             ))
                             .from_err()
                             .and_then(move |res: QueryResult<User>| {
@@ -134,6 +134,7 @@ mod bearer {
     use actix_web::http::header;
     use actix_web::{Error, FromRequest, HttpMessage, HttpRequest, Result};
     use actor::db::{Query, QueryResult};
+    use chrono::Utc;
     use diesel::ExpressionMethods;
     use diesel::QueryDsl;
     use futures::future::result;
@@ -189,20 +190,18 @@ mod bearer {
                             .state()
                             .db
                             .send(Query::new(
-                                sdsl::session.limit(1).filter(sdsl::token.eq(token)),
+                                sdsl::session
+                                    .limit(1)
+                                    .filter(sdsl::token.eq(token))
+                                    .filter(sdsl::expires_at.ge(Utc::now())),
                             ))
                             .from_err()
                             .and_then(move |res: QueryResult<Session>| {
-                                res.map_err(ApiError::from_error)?.pop().map_or(
-                                    Err(ApiError::BearerAuthInvalidToken),
-                                    |u| {
-                                        if u.is_valid() {
-                                            Ok(BearerAuth(u))
-                                        } else {
-                                            Err(ApiError::BearerAuthInvalidToken)
-                                        }
-                                    },
-                                )
+                                res.map_err(ApiError::from_error)?
+                                    .pop()
+                                    .map_or(Err(ApiError::BearerAuthInvalidToken), |u| {
+                                        Ok(BearerAuth(u))
+                                    })
                             })
                     })
                     .map_err(|e| e.into()),

@@ -7,6 +7,7 @@ extern crate dotenv;
 extern crate failure;
 extern crate futures;
 extern crate listenfd;
+extern crate num_cpus;
 extern crate pretty_env_logger;
 extern crate r2d2;
 extern crate serde;
@@ -67,7 +68,7 @@ fn main() {
 
     let addr = SyncArbiter::start(
         std::env::var("DBEXECUTOR_COUNT")
-            .unwrap_or("3".to_string())
+            .unwrap_or(num_cpus::get().to_string())
             .parse()
             .expect("invalid value for DBEXECUTOR_COUNT"),
         move || DbExecutor(pool.clone()),
