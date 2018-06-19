@@ -1,10 +1,11 @@
-use super::{SubscriptionEvent, User};
+use super::{Service, SubscriptionEvent, User};
 use chrono::{DateTime, Utc};
 use schema::subscription;
 use uuid::Uuid;
 
 #[derive(Queryable, Serialize, Identifiable, Associations, AsChangeset)]
 #[belongs_to(User, foreign_key = "owner_id")]
+#[belongs_to(Service)]
 #[table_name = "subscription"]
 pub struct Subscription {
     pub id: Uuid,

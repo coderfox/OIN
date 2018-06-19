@@ -33,6 +33,7 @@ pub enum ApiError {
     BearerAuthInvalidToken,       // bearer auth
     SubscriptionNotFound,         // subscription
     InsufficientPermission,       // generic auth
+    ServiceNotFound,              // service
 }
 
 impl ApiError {
@@ -59,6 +60,7 @@ impl ApiError {
             BearerAuthInvalidToken => "INVALID_TOKEN",
             SubscriptionNotFound => "SUBSCRIPTION_NOT_FOUND",
             InsufficientPermission => "INSUFFICIENT_PERMISSION",
+            ServiceNotFound => "SERVICE_NOT_FOUND",
         }
     }
     pub fn status(&self) -> StatusCode {
@@ -78,6 +80,7 @@ impl ApiError {
             BearerAuthInvalidToken => StatusCode::FORBIDDEN,
             SubscriptionNotFound => StatusCode::NOT_FOUND,
             InsufficientPermission => StatusCode::FORBIDDEN,
+            ServiceNotFound => StatusCode::NOT_FOUND,
         }
     }
 }

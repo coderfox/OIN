@@ -68,11 +68,11 @@ pub fn build_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
                 })
                 .resource("/services", |r| {
                     r.name("services");
-                    r.get().with(error::not_implemented);
+                    r.get().with(routes::services::get_all);
                 })
                 .resource("/services/{id}", |r| {
                     r.name("service");
-                    r.get().with(error::not_implemented);
+                    r.get().with(routes::services::get_one);
                 })
                 .register()
         })
