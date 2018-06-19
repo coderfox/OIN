@@ -1,6 +1,6 @@
 tag-prefix = "v"
 disable-push = true
-sign-commit = true
+# sign-commit = true
 pre-release-commit-message = "release: {{version}}"
 pro-release-commit-message = "minor: bump to {{version}}"
 tag-message = "release {{prefix}}{{version}}"
