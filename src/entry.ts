@@ -29,8 +29,7 @@ const main = async () => {
   }
 };
 
-main()
-  .catch((err: any) => {
-    console.error(err);
-    process.exit(1);
-  });
+main().catch((err: any) => {
+  console.error(err);
+  process.exit(1);
+});

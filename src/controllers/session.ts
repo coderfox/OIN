@@ -11,7 +11,10 @@ class SessionController {
     return session;
   }
   @Put()
-  public async create(@BasicAuth() user: User, @Body("permissions") permissions?: Roles): Promise<Session> {
+  public async create(
+    @BasicAuth() user: User,
+    @Body("permissions") permissions?: Roles,
+  ): Promise<Session> {
     const session = new Session(user);
     for (const permission of permissions || []) {
       if (!user.permission.check(permission as Role)) {

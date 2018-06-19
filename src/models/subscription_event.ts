@@ -1,6 +1,9 @@
 import {
-  Entity, BaseEntity,
-  Column, PrimaryGeneratedColumn, UpdateDateColumn,
+  Entity,
+  BaseEntity,
+  Column,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
   ManyToOne,
   JoinColumn,
 } from "typeorm";
@@ -25,8 +28,9 @@ export default class SubscriptionEvent extends BaseEntity {
   @Expose()
   public id!: string;
 
-  @ManyToOne(() => Subscription, (subscription) => subscription.events, {
-    eager: true, nullable: false,
+  @ManyToOne(() => Subscription, subscription => subscription.events, {
+    eager: true,
+    nullable: false,
   })
   @JoinColumn({ name: "subscription_id" })
   @Expose()

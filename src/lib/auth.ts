@@ -6,7 +6,10 @@ import { Errors as SessionErrors } from "../models/session";
 
 const UUID_REGEXP = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export const parseAuth = (authorization: string, required?: "Basic" | "Bearer") => {
+export const parseAuth = (
+  authorization: string,
+  required?: "Basic" | "Bearer",
+) => {
   const space_index = authorization.indexOf(" ");
   if (space_index < 0) {
     throw new Errors.CorruptedAuthorizationHeaderError();

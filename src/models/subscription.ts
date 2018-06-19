@@ -1,7 +1,12 @@
 import {
-  Entity, BaseEntity,
-  Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
-  ManyToOne, OneToMany,
+  Entity,
+  BaseEntity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
   JoinColumn,
 } from "typeorm";
 import User from "./user";
@@ -13,12 +18,7 @@ import { Exclude, Expose, Transform } from "class-transformer";
 @Entity()
 @Exclude()
 export default class Subscription extends BaseEntity {
-  constructor(
-    owner: User,
-    service: Service,
-    config = "",
-    name?: string,
-  ) {
+  constructor(owner: User, service: Service, config = "", name?: string) {
     super();
     this.owner = owner;
     this.service = service;
@@ -30,16 +30,18 @@ export default class Subscription extends BaseEntity {
   @Expose()
   public id!: string;
 
-  @ManyToOne(() => User, (user) => user.subscriptions, {
-    eager: true, nullable: false,
+  @ManyToOne(() => User, user => user.subscriptions, {
+    eager: true,
+    nullable: false,
   })
   @JoinColumn({ name: "owner_id" })
   @Expose()
   @Transform((value: User) => value.id)
   public owner: User;
 
-  @ManyToOne(() => Service, (service) => service.subscriptions, {
-    eager: true, nullable: false,
+  @ManyToOne(() => Service, service => service.subscriptions, {
+    eager: true,
+    nullable: false,
   })
   @JoinColumn({ name: "service_id" })
   @Expose()
@@ -62,23 +64,23 @@ export default class Subscription extends BaseEntity {
   @Expose({ name: "updated_at" })
   public updated_at!: Date;
 
-  @OneToMany(() => Message, (message) => message.subscription)
+  @OneToMany(() => Message, message => message.subscription)
   public messages!: Promise<Message[]>;
 
   @Expose()
   @Column("varchar")
   public name: string;
 
-  @OneToMany(() => SubscriptionEvent, (event) => event.subscription)
+  @OneToMany(() => SubscriptionEvent, event => event.subscription)
   public events!: Promise<SubscriptionEvent[]>;
 
-  @Expose()
-  public last_event?: SubscriptionEvent | null;
+  @Expose() public last_event?: SubscriptionEvent | null;
 
   public fetch_last_event = async () => {
-    this.last_event = await SubscriptionEvent.findOne({
-      where: { subscription: this },
-      order: { time: "DESC" },
-    }) || null;
+    this.last_event =
+      (await SubscriptionEvent.findOne({
+        where: { subscription: this },
+        order: { time: "DESC" },
+      })) || null;
   }
 }

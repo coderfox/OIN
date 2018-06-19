@@ -6,7 +6,7 @@ import { buildApplication } from "../../app";
 // tslint:disable-next-line:no-var-requires
 const axiosist = require("axiosist");
 
-export const request = async <T= any>(
+export const request = async <T = any>(
   method: string,
   url: string,
   auth?: AxiosBasicCredentials | string,
@@ -20,18 +20,21 @@ export const request = async <T= any>(
     url,
     params,
     data,
-    ...typeof (auth) === "undefined" ? undefined :
-      typeof (auth) === "string" ? {
-        headers: {
-          Authorization: "Bearer ".concat(auth),
-        },
-      } : { auth },
+    ...(typeof auth === "undefined"
+      ? undefined
+      : typeof auth === "string"
+        ? {
+            headers: {
+              Authorization: "Bearer ".concat(auth),
+            },
+          }
+        : { auth }),
     validateStatus: () => true,
     adapter: axiosist.createAdapter(server.getHttpServer()),
   });
   return result;
 };
-export const requestAssert = async <T= any>(
+export const requestAssert = async <T = any>(
   t: TestContext,
   endpoint: string,
   assertion: string,
@@ -61,5 +64,7 @@ export const init = async (test: RegisterContextual<any>) => {
   });
 };
 export const clearDb = () =>
-  getConnection().query(`TRUNCATE "cofirmation", "message", "service", "session", "user" RESTART IDENTITY CASCADE;`);
+  getConnection().query(
+    `TRUNCATE "cofirmation", "message", "service", "session", "user" RESTART IDENTITY CASCADE;`,
+  );
 export const DATE_REGEXP = /^\d{4,4}-\d{2,2}-\d{2,2}T\d{2,2}:\d{2,2}:\d{2,2}.\d{3,3}Z$/;

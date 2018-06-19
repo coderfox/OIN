@@ -11,7 +11,7 @@ test.before.serial(async () => {
 
 const api = "PUT /session";
 
-test("200 OK", async (t) => {
+test("200 OK", async t => {
   const result = await requestAssert(t, api, "200 OK", {
     username: "user@example.com",
     password: "password",
@@ -28,13 +28,16 @@ test("200 OK", async (t) => {
   should_expires_at.setDate(new Date().getDate() + 7);
   t.true(new Date(result.expires_at) > should_expires_at);
 });
-test("403 USER_NOT_FOUND", async t => requestAssert(t, api, "403 USER_NOT_FOUND", {
-  username: "invalid@example.com",
-  password: "password",
-}));
-test("403 PASSWORD_MISMATCH", async t => requestAssert(t, api, "403 PASSWORD_MISMATCH", {
-  username: "user@example.com",
-  password: "invalid",
-}));
-test("401 INVALID_AUTHENTICATION_TYPE", async t => requestAssert(t, api, "401 INVALID_AUTHENTICATION_TYPE", "token"));
+test("403 USER_NOT_FOUND", async t =>
+  requestAssert(t, api, "403 USER_NOT_FOUND", {
+    username: "invalid@example.com",
+    password: "password",
+  }));
+test("403 PASSWORD_MISMATCH", async t =>
+  requestAssert(t, api, "403 PASSWORD_MISMATCH", {
+    username: "user@example.com",
+    password: "invalid",
+  }));
+test("401 INVALID_AUTHENTICATION_TYPE", async t =>
+  requestAssert(t, api, "401 INVALID_AUTHENTICATION_TYPE", "token"));
 test.todo("403 INSUFFICIENT_PERMISSION");

@@ -17,14 +17,19 @@ class RpcInterceptor implements NestInterceptor {
 
 @Injectable()
 export class RpcErrorInterceptor implements NestInterceptor {
-  public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
-    return call$.pipe(catchError(err => {
-      if (err instanceof RpcError) {
-        throw err;
-      } else {
-        throw new RpcInternalServerError(err);
-      }
-    }));
+  public intercept(
+    _: ExecutionContext,
+    call$: Observable<any>,
+  ): Observable<any> {
+    return call$.pipe(
+      catchError(err => {
+        if (err instanceof RpcError) {
+          throw err;
+        } else {
+          throw new RpcInternalServerError(err);
+        }
+      }),
+    );
   }
 }
 export default RpcInterceptor;

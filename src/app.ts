@@ -26,9 +26,9 @@ import { SENTRY_DSN, SERVER_UA } from "./lib/config";
     SubscriptionController,
     RpcController,
   ],
-  components: [],
+  providers: [],
 })
-class ApplicationModule { }
+class ApplicationModule {}
 
 export default ApplicationModule;
 const root = __dirname || process.cwd();
@@ -52,16 +52,12 @@ export const buildApplication = async () => {
   const app = await NestFactory.create(ApplicationModule, {
     logger: new NestLogger(),
   });
-  app.useGlobalFilters(
-    new GenericErrorFilter(),
-  );
-  app.useGlobalInterceptors(
-    new SerializeInterceptor(),
-  );
-  app.use(((_: any, res: any, next: any) => {
+  app.useGlobalFilters(new GenericErrorFilter());
+  app.useGlobalInterceptors(new SerializeInterceptor());
+  app.use((_: any, res: any, next: any) => {
     res.set("Server", SERVER_UA);
     next();
-  }));
+  });
   app.enableCors({
     origin: true,
     credentials: true,

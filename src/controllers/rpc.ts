@@ -1,4 +1,11 @@
-import { Controller, Post, Body, UseInterceptors, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Body,
+  UseInterceptors,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { Subscription, Service, Message, SubscriptionEvent } from "../models";
 import * as Errors from "../lib/errors";
 import RpcInterceptor, { RpcErrorInterceptor } from "../middlewares/rpc";
@@ -10,14 +17,21 @@ class RpcController {
   @HttpCode(HttpStatus.OK)
   @Post("register_service")
   public async register_service(
-    @Body("metadata") metadata?: {
-      id?: string,
-      name?: string,
-      description?: string,
+    @Body("metadata")
+    metadata?: {
+      id?: string;
+      name?: string;
+      description?: string;
     },
     @Body("deploy_token") deploy_token?: string,
   ): Promise<string> {
-    if (!metadata || !metadata.id || !metadata.name || !metadata.description || !deploy_token) {
+    if (
+      !metadata ||
+      !metadata.id ||
+      !metadata.name ||
+      !metadata.description ||
+      !deploy_token
+    ) {
       throw new Errors.RpcInvalidParametersError("body:param");
     }
     if (deploy_token !== DEPLOY_TOKEN) {
@@ -30,7 +44,11 @@ class RpcController {
       await existing_service.save();
       return existing_service.token;
     } else {
-      const service = new Service(metadata.id, metadata.name, metadata.description);
+      const service = new Service(
+        metadata.id,
+        metadata.name,
+        metadata.description,
+      );
       await service.save();
       return service.token;
     }
@@ -39,7 +57,7 @@ class RpcController {
   @Post("get_channels")
   public async get_channels(
     @Body("token") token?: string,
-  ): Promise<Array<{ id: string, config: string }>> {
+  ): Promise<Array<{ id: string; config: string }>> {
     if (!token) {
       throw new Errors.RpcInvalidParametersError("body:param:token");
     }
@@ -59,11 +77,12 @@ class RpcController {
   public async create_message(
     @Body("token") token?: string,
     @Body("channel_id") channel?: string,
-    @Body("message") message?: {
-      title?: string,
-      summary?: string,
-      content?: string,
-      href?: string,
+    @Body("message")
+    message?: {
+      title?: string;
+      summary?: string;
+      content?: string;
+      href?: string;
     },
   ): Promise<true> {
     if (!token || !channel || !message || !message.title || !message.content) {
@@ -83,7 +102,8 @@ class RpcController {
       message.title,
       message.summary || message.content,
       message.content,
-      message.href || null);
+      message.href || null,
+    );
     await message_db.save();
     return true;
   }
@@ -92,13 +112,19 @@ class RpcController {
   public async report_event(
     @Body("token") token?: string,
     @Body("channel_id") channel?: string,
-    @Body("event") event?: {
-      status?: boolean,
-      message?: string,
+    @Body("event")
+    event?: {
+      status?: boolean;
+      message?: string;
     },
   ): Promise<true> {
-    if (!token || !channel || !event ||
-      event.status === undefined || typeof event.status !== "boolean") {
+    if (
+      !token ||
+      !channel ||
+      !event ||
+      event.status === undefined ||
+      typeof event.status !== "boolean"
+    ) {
       throw new Errors.RpcInvalidParametersError("body:param");
     }
     const service = await Service.findOne({ token });

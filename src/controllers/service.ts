@@ -7,10 +7,7 @@ import * as Errors from "../lib/errors";
 @Controller("services")
 class ServiceController {
   @Get()
-  public async get_all(
-    @Req() req: any,
-    @Res() res: any,
-  ): Promise<void> {
+  public async get_all(@Req() req: any, @Res() res: any): Promise<void> {
     const { skip, take } = getPagination(req);
     const [services, count] = await Service.findAndCount({
       skip,

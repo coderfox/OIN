@@ -1,4 +1,15 @@
-import { Get, Controller, Req, Res, Param, Post, Body, HttpCode, HttpStatus, Delete } from "@nestjs/common";
+import {
+  Get,
+  Controller,
+  Req,
+  Res,
+  Param,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Delete,
+} from "@nestjs/common";
 import { SessionAuth } from "../middlewares/authentication";
 import { Session, Subscription, Service, SubscriptionEvent } from "../models";
 import * as Errors from "../lib/errors";
@@ -26,6 +37,14 @@ class SubscriptionController {
       res.set("X-Pagination-Total", count);
     }
     // TODO: improve performance
+    /*
+      SELECT
+      DISTINCT ON (subscription.id)
+      subscription.name, event.updated_at
+      FROM "subscription"
+      LEFT JOIN "subscription_event" event ON event.subscription_id = "subscription".id
+      ORDER BY subscription.id DESC, event.updated_at DESC;
+    */
     await Promise.all(subscriptions.map(s => s.fetch_last_event()));
     res.send(classToPlain(subscriptions));
   }
@@ -54,7 +73,7 @@ class SubscriptionController {
     @Param("id") id: string,
     @Body("config") config?: string,
     @Body("name") name?: string,
-  ): Promise<{ config?: string, name?: string }> {
+  ): Promise<{ config?: string; name?: string }> {
     const subscription = await Subscription.findOne(id);
     if (!subscription) {
       throw new Errors.SubscriptionNotExistsError(id);
@@ -88,7 +107,10 @@ class SubscriptionController {
     return subscription;
   }
   @Get(":id")
-  public async get_one(@SessionAuth() session: Session, @Param("id") id: string): Promise<Subscription> {
+  public async get_one(
+    @SessionAuth() session: Session,
+    @Param("id") id: string,
+  ): Promise<Subscription> {
     const subscription = await Subscription.findOne(id);
     if (!subscription) {
       throw new Errors.MessageNotExistsError(id);

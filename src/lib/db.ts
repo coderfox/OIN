@@ -5,12 +5,8 @@ const config: ConnectionOptions = {
   name: "default",
   type: "postgres",
   url: DB_URL,
-  entities: [
-    `${__dirname}/../models/*.js`,
-  ],
-  migrations: [
-    `${__dirname}/../migrations/*.js`,
-  ],
+  entities: [`${__dirname}/../models/*.js`],
+  migrations: [`${__dirname}/../migrations/*.js`],
   synchronize: false,
   cli: {
     migrationsDir: `${__dirname}/../migrations/`,

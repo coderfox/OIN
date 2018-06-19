@@ -1,4 +1,15 @@
-import { Get, Controller, Query, Req, Res, Param, Post, Body, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Get,
+  Controller,
+  Query,
+  Req,
+  Res,
+  Param,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { SessionAuth } from "../middlewares/authentication";
 import { Session, Message, Subscription } from "../models";
 import * as Errors from "../lib/errors";
@@ -31,28 +42,33 @@ class MessageController {
             }
             const subscription = await Subscription.findOne(param);
             if (!subscription) {
-              throw new Errors.BadRequestError("query:query:filters:param:SUBSCRIPTION_NOT_EXISTS");
+              throw new Errors.BadRequestError(
+                "query:query:filters:param:SUBSCRIPTION_NOT_EXISTS",
+              );
             }
             where.subscription = subscription;
             break;
           }
         }
       }
-    } else { where.readed = false; }
+    } else {
+      where.readed = false;
+    }
     const [messages, count] = await Message.findAndCount({
       where,
       skip,
       take,
       order: { updated_at: "DESC" },
     });
-    if (count > skip + take) {
-      res.set("X-Pagination-More", "true");
-      res.set("X-Pagination-Total", count);
-    }
+    res.set("X-Pagination-Total", count);
+    res.set("X-Pagination-More", count > skip + take ? "true" : "false");
     res.send(classToPlain(messages, { version: 1.0 }));
   }
   @Get(":id")
-  public async get_one(@SessionAuth() session: Session, @Param("id") id: string): Promise<Message> {
+  public async get_one(
+    @SessionAuth() session: Session,
+    @Param("id") id: string,
+  ): Promise<Message> {
     const message = await Message.findOne(id);
     if (!message) {
       throw new Errors.MessageNotExistsError(id);
@@ -76,7 +92,12 @@ class MessageController {
     if (message.owner.id !== session.user.id) {
       throw new Errors.InsufficientPermissionError(session, "admin");
     }
-    message.readed = typeof readed === "string" ? readed === "true" : readed !== undefined ? readed : false;
+    message.readed =
+      typeof readed === "string"
+        ? readed === "true"
+        : readed !== undefined
+          ? readed
+          : false;
     await message.save();
     return { readed: message.readed };
   }

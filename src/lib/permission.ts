@@ -6,8 +6,7 @@ export class Permission {
   constructor(roles?: Roles) {
     this.roles = roles || [];
   }
-  public check = (name: Role) =>
-    this.roles.indexOf(name) >= 0
+  public check = (name: Role) => this.roles.indexOf(name) >= 0;
   public grant(name: Role) {
     if (!this.check(name)) {
       this.roles.push(name);

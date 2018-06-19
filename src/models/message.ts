@@ -1,6 +1,10 @@
 import {
-  Entity, BaseEntity,
-  Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  Entity,
+  BaseEntity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
   ManyToOne,
   JoinColumn,
 } from "typeorm";
@@ -36,16 +40,18 @@ export default class Message extends BaseEntity {
   @Expose()
   public readed: boolean = false;
 
-  @ManyToOne(() => User, (user) => user.messages, {
-    eager: true, nullable: false,
+  @ManyToOne(() => User, user => user.messages, {
+    eager: true,
+    nullable: false,
   })
   @JoinColumn({ name: "owner_id" })
   @Expose()
   @Transform((value: User) => value.id)
   public owner: User;
 
-  @ManyToOne(() => Subscription, (subscription) => subscription.messages, {
-    eager: true, nullable: false,
+  @ManyToOne(() => Subscription, subscription => subscription.messages, {
+    eager: true,
+    nullable: false,
   })
   @JoinColumn({ name: "subscription_id" })
   @Expose()

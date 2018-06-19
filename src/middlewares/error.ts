@@ -1,4 +1,9 @@
-import { ExceptionFilter, Catch, NotFoundException, ArgumentsHost } from "@nestjs/common";
+import {
+  ExceptionFilter,
+  Catch,
+  NotFoundException,
+  ArgumentsHost,
+} from "@nestjs/common";
 import log from "../lib/log";
 import * as Errors from "../lib/errors";
 import { DEBUG } from "../lib/config";
@@ -24,27 +29,32 @@ export class GenericErrorFilter implements ExceptionFilter {
         response.set("WWW-Authenticate", error.right);
       }
     }
-    Raven.captureException(error.baseError || error, {
-      req: http.getRequest(),
-      level: error.baseError ? "info" : "error",
-    }, (sentry_err, event_id) => {
-      // This callback fires once the report has been sent to Sentry
-      if (sentry_err) {
-        log.error("sentry error", sentry_err);
-      } else {
-        log.info("sentry captured", event_id);
-      }
+    Raven.captureException(
+      error.baseError || error,
+      {
+        req: http.getRequest(),
+        level: error.baseError ? "error" : "info",
+      },
+      (sentry_err, event_id) => {
+        // This callback fires once the report has been sent to Sentry
+        if (sentry_err) {
+          log.error("sentry error", sentry_err);
+        } else {
+          log.info("sentry captured", event_id);
+        }
+      },
+    );
+    response.status(error.status).json({
+      code: error.code,
+      api_error: DEBUG && error,
+      base_error:
+        DEBUG && error.baseError
+          ? {
+              message: error.baseError.message,
+              stack: error.baseError.stack,
+              ...error.baseError,
+            }
+          : undefined,
     });
-    response
-      .status(error.status)
-      .json({
-        code: error.code,
-        api_error: DEBUG && error,
-        base_error: (DEBUG && error.baseError) ? {
-          message: error.baseError.message,
-          stack: error.baseError.stack,
-          ...error.baseError,
-        } : undefined,
-      });
   }
 }

@@ -5,7 +5,10 @@ import { classToPlain } from "class-transformer";
 
 @Injectable()
 class SerializeInterceptor implements NestInterceptor {
-  public intercept(_: ExecutionContext, call$: Observable<any>): Observable<any> {
+  public intercept(
+    _: ExecutionContext,
+    call$: Observable<any>,
+  ): Observable<any> {
     return call$.pipe(map(value => classToPlain(value)));
   }
 }

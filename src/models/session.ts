@@ -1,7 +1,12 @@
 import {
-  Entity, BaseEntity,
-  Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
-  ManyToOne, JoinColumn,
+  Entity,
+  BaseEntity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
 import { TOKEN_EXPIRES } from "../lib/config";
 import User from "./user";
@@ -43,11 +48,11 @@ export default class Session extends BaseEntity {
       this.user = user;
     }
   }
-  private _get_new_expires_at = () =>
-    new Date(Date.now() + ms(TOKEN_EXPIRES))
+  private _get_new_expires_at = () => new Date(Date.now() + ms(TOKEN_EXPIRES));
 
-  @ManyToOne(() => User, (user) => user.sessions, {
-    eager: true, nullable: false,
+  @ManyToOne(() => User, user => user.sessions, {
+    eager: true,
+    nullable: false,
   })
   @JoinColumn({ name: "user_id" })
   @Expose()
@@ -58,9 +63,10 @@ export default class Session extends BaseEntity {
   public token!: string;
 
   @Column("varchar", {
-    array: true, transformer: {
+    array: true,
+    transformer: {
       to: (roles: Permission) => roles.roles,
-      from: (value) => new Permission(value),
+      from: value => new Permission(value),
     },
   })
   @Expose({ name: "permissions" })
@@ -80,7 +86,7 @@ export default class Session extends BaseEntity {
   public expires_at: Date = this._get_new_expires_at();
 
   public get expired() {
-    return (this.expires_at <= new Date()) || !!this.user.delete_token;
+    return this.expires_at <= new Date() || !!this.user.delete_token;
   }
 
   public renew = () => {

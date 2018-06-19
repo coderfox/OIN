@@ -1,6 +1,11 @@
 import {
-  Entity, BaseEntity, Index,
-  Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  Entity,
+  BaseEntity,
+  Index,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
   OneToMany,
 } from "typeorm";
 import bcrypt from "bcrypt";
@@ -13,8 +18,13 @@ import { Permission } from "../lib/permission";
 import { Exclude, Expose, Transform } from "class-transformer";
 
 @Entity()
-@Index("email_unique_with_deletion", ["email", "delete_token"], { unique: true })
-@Index("email_unique_without_deletion", ["email"], { unique: true, where: "delete_token IS NULL" })
+@Index("email_unique_with_deletion", ["email", "delete_token"], {
+  unique: true,
+})
+@Index("email_unique_without_deletion", ["email"], {
+  unique: true,
+  where: "delete_token IS NULL",
+})
 @Exclude()
 export default class User extends BaseEntity {
   constructor(email: string, nickname?: string) {
@@ -40,25 +50,28 @@ export default class User extends BaseEntity {
     this.password_hashed = await User.hash_password(password);
   }
   public check_password = async (password: string) =>
-    this.password_hashed ? bcrypt.compare(password, this.password_hashed) : false
+    this.password_hashed
+      ? bcrypt.compare(password, this.password_hashed)
+      : false
 
   @Column("varchar", {
-    array: true, transformer: {
+    array: true,
+    transformer: {
       to: (roles: Permission) => roles.roles,
-      from: (value) => new Permission(value),
+      from: value => new Permission(value),
     },
   })
   @Expose({ name: "permissions" })
   @Transform((value: Permission) => value.roles)
   public permission: Permission = new Permission();
 
-  @OneToMany(() => Session, (session) => session.user)
+  @OneToMany(() => Session, session => session.user)
   public sessions!: Promise<Session[]>;
 
-  @OneToMany(() => Message, (message) => message.owner)
+  @OneToMany(() => Message, message => message.owner)
   public messages!: Promise<Message[]>;
 
-  @OneToMany(() => Subscription, (subscription) => subscription.owner)
+  @OneToMany(() => Subscription, subscription => subscription.owner)
   public subscriptions!: Promise<Subscription[]>;
 
   @CreateDateColumn({ name: "created_at", type: "timestamptz" })
@@ -72,7 +85,7 @@ export default class User extends BaseEntity {
   @Column({ name: "delete_token", type: "uuid", nullable: true })
   public delete_token?: string;
 
-  public mark_deleted = () => this.delete_token = uuid();
+  public mark_deleted = () => (this.delete_token = uuid());
 
   @Expose()
   @Column("varchar")

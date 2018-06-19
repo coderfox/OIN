@@ -14,7 +14,7 @@ test.before.serial(async () => {
 
 const api = "GET /session";
 
-test("200 OK", async (t) => {
+test("200 OK", async t => {
   const result = await requestAssert(t, api, "200 OK", session.token);
   t.is(typeof result.token, "string");
   t.is(typeof result.user.id, "string");
@@ -28,8 +28,10 @@ test("200 OK", async (t) => {
   should_expires_at.setDate(new Date().getDate() + 7);
   t.true(new Date(result.expires_at) > should_expires_at);
 });
-test("403 INVALID_TOKEN", async t => requestAssert(t, api, "403 INVALID_TOKEN", uuid()));
-test("403 INVALID_AUTHENTICATION_TYPE", async t => requestAssert(t, api, "403 INVALID_AUTHENTICATION_TYPE", {
-  username: "user@example.com",
-  password: "invalid",
-}));
+test("403 INVALID_TOKEN", async t =>
+  requestAssert(t, api, "403 INVALID_TOKEN", uuid()));
+test("403 INVALID_AUTHENTICATION_TYPE", async t =>
+  requestAssert(t, api, "403 INVALID_AUTHENTICATION_TYPE", {
+    username: "user@example.com",
+    password: "invalid",
+  }));
