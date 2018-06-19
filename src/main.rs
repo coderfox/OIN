@@ -6,8 +6,10 @@ extern crate chrono;
 extern crate dotenv;
 extern crate failure;
 extern crate futures;
+#[cfg(feature = "listenfd")]
 extern crate listenfd;
 extern crate num_cpus;
+#[cfg(feature = "pretty_env_logger")]
 extern crate pretty_env_logger;
 extern crate r2d2;
 extern crate serde;
@@ -23,6 +25,11 @@ extern crate log;
 extern crate serde_derive;
 #[macro_use]
 extern crate diesel_derive_enum;
+#[cfg(feature = "sentry")]
+#[macro_use]
+extern crate sentry;
+#[macro_use]
+extern crate failure_derive;
 
 mod actor;
 mod components;
@@ -36,7 +43,34 @@ use actix::prelude::SyncArbiter;
 use actix_web::server;
 use actor::db::DbExecutor;
 use dotenv::dotenv;
+#[cfg(feature = "listenfd")]
 use listenfd::ListenFd;
+#[cfg(feature = "sentry")]
+use sentry::integrations::panic::register_panic_handler;
+
+#[cfg(not(feature = "listenfd"))]
+fn bind_server<T>(server: actix_web::server::HttpServer<T>) -> actix_web::server::HttpServer<T>
+where
+    T: actix_web::server::IntoHttpHandler,
+{
+    server
+        .bind(std::env::var("BIND_ADDRESS").unwrap_or("[::]:3000".to_string()))
+        .unwrap()
+}
+#[cfg(feature = "listenfd")]
+fn bind_server<T>(server: actix_web::server::HttpServer<T>) -> actix_web::server::HttpServer<T>
+where
+    T: actix_web::server::IntoHttpHandler,
+{
+    let mut listenfd = ListenFd::from_env();
+    if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
+        server.listen(l)
+    } else {
+        server
+            .bind(std::env::var("BIND_ADDRESS").unwrap_or("[::]:3000".to_string()))
+            .unwrap()
+    }
+}
 
 fn main() {
     dotenv().ok();
@@ -50,7 +84,34 @@ fn main() {
         ),
     );
     // log level in increasing order: trace! debug! info! warn! error!
+    #[cfg(feature = "pretty_env_logger")]
     pretty_env_logger::init();
+
+    #[cfg(feature = "rest")]
+    info!("enabled rest api server at /rest");
+    #[cfg(feature = "rpc-client")]
+    info!("enabled rpc-client api server at /rpc-client");
+    #[cfg(feature = "rpc-crawler")]
+    info!("enabled rpc-crawler api server at /rpc-crawler");
+    #[cfg(feature = "fallback-app")]
+    info!("enabled fallback app");
+    #[cfg(feature = "listenfd")]
+    info!("enabled listenfd binding");
+    #[cfg(feature = "sentry")]
+    info!("enabled sentry report");
+    #[cfg(feature = "pretty_env_logger")]
+    info!("enabled pretty_env_logger");
+
+    #[cfg(feature = "sentry")]
+    sentry::init((
+        std::env::var("SENTRY_DSL").expect("SENTRY_DSL is not set"),
+        sentry::ClientOptions {
+            release: sentry_crate_release!(),
+            ..Default::default()
+        },
+    ));
+    #[cfg(feature = "sentry")]
+    register_panic_handler();
 
     let sys = actix::System::new("sandra");
 
@@ -68,23 +129,9 @@ fn main() {
         move || DbExecutor(pool.clone()),
     );
 
-    #[cfg(feature = "rest")]
-    info!("enabled rest api server at /rest");
-    #[cfg(feature = "rpc-client")]
-    info!("enabled rpc-client api server at /rpc-client");
-    #[cfg(feature = "rpc-crawler")]
-    info!("enabled rpc-crawler api server at /rpc-crawler");
-    let mut listenfd = ListenFd::from_env();
-
     let mut server = server::new(move || components::build_app(addr.clone()));
 
-    server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
-        server.listen(l)
-    } else {
-        server
-            .bind(std::env::var("BIND_ADDRESS").unwrap_or("[::]:3000".to_string()))
-            .unwrap()
-    };
+    server = bind_server(server);
 
     info!(
         "server listening on {}",
