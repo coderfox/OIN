@@ -34,7 +34,7 @@ impl<S> Middleware<S> for LogError {
         if res.status().is_server_error() {
             if let Some(error) = res.error() {
                 #[cfg(feature = "sentry")]
-                report_actix_error_to_sentry(error);
+                report_actix_error_to_sentry(error, req);
                 error!("error: {}", error)
             }
         }
@@ -43,7 +43,7 @@ impl<S> Middleware<S> for LogError {
 }
 
 #[cfg(feature = "sentry")]
-pub fn report_actix_error_to_sentry(err: &Error) {
+pub fn report_actix_error_to_sentry<S>(err: &Error, _req: &HttpRequest<S>) {
     with_client_and_scope(|client, scope| {
         let mut exceptions = vec![exception_from_single_fail(
             err.as_response_error(),
@@ -52,13 +52,27 @@ pub fn report_actix_error_to_sentry(err: &Error) {
         let mut ptr: Option<&Fail> = err.as_response_error().cause();
         while let Some(cause) = ptr {
             exceptions.push(exception_from_single_fail(cause, cause.backtrace()));
-            ptr = Some(cause);
+            ptr = cause.cause();
         }
         exceptions.reverse();
         client.capture_event(
             Event {
                 exceptions: exceptions,
                 level: Level::Error,
+                /* user: Some(protocol::User {
+                    ip_address: Some(req.connection_info().remote().unwrap().parse().unwrap()),
+                    ..Default::default()
+                }),
+                request: Some(protocol::Request {
+                    url: Some(req.path().parse().unwrap()),
+                    method: Some(req.method().as_str().to_owned()),
+                    query_string: Some(req.query_string().to_owned()),
+                    headers: req.headers()
+                        .iter()
+                        .map(|(a, b)| (a.as_str().to_owned(), b.to_str().unwrap().to_owned()))
+                        .collect(),
+                    ..Default::default()
+                }), */
                 ..Default::default()
             },
             Some(scope),

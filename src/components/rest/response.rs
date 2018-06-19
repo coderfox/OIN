@@ -6,7 +6,6 @@ use failure::Fail;
 use futures::Future;
 use state::QueryError;
 use std;
-use std::error;
 use std::fmt;
 
 #[allow(dead_code)] // TODO: remove this
@@ -20,7 +19,7 @@ pub struct ErrorResponse {
 
 #[derive(Debug)]
 pub enum ApiError {
-    InternalServerError(Box<error::Error + Send + Sync>),
+    InternalServerError(Box<Fail>),
     InternalServerErrorWithoutReason,
     NotImplemented,               // TODO: drop this
     ApiEndpointNotFound,          // generic
@@ -35,10 +34,10 @@ pub enum ApiError {
 }
 
 impl ApiError {
-    pub fn from_error_boxed(err: Box<error::Error + Send + Sync>) -> Self {
+    pub fn from_error_boxed(err: Box<Fail>) -> Self {
         ApiError::InternalServerError(err)
     }
-    pub fn from_error<T: 'static + error::Error + Send + Sync>(err: T) -> Self {
+    pub fn from_error<T: Fail>(err: T) -> Self {
         ApiError::from_error_boxed(Box::new(err))
     }
     pub fn code(&self) -> &'static str {
@@ -83,7 +82,7 @@ impl fmt::Display for ApiError {
             f,
             "{}",
             if let ApiError::InternalServerError(ref base_error) = self {
-                format!("internal error: {}", base_error.as_ref().description())
+                format!("internal error: {}", base_error.as_ref())
             } else {
                 format!("handled error: {}", self.code())
             }
@@ -91,16 +90,8 @@ impl fmt::Display for ApiError {
     }
 }
 
-impl error::Error for ApiError {
-    fn description(&self) -> &str {
-        if let ApiError::InternalServerError(ref base_error) = self {
-            base_error.as_ref().description()
-        } else {
-            self.code()
-        }
-    }
-
-    fn cause(&self) -> Option<&error::Error> {
+impl Fail for ApiError {
+    fn cause(&self) -> Option<&Fail> {
         if let ApiError::InternalServerError(ref base_error) = self {
             Some(base_error.as_ref())
         } else {
@@ -131,7 +122,7 @@ impl PartialEq<ApiError> for ApiError {
 
 impl From<actix::MailboxError> for ApiError {
     fn from(err: actix::MailboxError) -> Self {
-        Self::from_error(err.compat())
+        Self::from_error(err)
     }
 }
 

@@ -28,8 +28,6 @@ extern crate diesel_derive_enum;
 #[cfg(feature = "sentry")]
 #[macro_use]
 extern crate sentry;
-#[macro_use]
-extern crate failure_derive;
 
 mod actor;
 mod components;
@@ -112,6 +110,8 @@ fn main() {
     ));
     #[cfg(feature = "sentry")]
     register_panic_handler();
+    #[cfg(feature = "sentry")]
+    std::env::set_var("RUST_BACKTRACE", "1");
 
     let sys = actix::System::new("sandra");
 
