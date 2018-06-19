@@ -1,7 +1,7 @@
 use super::super::auth::BearerAuth;
 use super::super::response::{ApiError, FutureResponse};
 use actix_web::{AsyncResponder, HttpRequest, HttpResponse, Json};
-use actor::db::{CreateUser, CreateUserError, QuerySingle, QuerySingleResult};
+use actor::db::{CreateUser, CreateUserError};
 use diesel::result::{DatabaseErrorKind, Error as DieselError};
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
@@ -28,20 +28,22 @@ pub fn post_all((req, raw_data): (HttpRequest<AppState>, Json<PostAllRequest>)) 
         .from_err()
         .and_then(|res| match res {
             // .header("location", user.id.hyphenated().to_string())
-            Ok(user) => Ok(HttpResponse::Ok().json(user)),
+            Ok(user) => Ok(HttpResponse::Created().json(user)),
             // TODO: refactor this after `if let combination` is supported
-            Err(err) => Err(if let CreateUserError::DieselError(derr) = err {
-                if let DieselError::DatabaseError(ek, ei) = derr {
-                    if let DatabaseErrorKind::UniqueViolation = ek {
-                        ApiError::DuplicatedEmail
-                    } else {
-                        ApiError::from_error(DieselError::DatabaseError(ek, ei))
+            Err(err) => Err({
+                let mut is_duplicated_email = false;
+                if let CreateUserError::DieselError(derr) = &err {
+                    if let DieselError::DatabaseError(ek, _) = derr {
+                        if let DatabaseErrorKind::UniqueViolation = ek {
+                            is_duplicated_email = true;
+                        }
                     }
-                } else {
-                    ApiError::from_error(derr)
                 }
-            } else {
-                ApiError::from_error(err)
+                if is_duplicated_email {
+                    ApiError::DuplicatedEmail
+                } else {
+                    ApiError::from_error(err)
+                }
             }),
         })
         .responder()
@@ -51,16 +53,11 @@ pub fn get_me((req, BearerAuth(session)): (HttpRequest<AppState>, BearerAuth)) -
     use schema::user::dsl;
 
     req.state()
-        .db
-        .send(QuerySingle::new(
+        .query_single(
             dsl::user
                 .find(session.user_id)
                 .filter(dsl::delete_token.is_null()),
-        ))
-        .from_err()
-        .and_then(|res: QuerySingleResult<User>| {
-            res.map_err(ApiError::from)
-                .map(|user| HttpResponse::Ok().json(user))
-        })
+        )
+        .map(|user: User| HttpResponse::Ok().json(user))
         .responder()
 }

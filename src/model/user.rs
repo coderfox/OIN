@@ -1,4 +1,5 @@
 use super::PermissionEnum;
+use actix_web::HttpResponse;
 use bcrypt::{hash, verify, BcryptError, DEFAULT_COST};
 use chrono::{DateTime, Utc};
 use schema::user;
@@ -56,5 +57,11 @@ impl<'a> NewUser<'a> {
                 DEFAULT_COST
             },
         )
+    }
+}
+
+impl Into<HttpResponse> for User {
+    fn into(self) -> HttpResponse {
+        HttpResponse::Ok().json(self)
     }
 }

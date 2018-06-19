@@ -4,6 +4,7 @@ use actix_web::{http::StatusCode, HttpResponse};
 use diesel::result::Error as DieselError;
 use failure::Fail;
 use futures::Future;
+use state::QueryError;
 use std;
 use std::error;
 use std::fmt;
@@ -137,5 +138,16 @@ impl From<actix::MailboxError> for ApiError {
 impl From<DieselError> for ApiError {
     fn from(err: DieselError) -> Self {
         Self::from_error(err)
+    }
+}
+
+impl From<QueryError> for ApiError {
+    fn from(err: QueryError) -> Self {
+        use self::QueryError::*;
+
+        match err {
+            DieselError(err) => err.into(),
+            ActixError(err) => err.into(),
+        }
     }
 }
