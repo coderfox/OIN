@@ -1,7 +1,7 @@
 mod error;
 mod response;
 
-use super::LogError;
+use super::{server_agent, LogError};
 use actix::prelude::{Addr, Syn};
 use actix_web::{http,
                 middleware::{cors, DefaultHeaders, ErrorHandlers},
@@ -12,7 +12,10 @@ use state::AppState;
 pub fn build_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
     App::with_state(AppState { db: addr })
         .prefix("/rpc-client")
-        .middleware(DefaultHeaders::new().header("Server", "sandra-backend/0.3.0 RPC-Client/0.1.0"))
+        .middleware(DefaultHeaders::new().header(
+            "Server",
+            format!("{} {}", server_agent(), "RPC-Client/0.5").as_str(),
+        ))
         .middleware(LogError)
         .middleware(
             ErrorHandlers::new()
@@ -29,7 +32,7 @@ pub fn build_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
         .configure(|app| {
             cors::Cors::for_app(app)
                 .supports_credentials()
-                .resource("/nothing", |r| r.f(error::not_implemented)) // TODO: drop this
+                .resource("/", |r| r.f(error::not_implemented)) // TODO: drop this
                 .register()
         })
         .default_resource(|r| r.f(error::not_implemented))

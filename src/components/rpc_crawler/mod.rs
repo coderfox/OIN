@@ -1,7 +1,7 @@
 mod error;
 mod response;
 
-use super::LogError;
+use super::{server_agent, LogError};
 use actix::prelude::{Addr, Syn};
 use actix_web::{http,
                 middleware::{cors, DefaultHeaders, ErrorHandlers},
@@ -12,9 +12,10 @@ use state::AppState;
 pub fn build_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
     App::with_state(AppState { db: addr })
         .prefix("/rpc-crawler")
-        .middleware(
-            DefaultHeaders::new().header("Server", "sandra-backend/0.3.0 RPC-Crawler/0.4.0"),
-        )
+        .middleware(DefaultHeaders::new().header(
+            "Server",
+            format!("{} {}", server_agent(), "RPC-Crawler/0.5").as_str(),
+        ))
         .middleware(LogError)
         .middleware(
             ErrorHandlers::new()

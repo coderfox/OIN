@@ -30,7 +30,11 @@ pub fn build_app(addr: Addr<Syn, DbExecutor>) -> Vec<App<AppState>> {
 pub fn build_fallback_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
     use actix_web::{middleware::DefaultHeaders, HttpRequest, HttpResponse};
     App::with_state(AppState { db: addr })
-        .middleware(DefaultHeaders::new().header("Server", "sandra-backend/0.3.0"))
+        .middleware(DefaultHeaders::new().header("Server", server_agent().as_str()))
         .middleware(LogError)
         .default_resource(|r| r.f(|_: HttpRequest<AppState>| HttpResponse::BadRequest()))
+}
+
+pub fn server_agent() -> String {
+    format!("{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"))
 }

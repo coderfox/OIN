@@ -1428,7 +1428,7 @@ dependencies = [
 
 [[package]]
 name = "sandra-backend"
-version = "0.1.0"
+version = "0.4.0-alpha"
 dependencies = [
  "actix 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "actix-web 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
