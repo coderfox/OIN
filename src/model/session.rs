@@ -13,6 +13,7 @@ pub struct Session {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub expires_at: DateTime<Utc>,
+    #[serde(skip)]
     pub user_id: Uuid,
     pub permissions: Vec<PermissionEnum>,
 }
@@ -32,22 +33,19 @@ pub struct NewSession {
 #[derive(Serialize)]
 pub struct SessionView<'a> {
     pub user: &'a User,
-    pub token: &'a Uuid,
-    pub created_at: &'a DateTime<Utc>,
-    pub updated_at: &'a DateTime<Utc>,
-    pub expires_at: &'a DateTime<Utc>,
-    pub permissions: &'a Vec<PermissionEnum>,
+    #[serde(flatten)]
+    pub session: &'a Session,
 }
 
 impl<'a> From<(&'a Session, &'a User)> for SessionView<'a> {
     fn from((session, user): (&'a Session, &'a User)) -> Self {
         Self {
-            token: &session.token,
+            session: &session,
             user: &user,
-            created_at: &session.created_at,
-            updated_at: &session.updated_at,
-            expires_at: &session.expires_at,
-            permissions: &session.permissions,
         }
     }
+}
+
+pub trait HasOwner {
+    fn is_owned_by(session: Session) -> bool;
 }

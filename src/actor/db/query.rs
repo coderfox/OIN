@@ -71,7 +71,7 @@ where
 }
 
 impl AppState {
-    pub fn query<T, R, E>(&self, query: T) -> Box<Future<Item = Vec<R>, Error = E>>
+    pub fn query<T, R, E>(&self, query: T) -> impl Future<Item = Vec<R>, Error = E>
     where
         T: 'static
             + RunQueryDsl<PgConnection>
@@ -83,12 +83,10 @@ impl AppState {
         diesel::pg::Pg: diesel::sql_types::HasSqlType<<T as diesel::query_builder::Query>::SqlType>,
         E: From<QueryError>,
     {
-        Box::new(
-            self.db
-                .send(Query::new(query))
-                .from_err()
-                .and_then(|f| f.map_err(|e| e.into()))
-                .map_err(|e: QueryError| e.into()),
-        )
+        self.db
+            .send(Query::new(query))
+            .from_err()
+            .and_then(|f| f.map_err(|e| e.into()))
+            .map_err(|e: QueryError| e.into())
     }
 }

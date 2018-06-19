@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use schema::subscription;
 use uuid::Uuid;
 
-#[derive(Queryable, Serialize, Identifiable, Associations)]
+#[derive(Queryable, Serialize, Identifiable, Associations, AsChangeset)]
 #[belongs_to(User, foreign_key = "owner_id")]
 #[table_name = "subscription"]
 pub struct Subscription {
@@ -12,18 +12,28 @@ pub struct Subscription {
     pub deleted: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    #[serde(rename = "owner")]
     pub owner_id: Uuid,
+    #[serde(rename = "service")]
     pub service_id: Uuid,
     pub name: String,
 }
 
 #[derive(Insertable)]
 #[table_name = "subscription"]
-pub struct NewSubscription<'a> {
-    pub config: &'a str,
-    pub owner_id: &'a Uuid,
-    pub service_id: &'a Uuid,
-    pub name: &'a str,
+pub struct NewSubscription {
+    pub config: String,
+    pub owner_id: Uuid,
+    pub service_id: Uuid,
+    pub name: String,
+}
+
+#[derive(AsChangeset, Default)]
+#[table_name = "subscription"]
+pub struct SubscriptionChangeset {
+    pub config: Option<String>,
+    pub name: Option<String>,
+    pub deleted: Option<bool>,
 }
 
 #[derive(Serialize)]

@@ -12,6 +12,7 @@ pub struct SubscriptionEvent {
     pub message: String,
     #[column_name = "updated_at"]
     pub time: DateTime<Utc>,
+    #[serde(skip)]
     pub subscription_id: Uuid,
 }
 

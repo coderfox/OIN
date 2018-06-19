@@ -40,10 +40,6 @@ pub fn build_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
                     r.get().with(routes::session::get);
                     r.delete().with(routes::session::delete);
                 })
-                .resource("/subscriptions/mine", |r| {
-                    r.name("subscriptions/mine");
-                    r.get().with(routes::subscriptions::get_mine);
-                })
                 .resource("/messages/mine", |r| {
                     r.name("messages/mine");
                     r.get().with(error::not_implemented);
@@ -52,19 +48,23 @@ pub fn build_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
                     r.get().with(error::not_implemented);
                     r.post().with(error::not_implemented);
                 })
+                .resource("/subscriptions/mine", |r| {
+                    r.name("subscriptions/mine");
+                    r.get().with(routes::subscriptions::get_mine);
+                })
                 .resource("/subscriptions/{id}", |r| {
                     r.name("subscription");
-                    r.get().with(error::not_implemented);
-                    r.post().with(error::not_implemented);
-                    r.delete().with(error::not_implemented);
+                    r.get().with(routes::subscriptions::get_one);
+                    r.post().with(routes::subscriptions::post_one);
+                    r.delete().with(routes::subscriptions::delete_one);
                 })
                 .resource("/subscriptions/{id}/events", |r| {
                     r.name("subscription/event");
-                    r.get().with(error::not_implemented);
+                    r.get().with(routes::subscriptions::get_one_events);
                 })
                 .resource("/subscriptions", |r| {
                     r.name("subscriptions");
-                    r.post().with(error::not_implemented);
+                    r.post().with(routes::subscriptions::post_all);
                 })
                 .resource("/services", |r| {
                     r.name("services");

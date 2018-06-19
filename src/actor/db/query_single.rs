@@ -3,6 +3,7 @@ use actix::prelude::{Handler, Message};
 use diesel;
 use diesel::prelude::{PgConnection, Queryable, RunQueryDsl};
 use diesel::result::Error as DieselError;
+use diesel::OptionalExtension;
 use futures::Future;
 use state::{AppState, QueryError};
 use std::marker::PhantomData;
@@ -71,7 +72,7 @@ where
 }
 
 impl AppState {
-    pub fn query_single<T, R, E>(&self, query: T) -> Box<Future<Item = R, Error = E>>
+    pub fn query_single<T, R, E>(&self, query: T) -> impl Future<Item = R, Error = E>
     where
         T: 'static
             + RunQueryDsl<PgConnection>
@@ -83,12 +84,31 @@ impl AppState {
         diesel::pg::Pg: diesel::sql_types::HasSqlType<<T as diesel::query_builder::Query>::SqlType>,
         E: From<QueryError>,
     {
-        Box::new(
-            self.db
-                .send(QuerySingle::new(query))
-                .from_err()
-                .and_then(|f| f.map_err(|e| e.into()))
-                .map_err(|e: QueryError| e.into()),
-        )
+        self.db
+            .send(QuerySingle::new(query))
+            .from_err()
+            .and_then(|f| f.map_err(|e| e.into()))
+            .map_err(|e: QueryError| e.into())
+    }
+    pub fn query_single_optional<T, R, E>(
+        &self,
+        query: T,
+    ) -> impl Future<Item = Option<R>, Error = E>
+    where
+        T: 'static
+            + RunQueryDsl<PgConnection>
+            + diesel::query_builder::Query
+            + diesel::query_builder::QueryId
+            + diesel::query_builder::QueryFragment<diesel::pg::Pg>
+            + Send,
+        R: 'static + Queryable<<T as diesel::query_builder::Query>::SqlType, diesel::pg::Pg> + Send,
+        diesel::pg::Pg: diesel::sql_types::HasSqlType<<T as diesel::query_builder::Query>::SqlType>,
+        E: From<QueryError>,
+    {
+        self.db
+            .send(QuerySingle::new(query))
+            .from_err()
+            .and_then(|f| f.optional().map_err(|e| e.into()))
+            .map_err(|e: QueryError| e.into())
     }
 }

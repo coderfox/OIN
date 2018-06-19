@@ -31,6 +31,8 @@ pub enum ApiError {
     CorruptedAuthorizationHeader, // generic auth
     InvalidAuthType,              // generic auth
     BearerAuthInvalidToken,       // bearer auth
+    SubscriptionNotFound,         // subscription
+    InsufficientPermission,       // generic auth
 }
 
 impl ApiError {
@@ -55,6 +57,8 @@ impl ApiError {
             NotAuthenticated => "NOT_AUTHENTICATED",
             CorruptedAuthorizationHeader => "CORRUPTED_AUTHORIZATION_HEADER",
             BearerAuthInvalidToken => "INVALID_TOKEN",
+            SubscriptionNotFound => "SUBSCRIPTION_NOT_FOUND",
+            InsufficientPermission => "INSUFFICIENT_PERMISSION",
         }
     }
     pub fn status(&self) -> StatusCode {
@@ -72,6 +76,8 @@ impl ApiError {
             NotAuthenticated => StatusCode::UNAUTHORIZED,
             CorruptedAuthorizationHeader => StatusCode::BAD_REQUEST,
             BearerAuthInvalidToken => StatusCode::FORBIDDEN,
+            SubscriptionNotFound => StatusCode::NOT_FOUND,
+            InsufficientPermission => StatusCode::FORBIDDEN,
         }
     }
 }

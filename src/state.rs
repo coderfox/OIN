@@ -1,6 +1,9 @@
 use actix::{Addr, MailboxError, Syn};
+use actix_web::State as ActixState;
 use actor::db::DbExecutor;
 use diesel::result::Error as DieselError;
+
+pub type State = ActixState<AppState>;
 
 pub struct AppState {
     pub db: Addr<Syn, DbExecutor>,
