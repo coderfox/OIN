@@ -34,6 +34,7 @@ pub enum ApiError {
     SubscriptionNotFound,         // subscription
     InsufficientPermission,       // generic auth
     ServiceNotFound,              // service
+    MessageNotFound,              // message
 }
 
 impl ApiError {
@@ -61,6 +62,7 @@ impl ApiError {
             SubscriptionNotFound => "SUBSCRIPTION_NOT_FOUND",
             InsufficientPermission => "INSUFFICIENT_PERMISSION",
             ServiceNotFound => "SERVICE_NOT_FOUND",
+            MessageNotFound => "MESSAGE_NOT_FOUND",
         }
     }
     pub fn status(&self) -> StatusCode {
@@ -81,6 +83,7 @@ impl ApiError {
             SubscriptionNotFound => StatusCode::NOT_FOUND,
             InsufficientPermission => StatusCode::FORBIDDEN,
             ServiceNotFound => StatusCode::NOT_FOUND,
+            MessageNotFound => StatusCode::NOT_FOUND,
         }
     }
 }

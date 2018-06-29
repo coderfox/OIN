@@ -23,6 +23,7 @@ pub fn render_404<S>(_: &mut HttpRequest<S>, res: HttpResponse) -> Result<Respon
     render(res, ApiError::ApiEndpointNotFound)
 }
 
+#[allow(dead_code)]
 pub fn not_implemented(_: HttpRequest<AppState>) -> ApiResult<&'static str> {
     Err(ApiError::NotImplemented)
 }

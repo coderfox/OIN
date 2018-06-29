@@ -1,10 +1,8 @@
-use super::super::auth::BearerAuth;
 use super::super::response::{ApiError, FutureResponse};
-use actix_web::{AsyncResponder, HttpResponse, Json, Path};
+use actix_web::{AsyncResponder, HttpResponse, Path};
 use diesel::{ExpressionMethods, QueryDsl};
 use futures::Future;
-use model::{NewSubscription, Service, Session, Subscription, SubscriptionChangeset,
-            SubscriptionEvent, SubscriptionView};
+use model::Service;
 use state::State;
 use uuid::Uuid;
 

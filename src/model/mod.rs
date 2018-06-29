@@ -13,6 +13,9 @@ pub use self::subscription_event::*;
 mod service;
 pub use self::service::*;
 
+mod message;
+pub use self::message::*;
+
 #[derive(Debug, PartialEq, DbEnum, Clone, Serialize, Deserialize)]
 #[PgType = "permission"]
 #[DieselType = "Permission"]
