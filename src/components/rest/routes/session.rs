@@ -12,6 +12,7 @@ use model::{NewSession, Session, SessionView};
 use state::AppState;
 
 pub fn post((req, BasicAuth(user)): (HttpRequest<AppState>, BasicAuth)) -> FutureResponse {
+    // TODO: support permissions
     use schema::session::dsl as sdsl;
 
     req.state()
@@ -21,12 +22,7 @@ pub fn post((req, BasicAuth(user)): (HttpRequest<AppState>, BasicAuth)) -> Futur
                 .as_query(),
         )
         .map(move |session: Session| {
-            HttpResponse::Ok()
-                .header(
-                    "X-Warning",
-                    "deprecated(drop=0.6; alternative=\"POST /sessions\")",
-                )
-                .json::<SessionView>((&session, &user).into())
+            HttpResponse::Created().json::<SessionView>((&session, &user).into())
         })
         .responder()
 }

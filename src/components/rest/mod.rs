@@ -16,7 +16,7 @@ pub fn build_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
         .prefix("/rest")
         .middleware(DefaultHeaders::new().header(
             "Server",
-            format!("{} {}", server_agent(), "REST/0.5").as_str(),
+            format!("{} {}", server_agent(), "REST/0.5.0").as_str(),
         ))
         .middleware(LogError)
         .middleware(
@@ -38,9 +38,12 @@ pub fn build_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
                 })
                 .resource("/session", |r| {
                     r.name("session");
-                    r.put().with(session::post);
                     r.get().with(session::get);
                     r.delete().with(session::delete);
+                })
+                .resource("/sessions", |r| {
+                    r.name("sessions");
+                    r.post().with(session::post);
                 })
                 .resource("/messages/mine", |r| {
                     r.name("messages/mine");
@@ -76,6 +79,7 @@ pub fn build_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
                     r.name("service");
                     r.get().with(services::get_one);
                 })
+                // TODO: `GET` /services/:id/config_validity
                 .register()
         })
 }

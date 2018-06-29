@@ -3,8 +3,10 @@ use super::super::response::{ApiError, FutureResponse};
 use actix_web::{AsyncResponder, HttpResponse, Json, Path};
 use diesel::{ExpressionMethods, QueryDsl};
 use futures::Future;
-use model::{NewSubscription, Session, Subscription, SubscriptionChangeset, SubscriptionEvent,
-            SubscriptionView};
+use model::{
+    NewSubscription, Session, Subscription, SubscriptionChangeset, SubscriptionEvent,
+    SubscriptionView,
+};
 use state::State;
 use uuid::Uuid;
 
@@ -115,6 +117,7 @@ pub fn post_one(
         Json<PostOneBody>,
     ),
 ) -> FutureResponse {
+    // TODO: INVALID_CONFIG
     let body = json_body.into_inner();
 
     single_from_req(&state, session, uuid.into_inner())
@@ -134,13 +137,14 @@ pub fn post_one(
             )
         })
         .flatten()
-        .map(|subscription: Subscription| HttpResponse::Ok().json(subscription))
+        .map(|subscription: Subscription| HttpResponse::PartialContent().json(subscription))
         .responder()
 }
 
 pub fn delete_one(
     (state, BearerAuth(session), uuid): (State, BearerAuth, Path<Uuid>),
 ) -> FutureResponse {
+    // TODO: last_event
     single_from_req(&state, session, uuid.into_inner())
         .map(move |s| {
             use diesel;
@@ -171,6 +175,9 @@ pub struct PostAllBody {
 pub fn post_all(
     (state, BearerAuth(session), json_body): (State, BearerAuth, Json<PostAllBody>),
 ) -> FutureResponse {
+    // TODO: `Location` header
+    // TODO: SERVICE_NOT_EXISTS
+    // TODO: INVALID_CONFIG
     let body = json_body.into_inner();
     let query = {
         use diesel;
@@ -188,6 +195,6 @@ pub fn post_all(
     };
     state
         .query_single(query)
-        .map(|subscription: Subscription| HttpResponse::Ok().json(subscription))
+        .map(|subscription: Subscription| HttpResponse::Created().json(subscription))
         .responder()
 }

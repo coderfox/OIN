@@ -20,6 +20,7 @@ pub fn get_mine((state, BearerAuth(session)): (State, BearerAuth)) -> FutureResp
         // TODO: only return fields used
     };
 
+    // TODO: do not return `content`
     state
         .query(query)
         .map(|results: Vec<(Message, Subscription)>| {
@@ -73,6 +74,7 @@ pub fn mark_readed(
         Json<MessageChangeset>,
     ),
 ) -> FutureResponse {
+    // TODO: only return partial
     single_from_req(&state, session, uuid.into_inner())
         .map(move |(m, s)| {
             use diesel;

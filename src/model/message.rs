@@ -17,6 +17,7 @@ pub struct Message {
     #[serde(rename = "subscription")]
     pub subscription_id: Uuid,
     pub href: Option<String>,
+    // TODO: support priority
 }
 
 #[derive(AsChangeset, Default, Deserialize)]

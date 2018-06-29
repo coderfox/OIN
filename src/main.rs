@@ -1,3 +1,8 @@
+// TODO: email notifications
+// TODO: crawler rpc
+// TODO: tests
+// TODO: pagination
+
 extern crate actix;
 extern crate actix_web;
 extern crate base64;
