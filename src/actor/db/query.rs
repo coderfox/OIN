@@ -9,8 +9,9 @@ use std::marker::PhantomData;
 
 pub type QueryResult<T> = Result<Vec<T>, DieselError>;
 
-pub struct Query<T, R>
+pub struct Query<F, T, R>
 where
+    F: FnOnce() -> T,
     T: RunQueryDsl<PgConnection>
         + diesel::query_builder::Query
         + diesel::query_builder::QueryId
@@ -18,12 +19,13 @@ where
     R: 'static + Queryable<<T as diesel::query_builder::Query>::SqlType, diesel::pg::Pg>,
     diesel::pg::Pg: diesel::sql_types::HasSqlType<<T as diesel::query_builder::Query>::SqlType>,
 {
-    pub query: T,
+    pub query_fn: F,
     pub _phantom: PhantomData<R>,
 }
 
-impl<T, R> Query<T, R>
+impl<F, T, R> Query<F, T, R>
 where
+    F: FnOnce() -> T,
     T: RunQueryDsl<PgConnection>
         + diesel::query_builder::Query
         + diesel::query_builder::QueryId
@@ -31,16 +33,17 @@ where
     R: 'static + Queryable<<T as diesel::query_builder::Query>::SqlType, diesel::pg::Pg>,
     diesel::pg::Pg: diesel::sql_types::HasSqlType<<T as diesel::query_builder::Query>::SqlType>,
 {
-    pub fn new(query: T) -> Self {
+    pub fn new(query_fn: F) -> Self {
         Self {
-            query,
+            query_fn,
             _phantom: PhantomData::<R>,
         }
     }
 }
 
-impl<T, R> Message for Query<T, R>
+impl<F, T, R> Message for Query<F, T, R>
 where
+    F: FnOnce() -> T,
     T: RunQueryDsl<PgConnection>
         + diesel::query_builder::Query
         + diesel::query_builder::QueryId
@@ -51,8 +54,9 @@ where
     type Result = QueryResult<R>;
 }
 
-impl<T, R> Handler<Query<T, R>> for DbExecutor
+impl<F, T, R> Handler<Query<F, T, R>> for DbExecutor
 where
+    F: FnOnce() -> T,
     T: RunQueryDsl<PgConnection>
         + diesel::query_builder::Query
         + diesel::query_builder::QueryId
@@ -62,14 +66,39 @@ where
 {
     type Result = QueryResult<R>;
 
-    fn handle(&mut self, msg: Query<T, R>, _: &mut Self::Context) -> Self::Result {
+    fn handle(
+        &mut self,
+        Query { query_fn, .. }: Query<F, T, R>,
+        _: &mut Self::Context,
+    ) -> Self::Result {
         // normal diesel operations
-        let result = msg.query.get_results::<R>(&self.0.get().unwrap())?;
+        let result = query_fn().get_results::<R>(&self.0.get().unwrap())?;
 
         Ok(result)
     }
 }
 
+impl AppState {
+    pub fn query_fn<F, T, R, E>(&self, query_fn: F) -> impl Future<Item = Vec<R>, Error = E>
+    where
+        F: FnOnce() -> T + Send,
+        T: 'static
+            + RunQueryDsl<PgConnection>
+            + diesel::query_builder::Query
+            + diesel::query_builder::QueryId
+            + diesel::query_builder::QueryFragment<diesel::pg::Pg>
+            + Send,
+        R: 'static + Queryable<<T as diesel::query_builder::Query>::SqlType, diesel::pg::Pg> + Send,
+        diesel::pg::Pg: diesel::sql_types::HasSqlType<<T as diesel::query_builder::Query>::SqlType>,
+        E: From<QueryError>,
+    {
+        self.db
+            .send(Query::new(query_fn))
+            .from_err()
+            .and_then(|f| f.map_err(|e| e.into()))
+            .map_err(|e: QueryError| e.into())
+    }
+}
 impl AppState {
     pub fn query<T, R, E>(&self, query: T) -> impl Future<Item = Vec<R>, Error = E>
     where
@@ -83,10 +112,6 @@ impl AppState {
         diesel::pg::Pg: diesel::sql_types::HasSqlType<<T as diesel::query_builder::Query>::SqlType>,
         E: From<QueryError>,
     {
-        self.db
-            .send(Query::new(query))
-            .from_err()
-            .and_then(|f| f.map_err(|e| e.into()))
-            .map_err(|e: QueryError| e.into())
+        self.query_fn(|| query)
     }
 }
