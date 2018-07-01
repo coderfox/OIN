@@ -1,28 +1,29 @@
 use super::super::auth::BearerAuth;
 use super::super::response::{ApiError, FutureResponse};
-use actix_web::{AsyncResponder, HttpResponse, Json, Path};
+use actix_web::{AsyncResponder, HttpResponse, Json, Path, Query};
 use diesel::{ExpressionMethods, QueryDsl};
 use futures::Future;
 use model::{Message, MessageChangeset, MessageView, Session, Subscription};
 use state::State;
 use uuid::Uuid;
 
-pub fn get_mine((state, BearerAuth(session)): (State, BearerAuth)) -> FutureResponse {
-    // TODO: support query param
+#[derive(Deserialize)]
+pub struct GetMultiQuery {
+    query: Option<String>,
+}
 
-    let query = {
-        use schema::message;
-        use schema::subscription;
-
-        message::table
-            .inner_join(subscription::table)
-            .filter(subscription::owner_id.eq(session.user_id))
-        // TODO: only return fields used
-    };
-
+pub fn get_mine(
+    (state, BearerAuth(session), url_query): (State, BearerAuth, Query<GetMultiQuery>),
+) -> FutureResponse {
     // TODO: do not return `content`
     state
-        .query(query)
+        .query_messages(
+            url_query
+                .into_inner()
+                .query
+                .unwrap_or("readed:false".to_string()),
+            session.user_id,
+        )
         .map(|results: Vec<(Message, Subscription)>| {
             HttpResponse::Ok()
                 .json::<Vec<MessageView>>(results.into_iter().map(|item| item.into()).collect())

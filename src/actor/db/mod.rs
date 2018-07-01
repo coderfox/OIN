@@ -16,3 +16,6 @@ pub use self::query::*;
 
 mod query_single;
 pub use self::query_single::*;
+
+mod query_messages;
+pub use self::query_messages::*;

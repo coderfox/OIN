@@ -1,6 +1,7 @@
 use actix;
 use actix_web::error::ResponseError;
 use actix_web::{http::StatusCode, HttpResponse};
+use actor::db::QueryMessageError;
 use diesel::result::Error as DieselError;
 use failure::Fail;
 use futures::Future;
@@ -35,6 +36,7 @@ pub enum ApiError {
     InsufficientPermission,       // generic auth
     ServiceNotFound,              // service
     MessageNotFound,              // message
+    InvalidFilter,                // generic filter
 }
 
 impl ApiError {
@@ -63,6 +65,7 @@ impl ApiError {
             InsufficientPermission => "INSUFFICIENT_PERMISSION",
             ServiceNotFound => "SERVICE_NOT_FOUND",
             MessageNotFound => "MESSAGE_NOT_FOUND",
+            InvalidFilter => "INVALID_FILTER",
         }
     }
     pub fn status(&self) -> StatusCode {
@@ -84,6 +87,7 @@ impl ApiError {
             InsufficientPermission => StatusCode::FORBIDDEN,
             ServiceNotFound => StatusCode::NOT_FOUND,
             MessageNotFound => StatusCode::NOT_FOUND,
+            InvalidFilter => StatusCode::BAD_REQUEST,
         }
     }
 }
@@ -151,6 +155,15 @@ impl From<QueryError> for ApiError {
         match err {
             DieselError(err) => err.into(),
             ActixError(err) => err.into(),
+        }
+    }
+}
+
+impl From<QueryMessageError> for ApiError {
+    fn from(e: QueryMessageError) -> Self {
+        match e {
+            QueryMessageError::InvalidFilterError => ApiError::InvalidFilter,
+            QueryMessageError::QueryError(e) => e.into(),
         }
     }
 }
