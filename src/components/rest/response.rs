@@ -37,6 +37,7 @@ pub enum ApiError {
     ServiceNotFound,              // service
     MessageNotFound,              // message
     InvalidFilter,                // generic filter
+    ServiceNotExists,             // subscription
 }
 
 impl ApiError {
@@ -66,6 +67,7 @@ impl ApiError {
             ServiceNotFound => "SERVICE_NOT_FOUND",
             MessageNotFound => "MESSAGE_NOT_FOUND",
             InvalidFilter => "INVALID_FILTER",
+            ServiceNotExists => "SERVICE_NOT_EXISTS",
         }
     }
     pub fn status(&self) -> StatusCode {
@@ -88,6 +90,7 @@ impl ApiError {
             ServiceNotFound => StatusCode::NOT_FOUND,
             MessageNotFound => StatusCode::NOT_FOUND,
             InvalidFilter => StatusCode::BAD_REQUEST,
+            ServiceNotExists => StatusCode::BAD_REQUEST,
         }
     }
 }

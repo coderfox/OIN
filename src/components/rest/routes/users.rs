@@ -27,23 +27,13 @@ pub fn post_all((req, raw_data): (HttpRequest<AppState>, Json<PostAllRequest>)) 
         })
         .from_err()
         .and_then(|res| match res {
-            // .header("location", user.id.hyphenated().to_string())
             Ok(user) => Ok(HttpResponse::Created().json(user)),
-            // TODO: refactor this after `if let combination` is supported
-            Err(err) => Err({
-                let mut is_duplicated_email = false;
-                if let CreateUserError::DieselError(derr) = &err {
-                    if let DieselError::DatabaseError(ek, _) = derr {
-                        if let DatabaseErrorKind::UniqueViolation = ek {
-                            is_duplicated_email = true;
-                        }
-                    }
-                }
-                if is_duplicated_email {
-                    ApiError::DuplicatedEmail
-                } else {
-                    ApiError::from_error(err)
-                }
+            Err(err) => Err(match err {
+                CreateUserError::DieselError(DieselError::DatabaseError(
+                    DatabaseErrorKind::UniqueViolation,
+                    _,
+                )) => ApiError::DuplicatedEmail,
+                other => ApiError::from_error(other),
             }),
         })
         .responder()

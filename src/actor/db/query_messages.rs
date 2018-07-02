@@ -58,19 +58,16 @@ impl Handler<QueryMessages> for DbExecutor {
                                             as Box<BoxableExpression<_, _, SqlType = _>>)
                                     })
                                     .unwrap_or(None),
-                                //Some(Box::new(
-                                //    message::subscription_id.eq(Uuid::parse_str(v).unwrap()),
-                                //)),
                                 "service" => Uuid::parse_str(v)
                                     .map(|v| {
                                         Some(Box::new(subscription::service_id.eq(v))
                                             as Box<BoxableExpression<_, _, SqlType = _>>)
                                     })
                                     .unwrap_or(None),
-                                _ => None, // error
+                                _ => None,
                             }
                         } else {
-                            Some(Box::new(message::title.like(ty.unwrap())))
+                            Some(Box::new(message::title.like(format!("%{}%", ty.unwrap()))))
                         }
                     }
                 },
@@ -83,6 +80,7 @@ impl Handler<QueryMessages> for DbExecutor {
                 message::table
                     .inner_join(subscription::table)
                     .filter(subscription::owner_id.eq(user_id))
+                    .order_by(message::updated_at.desc())
                     .into_boxed(),
                 |query, item| query.filter(item),
             );

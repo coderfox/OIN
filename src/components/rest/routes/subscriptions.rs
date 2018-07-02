@@ -1,12 +1,15 @@
 use super::super::auth::BearerAuth;
 use super::super::response::{ApiError, FutureResponse};
 use actix_web::{AsyncResponder, HttpResponse, Json, Path};
-use diesel::{ExpressionMethods, QueryDsl};
+use diesel::{
+    result::{DatabaseErrorKind, Error as DieselError}, ExpressionMethods, QueryDsl,
+};
 use futures::Future;
 use model::{
     NewSubscription, Session, Subscription, SubscriptionChangeset, SubscriptionEvent,
     SubscriptionView,
 };
+use state::QueryError;
 use state::State;
 use uuid::Uuid;
 
@@ -95,7 +98,9 @@ pub fn get_one_events(
         .and_then(move |subscription| {
             let query = {
                 use schema::subscription_event::dsl::*;
-                subscription_event.filter(subscription_id.eq(subscription.id))
+                subscription_event
+                    .filter(subscription_id.eq(subscription.id))
+                    .order_by(updated_at.desc())
             };
             state.query(query)
         })
@@ -145,23 +150,25 @@ pub fn delete_one(
     (state, BearerAuth(session), uuid): (State, BearerAuth, Path<Uuid>),
 ) -> FutureResponse {
     // TODO: last_event
-    single_from_req(&state, session, uuid.into_inner())
-        .map(move |s| {
+    single_from_req_with_last_event(&state, session, uuid.into_inner())
+        .map(move |(s, e)| {
             use diesel;
             use diesel::query_builder::AsQuery;
             use schema::subscription::dsl::*;
-            state.query_single(
-                diesel::update(subscription)
-                    .filter(id.eq(s.id))
-                    .set(SubscriptionChangeset {
-                        deleted: Some(true),
-                        ..Default::default()
-                    })
-                    .as_query(),
-            )
+            state
+                .query_single(
+                    diesel::update(subscription)
+                        .filter(id.eq(s.id))
+                        .set(SubscriptionChangeset {
+                            deleted: Some(true),
+                            ..Default::default()
+                        })
+                        .as_query(),
+                )
+                .map(|s| (s, e))
         })
         .flatten()
-        .map(|subscription: Subscription| HttpResponse::Ok().json(subscription))
+        .map(|result| HttpResponse::Ok().json::<SubscriptionView>(result.into()))
         .responder()
 }
 
@@ -176,7 +183,6 @@ pub fn post_all(
     (state, BearerAuth(session), json_body): (State, BearerAuth, Json<PostAllBody>),
 ) -> FutureResponse {
     // TODO: `Location` header
-    // TODO: SERVICE_NOT_EXISTS
     // TODO: INVALID_CONFIG
     let body = json_body.into_inner();
     let query = {
@@ -195,6 +201,13 @@ pub fn post_all(
     };
     state
         .query_single(query)
+        .map_err(|e| match e {
+            QueryError::DieselError(DieselError::DatabaseError(
+                DatabaseErrorKind::ForeignKeyViolation,
+                _,
+            )) => ApiError::ServiceNotExists,
+            other => other.into(),
+        })
         .map(|subscription: Subscription| HttpResponse::Created().json(subscription))
         .responder()
 }
