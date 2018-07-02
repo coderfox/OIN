@@ -28,13 +28,17 @@ pub fn post_all((req, raw_data): (HttpRequest<AppState>, Json<PostAllRequest>)) 
         .from_err()
         .and_then(|res| match res {
             Ok(user) => Ok(HttpResponse::Created().json(user)),
-            Err(err) => Err(match err {
-                CreateUserError::DieselError(DieselError::DatabaseError(
+            Err(err) => Err(
+                if let CreateUserError::DieselError(DieselError::DatabaseError(
                     DatabaseErrorKind::UniqueViolation,
                     _,
-                )) => ApiError::DuplicatedEmail,
-                other => ApiError::from_error(other),
-            }),
+                )) = err
+                {
+                    ApiError::DuplicatedEmail
+                } else {
+                    ApiError::from_error(err)
+                },
+            ),
         })
         .responder()
 }

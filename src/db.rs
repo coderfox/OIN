@@ -1,4 +1,4 @@
-#![allow(unused_imports)] // TODO: remove this after diesel_migrations update
+#![allow(unused_imports)] // TODO:UPSTREAM remove this after diesel_migrations update
 
 use diesel::r2d2::ConnectionManager;
 use diesel::PgConnection;

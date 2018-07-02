@@ -3,7 +3,7 @@ use super::super::response::{ApiError, FutureResponse};
 use actix_web::{AsyncResponder, HttpResponse, Json, Path, Query};
 use diesel::{ExpressionMethods, QueryDsl};
 use futures::Future;
-use model::{Message, MessageChangeset, MessageView, Session, Subscription};
+use model::{Message, MessageChangeset, MessageSimpleView, MessageView, Session, Subscription};
 use state::State;
 use uuid::Uuid;
 
@@ -15,7 +15,6 @@ pub struct GetMultiQuery {
 pub fn get_mine(
     (state, BearerAuth(session), url_query): (State, BearerAuth, Query<GetMultiQuery>),
 ) -> FutureResponse {
-    // TODO: do not return `content`
     state
         .query_messages(
             url_query
@@ -25,8 +24,9 @@ pub fn get_mine(
             session.user_id,
         )
         .map(|results: Vec<(Message, Subscription)>| {
-            HttpResponse::Ok()
-                .json::<Vec<MessageView>>(results.into_iter().map(|item| item.into()).collect())
+            HttpResponse::Ok().json::<Vec<MessageSimpleView>>(
+                results.into_iter().map(|item| item.into()).collect(),
+            )
         })
         .responder()
 }
@@ -67,6 +67,11 @@ pub fn get_one(
         .responder()
 }
 
+#[derive(Serialize)]
+pub struct MarkReadedResponse {
+    readed: bool,
+}
+
 pub fn mark_readed(
     (state, BearerAuth(session), uuid, json_body): (
         State,
@@ -75,22 +80,20 @@ pub fn mark_readed(
         Json<MessageChangeset>,
     ),
 ) -> FutureResponse {
-    // TODO: only return partial
     single_from_req(&state, session, uuid.into_inner())
-        .map(move |(m, s)| {
+        .map(move |(m, _)| {
             use diesel;
             use diesel::query_builder::AsQuery;
             use schema::message::dsl::*;
-            state
-                .query_single(
-                    diesel::update(message)
-                        .filter(id.eq(m.id))
-                        .set(json_body.into_inner())
-                        .as_query(),
-                )
-                .map(|m: Message| (m, s))
+            state.query_single(
+                diesel::update(message)
+                    .filter(id.eq(m.id))
+                    .set(json_body.into_inner())
+                    .returning(readed)
+                    .as_query(),
+            )
         })
         .flatten()
-        .map(|result| HttpResponse::Ok().json::<MessageView>(result.into()))
+        .map(|readed| HttpResponse::Ok().json(MarkReadedResponse { readed }))
         .responder()
 }

@@ -149,7 +149,6 @@ pub fn post_one(
 pub fn delete_one(
     (state, BearerAuth(session), uuid): (State, BearerAuth, Path<Uuid>),
 ) -> FutureResponse {
-    // TODO: last_event
     single_from_req_with_last_event(&state, session, uuid.into_inner())
         .map(move |(s, e)| {
             use diesel;
@@ -201,12 +200,16 @@ pub fn post_all(
     };
     state
         .query_single(query)
-        .map_err(|e| match e {
-            QueryError::DieselError(DieselError::DatabaseError(
+        .map_err(|e| {
+            if let QueryError::DieselError(DieselError::DatabaseError(
                 DatabaseErrorKind::ForeignKeyViolation,
                 _,
-            )) => ApiError::ServiceNotExists,
-            other => other.into(),
+            )) = e
+            {
+                ApiError::ServiceNotExists
+            } else {
+                e.into()
+            }
         })
         .map(|subscription: Subscription| HttpResponse::Created().json(subscription))
         .responder()
