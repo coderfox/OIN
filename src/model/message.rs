@@ -108,3 +108,13 @@ impl From<(Message, Subscription)> for MessageView {
         }
     }
 }
+
+#[derive(Insertable)]
+#[table_name = "message"]
+pub struct NewMessage {
+    pub title: String,
+    pub summary: String,
+    pub content: String,
+    pub subscription_id: Uuid,
+    pub href: Option<String>,
+}

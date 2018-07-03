@@ -1,11 +1,12 @@
 mod error;
+mod func;
 mod response;
 
 use super::{server_agent, LogError};
 use actix::prelude::{Addr, Syn};
-use actix_web::{http,
-                middleware::{cors, DefaultHeaders, ErrorHandlers},
-                App};
+use actix_web::{
+    http, middleware::{cors, DefaultHeaders, ErrorHandlers}, App,
+};
 use actor::db::DbExecutor;
 use state::AppState;
 
@@ -32,10 +33,12 @@ pub fn build_app(addr: Addr<Syn, DbExecutor>) -> App<AppState> {
         .configure(|app| {
             cors::Cors::for_app(app)
                 .supports_credentials()
-                .resource("/register_service", |r| r.post().f(error::not_implemented))
-                .resource("/get_channels", |r| r.post().f(error::not_implemented))
-                .resource("/create_message", |r| r.post().f(error::not_implemented))
-                .resource("/report_event", |r| r.post().f(error::not_implemented))
+                .resource("/register_service", |r| {
+                    r.post().with(func::register_service);
+                })
+                .resource("/get_channels", |r| r.post().with(func::get_channels))
+                .resource("/create_message", |r| r.post().with(func::create_message))
+                .resource("/report_event", |r| r.post().with(func::report_event))
                 .register()
         })
         .default_resource(|r| r.f(error::not_implemented))

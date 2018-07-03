@@ -1,0 +1,2 @@
+ALTER TABLE "message" ALTER COLUMN "readed" SET DEFAULT FALSE;
+

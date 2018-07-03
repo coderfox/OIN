@@ -15,3 +15,11 @@ pub struct Service {
     #[serde(skip)]
     pub updated_at: DateTime<Utc>,
 }
+
+#[derive(Insertable, Deserialize, AsChangeset, Clone)]
+#[table_name = "service"]
+pub struct NewService {
+    pub id: Uuid,
+    pub name: String,
+    pub description: Option<String>,
+}

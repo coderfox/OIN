@@ -1,17 +1,39 @@
 use actix;
 use actix_web::error::ResponseError;
+use actix_web::HttpRequest;
+use actix_web::Responder;
 use actix_web::{http::StatusCode, HttpResponse};
 use diesel::result::Error as DieselError;
 use failure::Fail;
 use futures::Future;
+use serde::Serialize;
+use state::QueryError;
 use std;
-use std::error;
 use std::fmt;
 
 #[allow(dead_code)] // TODO: remove this
-pub type Result<T> = std::result::Result<T, ApiError>;
+pub type Result<T> = std::result::Result<RpcResponse<T>, ApiError>;
 #[allow(dead_code)] // TODO: remove this
-pub type FutureResponse = Box<Future<Item = HttpResponse, Error = ApiError>>;
+pub type FutureResponse<T> = Box<Future<Item = RpcResponse<T>, Error = ApiError>>;
+
+#[derive(Serialize)]
+pub struct RpcResponse<T: Serialize> {
+    result: T,
+}
+
+impl<T: Serialize> RpcResponse<T> {
+    pub fn new(result: T) -> Self {
+        Self { result }
+    }
+}
+
+impl<T: Serialize> Responder for RpcResponse<T> {
+    type Item = HttpResponse;
+    type Error = ApiError;
+    fn respond_to<S>(self, _req: &HttpRequest<S>) -> std::result::Result<Self::Item, Self::Error> {
+        Ok(HttpResponse::Ok().json(self))
+    }
+}
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
@@ -20,18 +42,19 @@ pub struct ErrorResponse {
 
 #[derive(Debug)]
 pub enum ApiError {
-    InternalServerError(Box<error::Error + Send + Sync>),
+    InternalServerError(Box<Fail>),
     InternalServerErrorWithoutReason,
     ApiEndpointNotFound,
     InvalidParameters,
     NotImplemented, // TODO: drop this
+    InsufficientPermission,
 }
 
 impl ApiError {
-    pub fn from_error_boxed(err: Box<error::Error + Send + Sync>) -> Self {
+    pub fn from_error_boxed(err: Box<Fail>) -> Self {
         ApiError::InternalServerError(err)
     }
-    pub fn from_error<T: 'static + error::Error + Send + Sync>(err: T) -> Self {
+    pub fn from_error<T: Fail>(err: T) -> Self {
         ApiError::from_error_boxed(Box::new(err))
     }
     pub fn code(&self) -> &'static str {
@@ -42,6 +65,7 @@ impl ApiError {
             ApiEndpointNotFound => "API_ENDPOINT_NOT_FOUND",
             InvalidParameters => "INVALID_PARAMETERS",
             NotImplemented => "NOT_IMPLEMENTED",
+            InsufficientPermission => "INSUFFICIENT_PERMISSION",
         }
     }
     pub fn status(&self) -> StatusCode {
@@ -49,9 +73,8 @@ impl ApiError {
         match self {
             InternalServerError(_) => StatusCode::SERVICE_UNAVAILABLE,
             InternalServerErrorWithoutReason => StatusCode::SERVICE_UNAVAILABLE,
-            ApiEndpointNotFound => StatusCode::INTERNAL_SERVER_ERROR,
-            InvalidParameters => StatusCode::INTERNAL_SERVER_ERROR,
             NotImplemented => StatusCode::NOT_IMPLEMENTED,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -62,7 +85,7 @@ impl fmt::Display for ApiError {
             f,
             "{}",
             if let ApiError::InternalServerError(ref base_error) = self {
-                format!("internal error: {}", base_error.as_ref().description())
+                format!("internal error: {}", base_error.as_ref())
             } else {
                 format!("handled error: {}", self.code())
             }
@@ -70,16 +93,8 @@ impl fmt::Display for ApiError {
     }
 }
 
-impl error::Error for ApiError {
-    fn description(&self) -> &str {
-        if let ApiError::InternalServerError(ref base_error) = self {
-            base_error.as_ref().description()
-        } else {
-            self.code()
-        }
-    }
-
-    fn cause(&self) -> Option<&error::Error> {
+impl Fail for ApiError {
+    fn cause(&self) -> Option<&Fail> {
         if let ApiError::InternalServerError(ref base_error) = self {
             Some(base_error.as_ref())
         } else {
@@ -110,12 +125,23 @@ impl PartialEq<ApiError> for ApiError {
 
 impl From<actix::MailboxError> for ApiError {
     fn from(err: actix::MailboxError) -> Self {
-        Self::from_error(err.compat())
+        Self::from_error(err)
     }
 }
 
 impl From<DieselError> for ApiError {
     fn from(err: DieselError) -> Self {
         Self::from_error(err)
+    }
+}
+
+impl From<QueryError> for ApiError {
+    fn from(err: QueryError) -> Self {
+        use self::QueryError::*;
+
+        match err {
+            DieselError(err) => err.into(),
+            ActixError(err) => err.into(),
+        }
     }
 }

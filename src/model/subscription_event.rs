@@ -18,10 +18,8 @@ pub struct SubscriptionEvent {
 
 #[derive(Insertable)]
 #[table_name = "subscription_event"]
-pub struct NewSubscriptionEvent<'a> {
-    pub status: &'a bool,
-    pub message: &'a str,
-    #[column_name = "updated_at"]
-    pub time: &'a DateTime<Utc>,
-    pub subscription_id: &'a Uuid,
+pub struct NewSubscriptionEvent {
+    pub status: bool,
+    pub message: String,
+    pub subscription_id: Uuid,
 }

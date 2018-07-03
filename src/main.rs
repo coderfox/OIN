@@ -33,9 +33,12 @@ extern crate diesel_derive_enum;
 #[cfg(feature = "sentry")]
 #[macro_use]
 extern crate sentry;
+#[macro_use]
+extern crate lazy_static;
 
 mod actor;
 mod components;
+mod config;
 mod db;
 mod model;
 #[allow(unused_imports)]
