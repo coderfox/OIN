@@ -4,24 +4,13 @@ WORKDIR /app
 RUN USER=root cargo init  --vcs none
 
 # Copies over *only* your manifests
-COPY ./Cargo.lock ./Cargo.lock
-COPY ./Cargo.toml ./Cargo.toml
+COPY Cargo.lock Cargo.toml ./
 
 RUN cargo build --release
-RUN rm -rf src
-RUN /app/target/x86_64-unknown-linux-musl/release/sandra-backend
+RUN rm -rf /app/target/x86_64-unknown-linux-musl/release/sandra-backend*
 
-# Copies only your actual source code to
-# avoid invalidating the cache at all
-COPY ./migrations ./migrations
-COPY ./src ./src
-
-# Builds again, this time it'll just be
-# your actual source files being built
-RUN cargo build --release
-
-# TODO: fix
-RUN /app/target/x86_64-unknown-linux-musl/release/sandra-backend
+COPY migrations src ./
+RUN cargo build --release --features sentry
 
 FROM scratch
 
