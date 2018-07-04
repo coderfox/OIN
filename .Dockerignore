@@ -1,8 +1,9 @@
 ### Git ###
-.git
-
-### Project ###
-.env
+/*
+!migrations
+!src
+!Cargo.toml
+!Cargo.lock
 
 # Created by https://www.gitignore.io/api/rust
 
