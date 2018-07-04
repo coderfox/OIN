@@ -14,3 +14,4 @@ FROM scratch
 
 COPY --from=build /app/target/x86_64-unknown-linux-musl/release/sandra-backend /app/sandra-backend
 ENTRYPOINT [ "/app/sandra-backend" ]
+EXPOSE 3000
