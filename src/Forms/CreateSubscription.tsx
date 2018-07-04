@@ -2,8 +2,12 @@ import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 
 import {
-  FormInputProps, FormTextAreaProps, FormDropdownProps,
-  Form, Message, Segment,
+  FormInputProps,
+  FormTextAreaProps,
+  FormDropdownProps,
+  Form,
+  Message,
+  Segment,
 } from 'semantic-ui-react';
 import SessionState from '../lib/SessionStore';
 import { Service, Subscription } from '../lib/api_interfaces';
@@ -60,16 +64,26 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
     this.setState({ loading: true });
     try {
       const { name, service, config } = this.state;
-      const subscription = await this.props.session!.client!.createSubscription(service, config, name);
+      const subscription = await this.props.session!.client!.createSubscription(
+        service,
+        config,
+        name,
+      );
       this.setState({ subscription });
       this.emitFinish();
     } catch (err) {
-      this.setState({ error: (err.response && err.response.data && err.response.data.code) || err.message });
+      this.setState({
+        error:
+          (err.response && err.response.data && err.response.data.code) ||
+          err.message,
+      });
     }
     this.setState({ loading: false });
   }
   emitFinish = () => {
-    if (this.props.onFinish) { this.props.onFinish(this.state.subscription); }
+    if (this.props.onFinish) {
+      this.props.onFinish(this.state.subscription);
+    }
   }
   render() {
     const { name, service, config, services } = this.state;
@@ -79,11 +93,7 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
         error={this.state.error !== ''}
         loading={this.state.loading}
       >
-        <Message
-          error
-          header="操作失败"
-          content={this.state.error}
-        />
+        <Message error header="操作失败" content={this.state.error} />
         <Form.Input
           fluid
           icon="tag"
@@ -102,16 +112,14 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
           options={services.map(s => ({
             key: s.id,
             value: s.id,
-            text: s.title,
+            text: s.name,
             desc: s.description,
           }))}
           value={service}
           onChange={this.handleDropdownChange}
           loading={services.length === 0}
         />
-        <Segment>
-          {this.state.service_desc || '尚未选择服务'}
-        </Segment>
+        <Segment>{this.state.service_desc || '尚未选择服务'}</Segment>
         <Form.TextArea
           fluid
           icon="mail"

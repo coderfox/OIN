@@ -8,8 +8,13 @@ var timeago = Timeage();
 import * as Forms from '../Forms';
 
 import {
-  Card, Label, Form, Icon, Message,
-  Dimmer, Loader
+  Card,
+  Label,
+  Form,
+  Icon,
+  Message,
+  Dimmer,
+  Loader,
 } from 'semantic-ui-react';
 
 interface Props {
@@ -39,12 +44,15 @@ class SubscriptionComponent extends React.Component<Props, States> {
         service: await this.props.session!.getService(subscription.service),
       });
     } catch (err) {
-      this.setState({ error: (err.response && err.response.data && err.response.data.code) || err.message });
+      this.setState({
+        error:
+          (err.response && err.response.data && err.response.data.code) ||
+          err.message,
+      });
     }
   }
 
-  openUpdateForm = () =>
-    this.setState({ update_subscription: true })
+  openUpdateForm = () => this.setState({ update_subscription: true });
   onUpdateFormFinish = () => {
     this.setState({ update_subscription: false });
     this.UNSAFE_componentWillMount();
@@ -55,19 +63,18 @@ class SubscriptionComponent extends React.Component<Props, States> {
     const lastEvent = subscription && subscription.last_event;
     return (
       <Card fluid>
-        {(subscription && service) ? (
+        {subscription && service ? (
           <Card.Content>
             <Card.Header>{subscription.name}</Card.Header>
             <Card.Meta>{subscription.id}</Card.Meta>
             <Card.Description>
               <p>
-                {subscription.deleted && <Label color="red">
-                  已删除
-                </Label>}
+                {subscription.deleted && <Label color="red">已删除</Label>}
                 <Label color="purple">
-                  服务<Label.Detail>{service.title}</Label.Detail>
+                  服务<Label.Detail>{service.name}</Label.Detail>
                 </Label>
-              </p><p>
+              </p>
+              <p>
                 <Label>
                   <Icon name="clock" />
                   {timeago.format(subscription.created_at, 'zh_CN')}
@@ -78,53 +85,71 @@ class SubscriptionComponent extends React.Component<Props, States> {
                   {timeago.format(subscription.updated_at, 'zh_CN')}
                   <Label.Detail>修改</Label.Detail>
                 </Label>
-              </p><p>
-                {lastEvent ?
-                  (lastEvent.status ?
+              </p>
+              <p>
+                {lastEvent ? (
+                  lastEvent.status ? (
                     <Label color="green">
                       <Icon name="checkmark" />
                       {timeago.format(lastEvent.time, 'zh_CN')}
                       <Label.Detail>成功</Label.Detail>
-                    </Label> :
+                    </Label>
+                  ) : (
                     <Label color="red">
                       <Icon name="warning" />
                       失败
-                      <Label.Detail>于{timeago.format(lastEvent.time, 'zh_CN')}: {lastEvent.message} </Label.Detail>
+                      <Label.Detail>
+                        于{timeago.format(lastEvent.time, 'zh_CN')}:{' '}
+                        {lastEvent.message}{' '}
+                      </Label.Detail>
                     </Label>
-                  ) :
+                  )
+                ) : (
                   <Label color="olive">
                     <Icon name="info" />
                     暂未被执行过
                   </Label>
-                }
+                )}
               </p>
-              {this.state.update_subscription ?
-                <Forms.UpdateSubscription id={subscription.id} onFinish={this.onUpdateFormFinish} /> :
+              {this.state.update_subscription ? (
+                <Forms.UpdateSubscription
+                  id={subscription.id}
+                  onFinish={this.onUpdateFormFinish}
+                />
+              ) : (
                 <Form>
                   <p>配置信息</p>
-                  <Form.TextArea disabled rows={2} autoHeight placeholder="空" value={subscription.config} />
+                  <Form.TextArea
+                    disabled
+                    rows={2}
+                    autoHeight
+                    placeholder="空"
+                    value={subscription.config}
+                  />
                   <Form.Button
                     icon="edit"
                     content="编辑"
                     onClick={this.openUpdateForm}
                   />
                 </Form>
-              }
+              )}
             </Card.Description>
-          </Card.Content>) : (
-            <React.Fragment>
-              <Card.Content>
-                <Message
-                  header="加载失败"
-                  error
-                  content={this.state.error}
-                />
-              </Card.Content>
-              <Dimmer active={this.state.error === '' && this.state.service === undefined} inverted>
-                <Loader />
-              </Dimmer>
-            </React.Fragment>
-          )}
+          </Card.Content>
+        ) : (
+          <React.Fragment>
+            <Card.Content>
+              <Message header="加载失败" error content={this.state.error} />
+            </Card.Content>
+            <Dimmer
+              active={
+                this.state.error === '' && this.state.service === undefined
+              }
+              inverted
+            >
+              <Loader />
+            </Dimmer>
+          </React.Fragment>
+        )}
       </Card>
     );
   }

@@ -5,7 +5,16 @@ import * as Interfaces from '../lib/api_interfaces';
 import Timeage from 'timeago.js';
 var timeago = Timeage();
 
-import { Card, Header, Button, Dimmer, Loader, Message, Label, Icon } from 'semantic-ui-react';
+import {
+  Card,
+  Header,
+  Button,
+  Dimmer,
+  Loader,
+  Message,
+  Label,
+  Icon,
+} from 'semantic-ui-react';
 import * as responsive from '../lib/responsive';
 
 interface Props {
@@ -40,7 +49,9 @@ class MessageComplexComponent extends React.Component<Props, States> {
     });
     try {
       const message = await newProps.session!.getMessage(newProps.id);
-      const subscription = await newProps.session!.getSubscription(message.subscription);
+      const subscription = await newProps.session!.getSubscription(
+        message.subscription,
+      );
       const service = await newProps.session!.getService(subscription.service);
       this.setState({
         message,
@@ -49,7 +60,9 @@ class MessageComplexComponent extends React.Component<Props, States> {
       });
     } catch (ex) {
       this.setState({
-        error: (ex.response && ex.response.data && ex.response.data.code) || ex.message,
+        error:
+          (ex.response && ex.response.data && ex.response.data.code) ||
+          ex.message,
         message: undefined,
         subscription: undefined,
         service: undefined,
@@ -89,15 +102,19 @@ class MessageComplexComponent extends React.Component<Props, States> {
           />
           <p>
             <Label>
-              <Icon name="clock" />{message && timeago.format(message.created_at, 'zh_CN')}
+              <Icon name="clock" />
+              {message && timeago.format(message.created_at, 'zh_CN')}
             </Label>
             <Label color="orange">
-              订阅<Label.Detail>{subscription && subscription.name}</Label.Detail>
+              订阅<Label.Detail>
+                {subscription && subscription.name}
+              </Label.Detail>
             </Label>
             <Label color="purple">
-              服务<Label.Detail>{service && service.title}</Label.Detail>
+              服务<Label.Detail>{service && service.name}</Label.Detail>
             </Label>
-          </p><p>
+          </p>
+          <p>
             <Button
               content="标为已读"
               color="olive"
@@ -105,16 +122,12 @@ class MessageComplexComponent extends React.Component<Props, States> {
               disabled={message && message.readed}
               size="small"
             />
-            <Button
-              content="关闭"
-              onClick={this.onClose}
-              size="small"
-            />
+            <Button content="关闭" onClick={this.onClose} size="small" />
           </p>
           <Card.Description
             className="sandra-message-content"
             dangerouslySetInnerHTML={{
-              __html: message && message.content
+              __html: message && message.content,
             }}
           />
         </Card.Content>
@@ -123,7 +136,7 @@ class MessageComplexComponent extends React.Component<Props, States> {
           <Card.Meta>{subscription && subscription.id}</Card.Meta>
         </Card.Content>
         <Card.Content>
-          <Card.Header>服务「{service && service.title}」</Card.Header>
+          <Card.Header>服务「{service && service.name}」</Card.Header>
           <Card.Meta>{service && service.id}</Card.Meta>
           <Card.Description>{service && service.description}</Card.Description>
         </Card.Content>

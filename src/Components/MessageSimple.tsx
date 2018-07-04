@@ -39,9 +39,7 @@ class MessageSimple extends React.Component<Props, States> {
         <Card.Content as="a" onClick={this.onClick}>
           <Card.Header>{title}</Card.Header>
           <Card.Meta>{subscription}</Card.Meta>
-          <Card.Description>
-            {summary}
-          </Card.Description>
+          <Card.Description>{summary}</Card.Description>
         </Card.Content>
         <Card.Content>
           <Button

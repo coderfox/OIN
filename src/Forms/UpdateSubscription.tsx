@@ -2,8 +2,11 @@ import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 
 import {
-  FormInputProps, FormTextAreaProps,
-  Form, Message, Segment,
+  FormInputProps,
+  FormTextAreaProps,
+  Form,
+  Message,
+  Segment,
 } from 'semantic-ui-react';
 
 import SessionState from '../lib/SessionStore';
@@ -46,7 +49,11 @@ class UpdateSubscriptionForm extends React.Component<Props, States> {
         config: subscription.config,
       });
     } catch (err) {
-      this.setState({ error: (err.response && err.response.data && err.response.data.code) || err.message });
+      this.setState({
+        error:
+          (err.response && err.response.data && err.response.data.code) ||
+          err.message,
+      });
     }
   }
 
@@ -58,10 +65,18 @@ class UpdateSubscriptionForm extends React.Component<Props, States> {
   handleSubmit = async () => {
     this.setState({ loading: true });
     try {
-      await this.props.session!.updateSubscription(this.props.id, this.state.config, this.state.name);
+      await this.props.session!.updateSubscription(
+        this.props.id,
+        this.state.config,
+        this.state.name,
+      );
       this.emitFinish();
     } catch (err) {
-      this.setState({ error: (err.response && err.response.data && err.response.data.code) || err.message });
+      this.setState({
+        error:
+          (err.response && err.response.data && err.response.data.code) ||
+          err.message,
+      });
     }
     this.setState({ loading: false });
   }
@@ -71,12 +86,18 @@ class UpdateSubscriptionForm extends React.Component<Props, States> {
       await this.props.session!.deleteSubscription(this.props.id);
       this.emitFinish();
     } catch (err) {
-      this.setState({ error: (err.response && err.response.data && err.response.data.code) || err.message });
+      this.setState({
+        error:
+          (err.response && err.response.data && err.response.data.code) ||
+          err.message,
+      });
     }
     this.setState({ loading: false });
   }
   emitFinish = () => {
-    if (this.props.onFinish) { this.props.onFinish(); }
+    if (this.props.onFinish) {
+      this.props.onFinish();
+    }
   }
   render() {
     const { name, config } = this.state;
@@ -86,11 +107,7 @@ class UpdateSubscriptionForm extends React.Component<Props, States> {
         error={this.state.error !== ''}
         loading={this.state.loading}
       >
-        <Message
-          error
-          header="操作失败"
-          content={this.state.error}
-        />
+        <Message error header="操作失败" content={this.state.error} />
         <Form.Input
           fluid
           icon="tag"
@@ -106,12 +123,16 @@ class UpdateSubscriptionForm extends React.Component<Props, States> {
           placeholder="服务"
           search
           selection
-          options={this.state.service && [{
-            key: this.state.service.id,
-            value: this.state.service.id,
-            text: this.state.service.title,
-            desc: this.state.service.description,
-          }]}
+          options={
+            this.state.service && [
+              {
+                key: this.state.service.id,
+                value: this.state.service.id,
+                text: this.state.service.name,
+                desc: this.state.service.description,
+              },
+            ]
+          }
           value={this.state.service && this.state.service.id}
         />
         <Segment>
