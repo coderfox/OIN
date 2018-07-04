@@ -12,7 +12,7 @@ before_script:
 
 variables:
   SENTRY_DSN: https://c9040f99c1c44deab891aa2b58d42a95@sentry.io/1216029
-  API_ROOT: https://api.oin.app
+  API_ROOT: https://api.oin.app/rest
 
 build-master:
   stage: build
