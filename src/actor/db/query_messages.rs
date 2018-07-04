@@ -52,7 +52,7 @@ impl Handler<QueryMessages> for DbExecutor {
                         if let Some(v) = val {
                             match ty.unwrap() {
                                 "readed" => Some(Box::new(message::readed.eq(v == "true"))),
-                                "subsciption" => Uuid::parse_str(v)
+                                "subscription" => Uuid::parse_str(v)
                                     .map(|v| {
                                         Some(Box::new(message::subscription_id.eq(v))
                                             as Box<dyn BoxableExpression<_, _, SqlType = _>>)
