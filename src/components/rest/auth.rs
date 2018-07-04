@@ -84,7 +84,7 @@ mod basic {
 
     impl FromRequest<AppState> for BasicAuth {
         type Config = BasicAuthConfig;
-        type Result = Box<Future<Item = Self, Error = Error>>;
+        type Result = Box<dyn Future<Item = Self, Error = Error>>;
         fn from_request(req: &HttpRequest<AppState>, _: &Self::Config) -> Self::Result {
             use schema::user::dsl as udsl;
 
@@ -170,7 +170,7 @@ mod bearer {
 
     impl FromRequest<AppState> for BearerAuth {
         type Config = BearerAuthConfig;
-        type Result = Box<Future<Item = Self, Error = Error>>;
+        type Result = Box<dyn Future<Item = Self, Error = Error>>;
         fn from_request(req: &HttpRequest<AppState>, _: &Self::Config) -> Self::Result {
             use schema::session::dsl as sdsl;
 

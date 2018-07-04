@@ -11,7 +11,7 @@ use std::fmt;
 
 #[allow(dead_code)] // TODO: remove this
 pub type Result<T> = std::result::Result<T, ApiError>;
-pub type FutureResponse = Box<Future<Item = HttpResponse, Error = ApiError>>;
+pub type FutureResponse = Box<dyn Future<Item = HttpResponse, Error = ApiError>>;
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
@@ -20,7 +20,7 @@ pub struct ErrorResponse {
 
 #[derive(Debug)]
 pub enum ApiError {
-    InternalServerError(Box<Fail>),
+    InternalServerError(Box<dyn Fail>),
     InternalServerErrorWithoutReason,
     NotImplemented,               // TODO: drop this
     ApiEndpointNotFound,          // generic
@@ -41,7 +41,7 @@ pub enum ApiError {
 }
 
 impl ApiError {
-    pub fn from_error_boxed(err: Box<Fail>) -> Self {
+    pub fn from_error_boxed(err: Box<dyn Fail>) -> Self {
         ApiError::InternalServerError(err)
     }
     pub fn from_error<T: Fail>(err: T) -> Self {
@@ -110,7 +110,7 @@ impl fmt::Display for ApiError {
 }
 
 impl Fail for ApiError {
-    fn cause(&self) -> Option<&Fail> {
+    fn cause(&self) -> Option<&dyn Fail> {
         if let ApiError::InternalServerError(ref base_error) = self {
             Some(base_error.as_ref())
         } else {

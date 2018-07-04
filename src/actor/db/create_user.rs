@@ -37,7 +37,7 @@ impl Error for CreateUserError {
         }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         use self::CreateUserError::*;
         match self {
             DieselError(e) => Some(e),

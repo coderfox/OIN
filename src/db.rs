@@ -1,4 +1,5 @@
 #![allow(unused_imports)] // TODO:UPSTREAM remove this after diesel_migrations update
+#![allow(bare_trait_objects)] // TODO:UPSTREAM remove this after diesel_migrations update
 
 use diesel::r2d2::ConnectionManager;
 use diesel::PgConnection;

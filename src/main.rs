@@ -3,6 +3,9 @@
 // TODO: tests
 // TODO: pagination
 
+#![deny(bare_trait_objects)]
+#![deny(anonymous_parameters)]
+
 extern crate actix;
 extern crate actix_web;
 extern crate base64;

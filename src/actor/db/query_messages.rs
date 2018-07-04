@@ -42,7 +42,7 @@ impl Handler<QueryMessages> for DbExecutor {
             .split(" ")
             .into_iter()
             .map(
-                |filter| -> Option<Box<BoxableExpression<_, _, SqlType = _>>> {
+                |filter| -> Option<Box<dyn BoxableExpression<_, _, SqlType = _>>> {
                     let mut parts = filter.split(":");
                     let ty = parts.next();
                     let val = parts.next();
@@ -55,13 +55,13 @@ impl Handler<QueryMessages> for DbExecutor {
                                 "subsciption" => Uuid::parse_str(v)
                                     .map(|v| {
                                         Some(Box::new(message::subscription_id.eq(v))
-                                            as Box<BoxableExpression<_, _, SqlType = _>>)
+                                            as Box<dyn BoxableExpression<_, _, SqlType = _>>)
                                     })
                                     .unwrap_or(None),
                                 "service" => Uuid::parse_str(v)
                                     .map(|v| {
                                         Some(Box::new(subscription::service_id.eq(v))
-                                            as Box<BoxableExpression<_, _, SqlType = _>>)
+                                            as Box<dyn BoxableExpression<_, _, SqlType = _>>)
                                     })
                                     .unwrap_or(None),
                                 _ => None,
@@ -73,7 +73,7 @@ impl Handler<QueryMessages> for DbExecutor {
                 },
                 // TODO: only return fields used
             )
-            .collect::<Option<Vec<Box<BoxableExpression<_, _, SqlType = _>>>>>()
+            .collect::<Option<Vec<Box<dyn BoxableExpression<_, _, SqlType = _>>>>>()
             .map_or(Err(QueryMessageError::InvalidFilterError), Ok)?
             .into_iter()
             .fold(
