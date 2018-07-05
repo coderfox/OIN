@@ -2,8 +2,11 @@ import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 
 import {
-  Button, Form, Message, Segment,
-  InputOnChangeData
+  Button,
+  Form,
+  Message,
+  Segment,
+  InputOnChangeData,
 } from 'semantic-ui-react';
 
 import ApiClient from '../lib/client';
@@ -36,11 +39,15 @@ class RegForm extends React.Component<Props, States> {
     password_confirm: '',
     loading: false,
     error: false,
-    message: ''
+    message: '',
   };
 
-  handleChange = (_: React.SyntheticEvent<HTMLInputElement>, data: InputOnChangeData) =>
-    this.setState({ [data.name]: data.value })
+  handleChange = (
+    _: React.SyntheticEvent<HTMLInputElement>,
+    data: InputOnChangeData,
+  ) =>
+    // tslint:disable-next-line:no-any
+    this.setState({ [data.name]: data.value } as any)
   handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const { email, password, password_confirm, nickname } = this.state;
     this.setState({ loading: true, error: false });
@@ -55,7 +62,9 @@ class RegForm extends React.Component<Props, States> {
     } catch (ex) {
       this.setState({
         error: true,
-        message: (ex.response && ex.response.data && ex.response.data.code) || ex.message
+        message:
+          (ex.response && ex.response.data && ex.response.data.code) ||
+          ex.message,
       });
     }
     this.setState({ loading: false });
@@ -69,7 +78,7 @@ class RegForm extends React.Component<Props, States> {
       loading,
       error,
       message,
-      user
+      user,
     } = this.state;
     return (
       <Form
@@ -84,11 +93,7 @@ class RegForm extends React.Component<Props, States> {
             <Message.Header>注册成功</Message.Header>
             <p>您的用户代码：{user && user.id}，3 秒后将为您导向登入页面。</p>
           </Message>
-          <Message
-            error
-            header="注册失败"
-            content={message}
-          />
+          <Message error header="注册失败" content={message} />
           <Form.Input
             fluid
             icon="user"
@@ -129,7 +134,9 @@ class RegForm extends React.Component<Props, States> {
             value={password_confirm}
             onChange={this.handleChange}
           />
-          <Button primary fluid size="large">注册</Button>
+          <Button primary fluid size="large">
+            注册
+          </Button>
         </Segment>
       </Form>
     );

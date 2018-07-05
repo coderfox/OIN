@@ -58,9 +58,11 @@ class UpdateSubscriptionForm extends React.Component<Props, States> {
   }
 
   handleInputChange: FormInputProps['onChange'] = (_, data) =>
-    this.setState({ [data.name]: data.value })
+    // tslint:disable-next-line:no-any
+    this.setState({ [data.name]: data.value } as any)
   handleTextAreaChange: FormTextAreaProps['onChange'] = (_, data) =>
-    this.setState({ [data.name]: data.value })
+    // tslint:disable-next-line:no-any
+    this.setState({ [data.name]: data.value } as any)
 
   handleSubmit = async () => {
     this.setState({ loading: true });

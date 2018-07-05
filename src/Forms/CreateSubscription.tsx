@@ -47,9 +47,11 @@ class CreateSubscriptionForm extends React.Component<Props, States> {
   }
 
   handleInputChange: FormInputProps['onChange'] = (_, data) =>
-    this.setState({ [data.name]: data.value })
+    // tslint:disable-next-line:no-any
+    this.setState({ [data.name]: data.value } as any)
   handleTextAreaChange: FormTextAreaProps['onChange'] = (_, data) =>
-    this.setState({ [data.name]: data.value })
+    // tslint:disable-next-line:no-any
+    this.setState({ [data.name]: data.value } as any)
   handleDropdownChange: FormDropdownProps['onChange'] = async (_, data) => {
     const service = await this.props.session!.getService(data.value as string);
     if (!service) {

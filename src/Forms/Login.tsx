@@ -2,8 +2,11 @@ import * as React from 'react';
 import { inject, observer } from 'mobx-react';
 
 import {
-  Button, Form, Message, Segment,
-  InputOnChangeData
+  Button,
+  Form,
+  Message,
+  Segment,
+  InputOnChangeData,
 } from 'semantic-ui-react';
 import SessionState from '../lib/SessionStore';
 
@@ -22,10 +25,20 @@ interface States {
 @inject('session')
 @observer
 class LoginForm extends React.Component<Props, States> {
-  state: States = { email: '', password: '', loading: false, error: false, message: '' };
+  state: States = {
+    email: '',
+    password: '',
+    loading: false,
+    error: false,
+    message: '',
+  };
 
-  handleChange = (_: React.SyntheticEvent<HTMLInputElement>, data: InputOnChangeData) =>
-    this.setState({ [data.name]: data.value })
+  handleChange = (
+    _: React.SyntheticEvent<HTMLInputElement>,
+    data: InputOnChangeData,
+  ) =>
+    // tslint:disable-next-line:no-any
+    this.setState({ [data.name]: data.value } as any)
   handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const { email, password } = this.state;
     this.setState({ loading: true });
@@ -36,7 +49,9 @@ class LoginForm extends React.Component<Props, States> {
     } catch (ex) {
       this.setState({
         error: true,
-        message: (ex.response && ex.response.data && ex.response.data.code) || ex.message
+        message:
+          (ex.response && ex.response.data && ex.response.data.code) ||
+          ex.message,
       });
     }
     this.setState({ loading: false });
@@ -57,11 +72,7 @@ class LoginForm extends React.Component<Props, States> {
             <Message.Header>登入成功</Message.Header>
             <p>您的 token：{token}，将为您导向您的主页。</p>
           </Message>
-          <Message
-            error
-            header="登入失败"
-            content={message}
-          />
+          <Message error header="登入失败" content={message} />
           <Form.Input
             fluid
             icon="mail"
@@ -82,7 +93,9 @@ class LoginForm extends React.Component<Props, States> {
             value={password}
             onChange={this.handleChange}
           />
-          <Button primary fluid size="large">登入</Button>
+          <Button primary fluid size="large">
+            登入
+          </Button>
         </Segment>
       </Form>
     );
