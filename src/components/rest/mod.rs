@@ -1,5 +1,6 @@
 mod auth;
 mod error;
+mod pagination;
 mod response;
 mod routes;
 

@@ -1,6 +1,7 @@
 use super::super::auth::BearerAuth;
 use super::super::response::{ApiError, FutureResponse};
 use actix_web::{AsyncResponder, HttpResponse, Json, Path, Query};
+use actor::db::Pagination;
 use diesel::{ExpressionMethods, QueryDsl};
 use futures::Future;
 use model::{Message, MessageChangeset, MessageSimpleView, MessageView, Session, Subscription};
@@ -13,7 +14,12 @@ pub struct GetMultiQuery {
 }
 
 pub fn get_mine(
-    (state, BearerAuth(session), url_query): (State, BearerAuth, Query<GetMultiQuery>),
+    (state, BearerAuth(session), url_query, pagination): (
+        State,
+        BearerAuth,
+        Query<GetMultiQuery>,
+        Pagination,
+    ),
 ) -> FutureResponse {
     state
         .query_messages(
@@ -22,6 +28,7 @@ pub fn get_mine(
                 .query
                 .unwrap_or("readed:false".to_string()),
             session.user_id,
+            pagination,
         )
         .map(|results: Vec<(Message, Subscription)>| {
             HttpResponse::Ok().json::<Vec<MessageSimpleView>>(

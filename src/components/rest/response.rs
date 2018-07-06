@@ -38,6 +38,7 @@ pub enum ApiError {
     MessageNotFound,              // message
     InvalidFilter,                // generic filter
     ServiceNotExists,             // subscription
+    InvalidPagination,            // pagination
 }
 
 impl ApiError {
@@ -68,6 +69,7 @@ impl ApiError {
             MessageNotFound => "MESSAGE_NOT_FOUND",
             InvalidFilter => "INVALID_FILTER",
             ServiceNotExists => "SERVICE_NOT_EXISTS",
+            InvalidPagination => "INVALID_PAGINATION",
         }
     }
     pub fn status(&self) -> StatusCode {
@@ -91,6 +93,7 @@ impl ApiError {
             MessageNotFound => StatusCode::NOT_FOUND,
             InvalidFilter => StatusCode::BAD_REQUEST,
             ServiceNotExists => StatusCode::BAD_REQUEST,
+            InvalidPagination => StatusCode::BAD_REQUEST,
         }
     }
 }

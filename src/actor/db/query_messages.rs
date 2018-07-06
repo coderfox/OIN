@@ -1,5 +1,6 @@
-use super::DbExecutor;
+use super::{DbExecutor, Pagination};
 use actix::prelude::{Handler, Message as ActixMessage};
+use chrono::{DateTime, Utc};
 use diesel::prelude::RunQueryDsl;
 use diesel::{BoxableExpression, ExpressionMethods, QueryDsl, TextExpressionMethods};
 use futures::Future;
@@ -16,11 +17,16 @@ pub enum QueryMessageError {
 pub struct QueryMessages {
     pub filter: String,
     pub user_id: Uuid,
+    pub pagination: Pagination,
 }
 
 impl QueryMessages {
-    pub fn new(filter: String, user_id: Uuid) -> Self {
-        Self { filter, user_id }
+    pub fn new(filter: String, user_id: Uuid, pagination: Pagination) -> Self {
+        Self {
+            filter,
+            user_id,
+            pagination,
+        }
     }
 }
 
@@ -33,12 +39,24 @@ impl Handler<QueryMessages> for DbExecutor {
 
     fn handle(
         &mut self,
-        QueryMessages { filter, user_id }: QueryMessages,
+        QueryMessages {
+            filter,
+            user_id,
+            pagination,
+        }: QueryMessages,
         _: &mut Self::Context,
     ) -> Self::Result {
         use schema::{message, subscription};
 
-        let query = filter
+        let until_data: Option<(Uuid, DateTime<Utc>)> = pagination.until.and_then(|v| {
+            message::table
+                .find(v)
+                .select((message::id, message::updated_at))
+                .get_result(&self.0.get().unwrap())
+                .ok()
+        });
+
+        let mut query = filter
             .split(" ")
             .into_iter()
             .map(
@@ -79,11 +97,15 @@ impl Handler<QueryMessages> for DbExecutor {
             .fold(
                 message::table
                     .inner_join(subscription::table)
+                    .limit(pagination.limit as i64)
                     .filter(subscription::owner_id.eq(user_id))
                     .order_by(message::updated_at.desc())
                     .into_boxed(),
                 |query, item| query.filter(item),
             );
+        if let Some(until) = until_data {
+            query = query.filter(message::updated_at.le(until.1));
+        }
 
         Ok(query
             .get_results::<(Message, Subscription)>(&self.0.get().unwrap())
@@ -96,12 +118,13 @@ impl AppState {
         &self,
         filter: String,
         user_id: Uuid,
+        pagination: Pagination,
     ) -> impl Future<Item = Vec<(Message, Subscription)>, Error = E>
     where
         E: From<QueryMessageError>,
     {
         self.db
-            .send(QueryMessages::new(filter, user_id))
+            .send(QueryMessages::new(filter, user_id, pagination))
             .from_err()
             .map_err(QueryMessageError::QueryError)
             .flatten()
