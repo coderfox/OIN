@@ -1,6 +1,6 @@
 use super::super::auth::BearerAuth;
 use super::super::response::{ApiError, FutureResponse};
-use actix_web::{AsyncResponder, HttpResponse, Json, Path};
+use actix_web::{AsyncResponder, HttpResponse, Json, Path, Query};
 use diesel::{
     result::{DatabaseErrorKind, Error as DieselError}, ExpressionMethods, QueryDsl,
 };
@@ -13,19 +13,19 @@ use state::QueryError;
 use state::State;
 use uuid::Uuid;
 
-pub fn get_mine((state, BearerAuth(session)): (State, BearerAuth)) -> FutureResponse {
-    use schema::subscription::dsl as fdsl;
-    use schema::subscription_event::{self, dsl as edsl};
+#[derive(Deserialize)]
+pub struct GetMultiQuery {
+    query: Option<String>,
+}
 
+pub fn get_mine(
+    (state, BearerAuth(session), query_wrapped): (State, BearerAuth, Query<GetMultiQuery>),
+) -> FutureResponse {
+    let query = query_wrapped.into_inner();
     state
-        .query(
-            fdsl::subscription
-                .filter(fdsl::owner_id.eq(session.user_id))
-                .left_join(subscription_event::table)
-                .order_by(fdsl::updated_at.desc())
-                .then_order_by(fdsl::id.desc())
-                .then_order_by(edsl::updated_at.desc())
-                .distinct_on((fdsl::updated_at, fdsl::id)),
+        .query_subscriptions(
+            query.query.unwrap_or(String::from("enabled:true")),
+            session.user_id,
         )
         .map(|results: Vec<(Subscription, Option<SubscriptionEvent>)>| {
             HttpResponse::Ok().json::<Vec<SubscriptionView>>(

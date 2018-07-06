@@ -1,7 +1,7 @@
 use actix;
 use actix_web::error::ResponseError;
 use actix_web::{http::StatusCode, HttpResponse};
-use actor::db::QueryMessageError;
+use actor::db::{QueryMessageError, QuerySubscriptionsError};
 use diesel::result::Error as DieselError;
 use failure::Fail;
 use futures::Future;
@@ -170,6 +170,15 @@ impl From<QueryMessageError> for ApiError {
         match e {
             QueryMessageError::InvalidFilterError => ApiError::InvalidFilter,
             QueryMessageError::QueryError(e) => e.into(),
+        }
+    }
+}
+
+impl From<QuerySubscriptionsError> for ApiError {
+    fn from(e: QuerySubscriptionsError) -> Self {
+        match e {
+            QuerySubscriptionsError::InvalidFilterError => ApiError::InvalidFilter,
+            QuerySubscriptionsError::QueryError(e) => e.into(),
         }
     }
 }
