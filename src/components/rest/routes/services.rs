@@ -1,15 +1,25 @@
 use super::super::response::{ApiError, FutureResponse};
-use actix_web::{AsyncResponder, HttpResponse, Path};
-use diesel::{ExpressionMethods, QueryDsl};
+use actix_web::{AsyncResponder, HttpResponse, Path, Query};
+use diesel::{ExpressionMethods, QueryDsl, TextExpressionMethods};
 use futures::Future;
 use model::Service;
 use state::State;
 use uuid::Uuid;
 
-pub fn get_all(state: State) -> FutureResponse {
+#[derive(Deserialize)]
+pub struct GetAllQuery {
+    pub search: Option<String>,
+}
+
+pub fn get_all((state, query): (State, Query<GetAllQuery>)) -> FutureResponse {
     let query = {
         use schema::service::dsl::*;
-        service.order_by(updated_at.desc())
+        service
+            .order_by(updated_at.desc())
+            .filter(name.like(format!(
+                "%{}%",
+                query.into_inner().search.unwrap_or(String::from(""))
+            )))
     };
     state
         .query(query)
