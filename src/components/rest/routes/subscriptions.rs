@@ -1,7 +1,6 @@
 use super::super::auth::BearerAuth;
 use super::super::response::{ApiError, FutureResponse};
 use actix_web::{AsyncResponder, HttpResponse, Json, Path, Query};
-use actor::db::ActorQuery;
 use diesel::{
     result::{DatabaseErrorKind, Error as DieselError}, ExpressionMethods, QueryDsl,
 };

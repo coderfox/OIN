@@ -71,61 +71,6 @@ where
     }
 }
 
-impl<Q, R, E> super::ActorQuery<Q, Option<R>, E> for AppState
-where
-    Q: 'static
-        + diesel::RunQueryDsl<PgConnection>
-        + diesel::query_builder::Query
-        + diesel::query_builder::QueryId
-        + diesel::query_builder::QueryFragment<diesel::pg::Pg>
-        + Send,
-    R: 'static
-        + diesel::Queryable<<Q as diesel::query_builder::Query>::SqlType, diesel::pg::Pg>
-        + Send,
-    diesel::pg::Pg: diesel::sql_types::HasSqlType<<Q as diesel::query_builder::Query>::SqlType>,
-    E: From<QueryError>,
-{
-    type Future = Box<dyn Future<Item = Option<R>, Error = E>>; // TODO: investigate more
-    fn query(&self, query: Q) -> Self::Future {
-        Box::new(
-            self.db
-                .send(QuerySingle::new(query))
-                .from_err()
-                .and_then(|f| f.optional().map_err(|e| e.into()))
-                .map_err(|e: QueryError| e.into()),
-        )
-    }
-}
-
-/*
-    TODO:UPSTREAM uncomment after `specialization` is stablized
-    impl<Q, R, E> super::ActorQuery<Q, R, E> for AppState
-    where
-        Q: 'static
-            + diesel::RunQueryDsl<PgConnection>
-            + diesel::query_builder::Query
-            + diesel::query_builder::QueryId
-            + diesel::query_builder::QueryFragment<diesel::pg::Pg>
-            + Send,
-        R: 'static
-            + diesel::Queryable<<Q as diesel::query_builder::Query>::SqlType, diesel::pg::Pg>
-            + Send,
-        diesel::pg::Pg: diesel::sql_types::HasSqlType<<Q as diesel::query_builder::Query>::SqlType>,
-        E: From<QueryError>,
-    {
-        type Future = Box<dyn Future<Item = R, Error = E>>;
-        fn query(&self, query: Q) -> Self::Future {
-            Box::new(
-                self.db
-                    .send(QuerySingle::new(query))
-                    .from_err()
-                    .and_then(|f| f.map_err(|e| e.into()))
-                    .map_err(|e: QueryError| e.into()),
-            )
-        }
-    }
-*/
-
 impl AppState {
     pub fn query_single<T, R, E>(&self, query: T) -> impl Future<Item = R, Error = E>
     where

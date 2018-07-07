@@ -1,6 +1,5 @@
 use super::response::{ApiError, FutureResponse, RpcResponse};
 use actix_web::{AsyncResponder, Json};
-use actor::db::ActorQuery;
 use config::DEPLOY_TOKEN;
 use diesel;
 use diesel::query_builder::AsQuery;
