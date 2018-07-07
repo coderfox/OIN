@@ -70,23 +70,28 @@ where
     }
 }
 
-impl AppState {
-    pub fn query<T, R, E>(&self, query: T) -> impl Future<Item = Vec<R>, Error = E>
-    where
-        T: 'static
-            + RunQueryDsl<PgConnection>
-            + diesel::query_builder::Query
-            + diesel::query_builder::QueryId
-            + diesel::query_builder::QueryFragment<diesel::pg::Pg>
-            + Send,
-        R: 'static + Queryable<<T as diesel::query_builder::Query>::SqlType, diesel::pg::Pg> + Send,
-        diesel::pg::Pg: diesel::sql_types::HasSqlType<<T as diesel::query_builder::Query>::SqlType>,
-        E: From<QueryError>,
-    {
-        self.db
-            .send(Query::new(query))
-            .from_err()
-            .and_then(|f| f.map_err(|e| e.into()))
-            .map_err(|e: QueryError| e.into())
+impl<Q, R, E> super::ActorQuery<Q, Vec<R>, E> for AppState
+where
+    Q: 'static
+        + diesel::RunQueryDsl<PgConnection>
+        + diesel::query_builder::Query
+        + diesel::query_builder::QueryId
+        + diesel::query_builder::QueryFragment<diesel::pg::Pg>
+        + Send,
+    R: 'static
+        + diesel::Queryable<<Q as diesel::query_builder::Query>::SqlType, diesel::pg::Pg>
+        + Send,
+    diesel::pg::Pg: diesel::sql_types::HasSqlType<<Q as diesel::query_builder::Query>::SqlType>,
+    E: From<QueryError>,
+{
+    type Future = Box<dyn Future<Item = Vec<R>, Error = E>>; // TODO: investigate more
+    fn query(&self, query: Q) -> Self::Future {
+        Box::new(
+            self.db
+                .send(Query::new(query))
+                .from_err()
+                .and_then(|f| f.map_err(|e| e.into()))
+                .map_err(|e: QueryError| e.into()),
+        )
     }
 }

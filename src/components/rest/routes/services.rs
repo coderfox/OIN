@@ -1,5 +1,6 @@
 use super::super::response::{ApiError, FutureResponse};
 use actix_web::{AsyncResponder, HttpResponse, Path, Query};
+use actor::db::ActorQuery;
 use diesel::{ExpressionMethods, QueryDsl, TextExpressionMethods};
 use futures::Future;
 use model::Service;
@@ -12,7 +13,7 @@ pub struct GetAllQuery {
 }
 
 pub fn get_all((state, query): (State, Query<GetAllQuery>)) -> FutureResponse {
-    let query = {
+    ActorQuery::<_, Vec<Service>, _>::query(&*state, {
         use schema::service::dsl::*;
         service
             .order_by(updated_at.desc())
@@ -20,10 +21,7 @@ pub fn get_all((state, query): (State, Query<GetAllQuery>)) -> FutureResponse {
                 "%{}%",
                 query.into_inner().search.unwrap_or(String::from(""))
             )))
-    };
-    state
-        .query(query)
-        .map(|results: Vec<Service>| HttpResponse::Ok().json(results))
+    }).map(|results| HttpResponse::Ok().json(results))
         .responder()
 }
 
