@@ -16,7 +16,7 @@ rpc-client = []
 fallback-app = []
 
 [dependencies]
-diesel-derive-enum = { features = ["postgres"], git = "https://github.com/coderfox/diesel-derive-enum.git" }
+diesel-derive-enum = { features = ["postgres"], git = "https://github.com/adwhit/diesel-derive-enum.git" }
 
 pretty_env_logger = { version = "0.2.3", optional = true }
 listenfd = { version = "0.3.3", optional = true }
