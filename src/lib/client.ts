@@ -51,18 +51,14 @@ class ApiClient {
   private static getWithPagination = async <T>(
     url: string,
     auth?: AxiosBasicCredentials | string,
-  ): Promise<{
-    data: T[];
-    more: boolean;
-    count: number | null;
-  }> => {
-    const result = await axios.get(
-      ApiClient.constructApiUrl(url),
-      ApiClient.constructOptions(auth),
-    );
-    const more = result.headers['x-pagination-more'] === 'true';
-    const count = parseInt(result.headers['x-pagination-count'], 10) || null;
-    return { data: result.data, more, count };
+    until?: string,
+    limit?: number,
+  ): Promise<T[]> => {
+    const result = await axios.get(ApiClient.constructApiUrl(url), {
+      ...ApiClient.constructOptions(auth),
+      params: { until, limit },
+    });
+    return result.data;
   }
   private static post = async <TRes, TReq>(
     url: string,
@@ -102,8 +98,11 @@ class ApiClient {
   constructor(private token: string) {}
   public get = async <T>(url: string): Promise<T> =>
     ApiClient.get<T>(url, this.token)
-  public getWithPagination = async <T>(url: string) =>
-    ApiClient.getWithPagination<T>(url, this.token)
+  public getWithPagination = async <T>(
+    url: string,
+    until?: string,
+    limit?: number,
+  ) => ApiClient.getWithPagination<T>(url, this.token, until, limit)
   public post = async <TRes, TReq>(url: string, data: TReq): Promise<TRes> =>
     ApiClient.post<TRes, TReq>(url, data, this.token)
   public put = async <TRes, TReq>(url: string, data: TReq): Promise<TRes> =>
@@ -114,9 +113,15 @@ class ApiClient {
   public getMessage = (id: string) =>
     this.get<Interfaces.Message>('/messages/'.concat(id))
   public getMessages = () => this.get<Interfaces.Message[]>('/messages/mine');
-  public getMessagesWithQuery = (query = 'readed:false') =>
+  public getMessagesWithQuery = (
+    query = 'readed:false',
+    until?: string,
+    limit = 25,
+  ) =>
     this.getWithPagination<Interfaces.Message>(
       ['/messages/mine', `query=${encodeURIComponent(query)}`].join('?'),
+      until,
+      limit,
     )
   public getServices = () => this.get<Interfaces.Service[]>('/services');
   public getService = (id: string) =>
