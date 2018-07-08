@@ -37,3 +37,6 @@ plain_make:
     - cargo build
   script:
     - cargo test
+  cache:
+    paths:
+      - target

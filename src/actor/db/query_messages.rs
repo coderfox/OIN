@@ -100,11 +100,14 @@ impl Handler<QueryMessages> for DbExecutor {
                     .limit(pagination.limit as i64)
                     .filter(subscription::owner_id.eq(user_id))
                     .order_by(message::updated_at.desc())
+                    .then_order_by(message::id.desc())
                     .into_boxed(),
                 |query, item| query.filter(item),
             );
-        if let Some(until) = until_data {
-            query = query.filter(message::updated_at.le(until.1));
+        if let Some((id, updated_at)) = until_data {
+            query = query
+                .filter(message::updated_at.le(updated_at))
+                .filter(message::id.le(id));
         }
 
         Ok(query
