@@ -5,17 +5,17 @@ import * as Components from '../Components';
 
 import {
   Grid,
-  Progress,
   Message,
   Ref,
   RefProps,
   Dimmer,
   Loader,
-  InputProps,
   Menu,
-  Input,
   Responsive,
   Button,
+  Dropdown,
+  DropdownProps,
+  DropdownItemProps,
 } from 'semantic-ui-react';
 import * as I from '../lib/api_interfaces';
 import * as responsive from '../lib/responsive';
@@ -30,24 +30,26 @@ interface States {
   loadingMarkAllAsReaded?: boolean;
   messages?: I.Message[];
   subscriptions?: { [key: string]: I.Subscription | undefined };
-  search_query?: string;
+  search_query: string[];
   loading_more: boolean;
   has_more: boolean;
+  search_options: DropdownItemProps[];
 }
 
 @inject('session')
 @observer
 class Messages extends React.Component<Props, States> {
   state: States = {
-    search_query: 'readed:false',
+    search_query: ['readed:false'],
     has_more: true,
     loading_more: false,
+    search_options: [{ text: '未读', value: 'readed:false' }],
   };
 
   async componentDidMount() {
     this.setState({ messages: undefined });
     const messages = await this.props.session!.client!.getMessagesWithQuery(
-      this.state.search_query || '',
+      this.state.search_query.join(' '),
     );
     await this.props.session!.cacheSubscriptions(
       messages.map(m => m.subscription),
@@ -55,19 +57,30 @@ class Messages extends React.Component<Props, States> {
     const subscriptionsArr = await Promise.all(
       messages.map(m => this.props.session!.getSubscription(m.subscription)),
     );
-    const subscriptions: { [key: string]: I.Subscription | undefined } = {};
-    subscriptionsArr.map(s => (subscriptions[s.id] = s));
-    this.setState({
+    const subscriptions: { [key: string]: I.Subscription } = {};
+    subscriptionsArr.forEach(s => (subscriptions[s.id] = s));
+    let subscriptionOptions: DropdownItemProps = [];
+    for (const k in subscriptions) {
+      if (subscriptions.hasOwnProperty(k)) {
+        const v = subscriptions[k];
+        subscriptionOptions.push({
+          text: '订阅 ' + v.name,
+          value: 'subscription:' + v.id,
+        });
+      }
+    }
+    this.setState(ps => ({
       messages,
       subscriptions,
       done_messages: messages.filter(m => m.readed === true).length,
-    });
+      search_options: ps.search_options.concat(subscriptionOptions),
+    }));
   }
   loadMore = async () => {
     this.setState({ loading_more: true });
     const messages = this.state.messages!;
     const messagesMore = await this.props.session!.client!.getMessagesWithQuery(
-      this.state.search_query || '',
+      this.state.search_query.join(' '),
       messages.sort(
         (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at),
       )[messages.length - 1].id,
@@ -109,8 +122,18 @@ class Messages extends React.Component<Props, States> {
     await this.componentDidMount(); // TODO: catch
   }
 
-  handleSearchChange: InputProps['onChange'] = (_, data) => {
-    this.setState({ search_query: data.value });
+  handleSearchChange: DropdownProps['onChange'] = (_, data) => {
+    const value = data.value as string[];
+    this.setState({
+      search_query: value || [],
+    });
+    this.search();
+  }
+  handleSearchAddition: DropdownProps['onAddItem'] = (_, data) => {
+    let value = data.value as string;
+    this.setState(ps => ({
+      search_options: [{ text: '搜索 ' + value, value }, ...ps.search_options],
+    }));
   }
   search = (e?: React.FormEvent<{}>) => {
     if (e) {
@@ -139,16 +162,18 @@ class Messages extends React.Component<Props, States> {
                 />
                 <Menu.Item onClick={this.refresh} name="刷新" />
                 <Menu.Item position="right">
-                  <Input
-                    as="form"
-                    onSubmit={this.search}
-                    action={{
-                      type: 'submit',
-                      icon: 'search',
-                    }}
-                    placeholder="搜索"
+                  <Dropdown
+                    // onSubmit={this.search}
+                    onAddItem={this.handleSearchAddition}
                     onChange={this.handleSearchChange}
+                    // onSearchChange={this.handleSearchChange}
                     value={this.state.search_query}
+                    placeholder="搜索"
+                    search
+                    multiple
+                    selection
+                    allowAdditions
+                    options={this.state.search_options}
                   />
                 </Menu.Item>
               </Menu>
@@ -156,28 +181,6 @@ class Messages extends React.Component<Props, States> {
           </Grid.Row>
           <Grid.Row>
             <Grid.Column mobile={16} tablet={16} computer={6}>
-              <Progress
-                color="olive"
-                value={
-                  messages === undefined ? -1 : this.state.done_messages || 0
-                }
-                total={messages === undefined ? -1 : messages.length}
-                progress="ratio"
-              />
-              {messages && (
-                <Message
-                  positive
-                  hidden={
-                    messages.length !== 0 &&
-                    this.state.done_messages !== messages.length
-                  }
-                >
-                  您的消息已经全部处理完毕！
-                </Message>
-              )}
-              <Dimmer active={messages === undefined} inverted>
-                <Loader>Loading</Loader>
-              </Dimmer>
               {messages &&
                 messages
                   .sort((a, b) => {
@@ -228,6 +231,20 @@ class Messages extends React.Component<Props, States> {
                       );
                     }
                   })}
+              {messages && (
+                <Message
+                  positive
+                  hidden={
+                    messages.length !== 0 &&
+                    this.state.done_messages !== messages.length
+                  }
+                >
+                  您的消息已经全部处理完毕！
+                </Message>
+              )}
+              <Dimmer active={messages === undefined} inverted>
+                <Loader>Loading</Loader>
+              </Dimmer>
               <Button
                 content="加载更多"
                 onClick={this.loadMore}
