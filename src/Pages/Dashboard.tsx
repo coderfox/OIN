@@ -6,7 +6,16 @@ import SessionState from '../lib/SessionStore';
 
 import * as Components from '../Components';
 import * as DashboardComponents from './DashboardPages';
-import { Grid, Menu, MenuItemProps, Header, Image, Segment, Responsive, Message } from 'semantic-ui-react';
+import {
+  Grid,
+  Menu,
+  MenuItemProps,
+  Header,
+  Image,
+  Segment,
+  Responsive,
+  Message,
+} from 'semantic-ui-react';
 import * as responsive from '../lib/responsive';
 
 interface Props {
@@ -26,9 +35,10 @@ class Dashboard extends React.Component<Props, States> {
   componentDidCatch(ex: any) {
     this.setState(prev => ({
       errors: [
-        (ex.response && ex.response.data && ex.response.data.code) || ex.message,
-        ...prev.errors
-      ]
+        (ex.response && ex.response.data && ex.response.data.code) ||
+          ex.message,
+        ...prev.errors,
+      ],
     }));
   }
   dismissError = () => {
@@ -37,7 +47,8 @@ class Dashboard extends React.Component<Props, States> {
   async componentWillMount() {
     await this.props.session!.loadSession();
   }
-  handleItemClick: MenuItemProps['onClick'] = (_, { route }) => this.props.routing!.push(route || '/dashboard');
+  handleItemClick: MenuItemProps['onClick'] = (_, { route }) =>
+    this.props.routing!.push(route || '/dashboard')
   render() {
     return (
       <Grid column={2} container={responsive.isComputer()}>
@@ -45,13 +56,19 @@ class Dashboard extends React.Component<Props, States> {
           <Segment vertical>
             <Header as="h1">
               <Image src="/assets/oin.svg" />
-              {process.env.REACT_APP_SANDRA_STAGE === 'true' && `${process.env.REACT_APP_COMMIT_SHA}`.slice(0, 6)}
+              {process.env.REACT_APP_SANDRA_STAGE === 'true' &&
+                `${process.env.REACT_APP_COMMIT_SHA}`.slice(0, 6)}
             </Header>
           </Segment>
           <Responsive {...responsive.computerAndMore}>
             <Components.UserCard />
           </Responsive>
-          <Menu pointing secondary vertical={!responsive.isMobileOrTablet()} fluid>
+          <Menu
+            pointing
+            secondary
+            vertical={!responsive.isMobileOrTablet()}
+            fluid
+          >
             <Menu.Item
               name="dashboard"
               route="/dashboard"
@@ -61,7 +78,10 @@ class Dashboard extends React.Component<Props, States> {
             <Menu.Item
               name="subscriptions"
               route="/dashboard/subscriptions"
-              active={this.props.routing!.location!.pathname === '/dashboard/subscriptions'}
+              active={
+                this.props.routing!.location!.pathname ===
+                '/dashboard/subscriptions'
+              }
               onClick={this.handleItemClick}
             />
           </Menu>
@@ -74,9 +94,17 @@ class Dashboard extends React.Component<Props, States> {
           />
         </Grid.Column>
         <Grid.Column mobile={16} tablet={16} computer={13}>
+          <base target="_blank" />
           <Switch>
-            <Route path="/dashboard" exact={true} component={DashboardComponents.Messages} />
-            <Route path="/dashboard/subscriptions" component={DashboardComponents.Subscriptions} />
+            <Route
+              path="/dashboard"
+              exact={true}
+              component={DashboardComponents.Messages}
+            />
+            <Route
+              path="/dashboard/subscriptions"
+              component={DashboardComponents.Subscriptions}
+            />
           </Switch>
         </Grid.Column>
       </Grid>

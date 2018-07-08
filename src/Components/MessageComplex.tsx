@@ -125,7 +125,6 @@ class MessageComplexComponent extends React.Component<Props, States> {
             <Button content="关闭" onClick={this.onClose} size="small" />
           </p>
           <Card.Description className="sandra-message-content">
-            <base target="_blank" />
             <p
               dangerouslySetInnerHTML={
                 message && {

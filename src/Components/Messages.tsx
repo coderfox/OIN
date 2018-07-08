@@ -61,6 +61,7 @@ class Messages extends React.Component<Props, States> {
       messages,
       subscriptions,
       done_messages: messages.filter(m => m.readed === true).length,
+      has_more: messages.length > 1,
     });
   }
   loadMore = async () => {
@@ -224,6 +225,7 @@ class Messages extends React.Component<Props, States> {
                           onClick={this.handleMessageClick}
                           onMarkedAsReaded={this.handleMessageReaded}
                           readed={m.readed}
+                          href={m.href}
                         />
                       );
                     }

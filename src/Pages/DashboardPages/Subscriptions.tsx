@@ -85,7 +85,7 @@ class Subscriptions extends React.Component<Props, States> {
   render() {
     const { subscriptions } = this.state;
     return (
-      <div>
+      <React.Fragment>
         <Menu secondary stackable>
           <Menu.Item>
             <span>
@@ -138,7 +138,7 @@ class Subscriptions extends React.Component<Props, States> {
               })
               .map(s => <Components.Subscription key={s.id} id={s.id} />)}
         </Card.Group>
-      </div>
+      </React.Fragment>
     );
   }
 }

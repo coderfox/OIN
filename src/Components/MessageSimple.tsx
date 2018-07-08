@@ -13,6 +13,7 @@ interface Props {
   readed: boolean;
   onClick: (id: string) => void;
   onMarkedAsReaded?: (id: string) => void;
+  href: string | null;
 }
 interface States {
   loading: boolean;
@@ -33,7 +34,7 @@ class MessageSimple extends React.Component<Props, States> {
     }
   }
   render() {
-    const { title, subscription, summary } = this.props;
+    const { title, subscription, summary, href } = this.props;
     return (
       <Card fluid>
         <Card.Content as="a" onClick={this.onClick}>
@@ -55,6 +56,9 @@ class MessageSimple extends React.Component<Props, States> {
             content="查看详情"
             size="mini"
           />
+          {href && (
+            <Button href={href} color="purple" content="查看原文" size="mini" />
+          )}
         </Card.Content>
       </Card>
     );
