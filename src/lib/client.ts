@@ -40,12 +40,14 @@ class ApiClient {
         : { auth }
   private static get = async <T>(
     url: string,
+    // tslint:disable-next-line:no-any
+    query?: any,
     auth?: AxiosBasicCredentials | string,
   ): Promise<T> => {
-    const result = await axios.get(
-      ApiClient.constructApiUrl(url),
-      ApiClient.constructOptions(auth),
-    );
+    const result = await axios.get(ApiClient.constructApiUrl(url), {
+      ...ApiClient.constructOptions(auth),
+      params: query,
+    });
     return result.data;
   }
   private static getWithPagination = async <T>(
@@ -96,8 +98,9 @@ class ApiClient {
   }
 
   constructor(private token: string) {}
-  public get = async <T>(url: string): Promise<T> =>
-    ApiClient.get<T>(url, this.token)
+  // tslint:disable-next-line:no-any
+  public get = async <T>(url: string, query?: any): Promise<T> =>
+    ApiClient.get<T>(url, query, this.token)
   public getWithPagination = async <T>(
     url: string,
     until?: string,
@@ -126,8 +129,8 @@ class ApiClient {
   public getServices = () => this.get<Interfaces.Service[]>('/services');
   public getService = (id: string) =>
     this.get<Interfaces.Service>('/services/'.concat(id))
-  public getSubscriptions = () =>
-    this.get<Interfaces.Subscription[]>('/subscriptions/mine')
+  public getSubscriptions = (query = 'enabled:true') =>
+    this.get<Interfaces.Subscription[]>('/subscriptions/mine', { query })
   public getSubscription = (id: string) =>
     this.get<Interfaces.Subscription>('/subscriptions/'.concat(id))
   public getSession = () => this.get<Interfaces.Session>('/session');
