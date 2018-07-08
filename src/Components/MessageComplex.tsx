@@ -124,12 +124,22 @@ class MessageComplexComponent extends React.Component<Props, States> {
             />
             <Button content="关闭" onClick={this.onClose} size="small" />
           </p>
-          <Card.Description
-            className="sandra-message-content"
-            dangerouslySetInnerHTML={{
-              __html: message && message.content,
-            }}
-          />
+          <Card.Description className="sandra-message-content">
+            <base target="_blank" />
+            <p
+              dangerouslySetInnerHTML={
+                message && {
+                  __html: message.content!,
+                }
+              }
+            />
+            {message &&
+              message.href && (
+                <p>
+                  <a href={message.href}>查看原文</a>
+                </p>
+              )}
+          </Card.Description>
         </Card.Content>
         <Card.Content>
           <Card.Header>订阅「{subscription && subscription.name}」</Card.Header>
