@@ -66,6 +66,7 @@ class ApiClient {
     title: string,
     summary: string,
     content: string,
+    href?: string,
   ) => {
     if (!this.token) {
       throw new ApiError("SERVICE_NOT_REGISTERED");
@@ -75,7 +76,7 @@ class ApiClient {
       {
         token: this.token,
         channel_id: channel,
-        message: { title, summary, content },
+        message: { title, summary, content, href },
       },
     );
   }

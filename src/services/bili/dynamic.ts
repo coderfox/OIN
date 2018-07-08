@@ -36,62 +36,98 @@ const mapCardToContent = (type: number, card: any) => {
     case CARD_TYPES.VIDEO:
       return `
         <p>
-          <a href="https://space.bilibili.com/${card.owner.mid}/#/dynamic">${card.owner.name}</a>
+          <a href="https://space.bilibili.com/${card.owner.mid}/#/dynamic">${
+        card.owner.name
+      }</a>
           ${card.title}
         </p>
-        <p><a href="https://www.bilibili.com/video/av${card.aid}"><img referrerpolicy="no-referrer" src="${card.pic}"></a></p>
+        <p><a href="https://www.bilibili.com/video/av${
+          card.aid
+        }"><img referrerpolicy="no-referrer" src="${card.pic}"></a></p>
         <p>${card.desc.split("\n").join("<br>")}</p>
       `;
     case CARD_TYPES.CLIP:
       return `
         <p>
-          <a href="https://space.bilibili.com/${card.user.uid}/#/dynamic">${card.user.name}</a>
+          <a href="https://space.bilibili.com/${card.user.uid}/#/dynamic">${
+        card.user.name
+      }</a>
           ${card.item.description}
         </p>
-        <p><a href="https://vc.bilibili.com/video/${card.item.id}"><img referrerpolicy="no-referrer" src="${card.item.cover.default}"></a></p>
+        <p><a href="https://vc.bilibili.com/video/${
+          card.item.id
+        }"><img referrerpolicy="no-referrer" src="${
+        card.item.cover.default
+      }"></a></p>
       `;
     case CARD_TYPES.DRAMA:
       return `
-        <p>${card.title} 第 ${card.new_ep.index} 集 - ${card.new_ep.index_title}</p>
-        <p><a href="${card.new_ep.url}"><img referrerpolicy="no-referrer" src="${card.new_ep.cover}"></a></p>
+        <p>${card.title} 第 ${card.new_ep.index} 集 - ${
+        card.new_ep.index_title
+      }</p>
+        <p><a href="${
+          card.new_ep.url
+        }"><img referrerpolicy="no-referrer" src="${card.new_ep.cover}"></a></p>
       `;
     case CARD_TYPES.BANGUMI:
       return `
-        <p>${card.apiSeasonInfo.title} 第 ${card.index} 集 - ${card.index_title}</p>
-        <p><a href="${card.url}"><img referrerpolicy="no-referrer" src="${card.cover}"></a></p>
+        <p>${card.apiSeasonInfo.title} 第 ${card.index} 集 - ${
+        card.index_title
+      }</p>
+        <p><a href="${card.url}"><img referrerpolicy="no-referrer" src="${
+        card.cover
+      }"></a></p>
       `;
     case CARD_TYPES.ARTICLE:
       return `
-        <p><a href="https://www.bilibili.com/read/cv${card.id}"><b>${card.title}</b></a></p>
-        <p><a href="https://space.bilibili.com/${card.author.mid}/#/article">${card.author.name}</a></p>
-        ${card.banner_url ?
-          `<p><img referrerpolicy="no-referrer" src="${card.banner_url}"></p>
-          <p>${card.summary}</p>` :
-          `<p>${card.summary}</p>
+        <p><a href="https://www.bilibili.com/read/cv${card.id}"><b>${
+        card.title
+      }</b></a></p>
+        <p><a href="https://space.bilibili.com/${card.author.mid}/#/article">${
+        card.author.name
+      }</a></p>
+        ${
+          card.banner_url
+            ? `<p><img referrerpolicy="no-referrer" src="${
+                card.banner_url
+              }"></p>
+          <p>${card.summary}</p>`
+            : `<p>${card.summary}</p>
           <p>
-          ${(card.image_urls as string[]).map(image => `<img referrerpolicy="no-referrer" src="${image}">`).join("<br>")}
+          ${(card.image_urls as string[])
+            .map(image => `<img referrerpolicy="no-referrer" src="${image}">`)
+            .join("<br>")}
           </p>`
         }
       `;
     case CARD_TYPES.PIC:
       return `
         <p>
-          <a href="https://space.bilibili.com/${card.user.uid}/#/dynamic">${card.user.name}</a>：
+          <a href="https://space.bilibili.com/${card.user.uid}/#/dynamic">${
+        card.user.name
+      }</a>：
           ${card.item.description}
         </p>
         <p>
-        ${card.item.pictures.map((pic: any) => `<img referrerpolicy="no-referrer" src="${pic.img_src}">`).join("<br>")}
+        ${card.item.pictures
+          .map(
+            (pic: any) =>
+              `<img referrerpolicy="no-referrer" src="${pic.img_src}">`,
+          )
+          .join("<br>")}
         </p>
-        <p><a href="https://h.bilibili.com/${card.item.id}">阅读原文</a></p>
       `;
     case CARD_TYPES.WORD:
       return `
-        <p><a href="https://space.bilibili.com/${card.user.uid}/#/dynamic">${card.user.uname}</a>：${card.item.content}</p>
-        <p><a href="https://t.bilibili.com/${card.item.dynamic_id}">阅读原文</a></p>
+        <p><a href="https://space.bilibili.com/${card.user.uid}/#/dynamic">${
+        card.user.uname
+      }</a>：${card.item.content}</p>
       `;
     case CARD_TYPES.REPOST:
       return `
-        <p><a href="https://space.bilibili.com/${card.user.uid}/#/dynamic">${card.user.uname}</a>：${card.item.content}</p>
+        <p><a href="https://space.bilibili.com/${card.user.uid}/#/dynamic">${
+        card.user.uname
+      }</a>：${card.item.content}</p>
       `;
     default:
       return "<p>不支持的动态内容</p>";
@@ -101,28 +137,35 @@ const mapCardToContent = (type: number, card: any) => {
 
 class BiliDynamic extends Service {
   constructor(store: Store) {
-    super(new ApiClient(
-      "47BF7A7F-78DC-4B07-850F-9969080A0C19",
-      "哔哩哔哩关注动态",
-      "测试中。配置信息请填写 cookies。支持的动态类型：图片、文字、投稿、小视频、番剧、文章。"), store);
+    super(
+      new ApiClient(
+        "47BF7A7F-78DC-4B07-850F-9969080A0C19",
+        "哔哩哔哩关注动态",
+        "测试中。配置信息请填写 cookies。支持的动态类型：图片、文字、投稿、小视频、番剧、文章。",
+      ),
+      store,
+    );
   }
-  public initialize = () =>
-    this.client.register()
+  public initialize = () => this.client.register();
   public mapChannelToMessages = async (config: string) => {
     const cookie = parseCookie(config);
     const uid = cookie.DedeUserID;
     const response = await axios({
       method: "get",
-      url: `https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid=${uid}&type=${CARD_TYPES.ALL}`,
+      url: `https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid=${uid}&type=${
+        CARD_TYPES.ALL
+      }`,
       headers: {
         "User-Agent": SANDRA_CRAWLER_UA,
         "Referer": "https://t.bilibili.com",
         "Origin": "https://t.bilibili.com",
         // tslint:disable-next-line:max-line-length
-        "Cookie": `DedeUserID=${cookie.DedeUserID}; DedeUserID__ckMd5=${cookie.DedeUserID__ckMd5}; SESSDATA=${cookie.SESSDATA}`,
+        "Cookie": `DedeUserID=${cookie.DedeUserID}; DedeUserID__ckMd5=${
+          cookie.DedeUserID__ckMd5
+        }; SESSDATA=${cookie.SESSDATA}`,
       },
       // tslint:disable-next-line:no-shadowed-variable
-      transformResponse: [(data) => data],
+      transformResponse: [data => data],
     });
     const data: any[] = JSONbig.parse(response.data).data.cards;
 
@@ -137,6 +180,7 @@ class BiliDynamic extends Service {
               card.dynamic,
               mapCardToContent(item.desc.type, card),
               new Date(item.desc.timestamp * 1000),
+              `https://www.bilibili.com/video/av${card.aid}`,
             );
           case CARD_TYPES.CLIP:
             return new Message(
@@ -144,6 +188,7 @@ class BiliDynamic extends Service {
               card.item.description,
               mapCardToContent(item.desc.type, card),
               new Date(item.desc.timestamp * 1000),
+              `https://vc.bilibili.com/video/${card.item.id}`,
             );
           case CARD_TYPES.DRAMA:
             return new Message(
@@ -151,6 +196,7 @@ class BiliDynamic extends Service {
               `${card.new_ep.index_title}`,
               mapCardToContent(item.desc.type, card),
               new Date(item.desc.timestamp * 1000),
+              card.new_ep.url,
             );
           case CARD_TYPES.BANGUMI:
             return new Message(
@@ -158,6 +204,7 @@ class BiliDynamic extends Service {
               `${card.index_title}`,
               mapCardToContent(item.desc.type, card),
               new Date(item.desc.timestamp * 1000),
+              card.url,
             );
           case CARD_TYPES.ARTICLE:
             return new Message(
@@ -165,6 +212,7 @@ class BiliDynamic extends Service {
               `${card.title} ${card.summary}`,
               mapCardToContent(item.desc.type, card),
               new Date(item.desc.timestamp * 1000),
+              `https://www.bilibili.com/read/cv${card.id}`,
             );
           case CARD_TYPES.PIC:
             return new Message(
@@ -172,6 +220,7 @@ class BiliDynamic extends Service {
               `${card.item.description}`,
               mapCardToContent(item.desc.type, card),
               new Date(item.desc.timestamp * 1000),
+              `https://h.bilibili.com/${card.item.id}`,
             );
           case CARD_TYPES.WORD:
             return new Message(
@@ -179,13 +228,19 @@ class BiliDynamic extends Service {
               `${card.item.content}`,
               mapCardToContent(item.desc.type, card),
               new Date(item.desc.timestamp * 1000),
+              `https://t.bilibili.com/${card.item.dynamic_id}`,
             );
           case CARD_TYPES.REPOST:
             return new Message(
               `@${item.desc.user_profile.info.uname} 有新动态`,
               `${card.item.content}`,
-              mapCardToContent(item.desc.type, card) + mapCardToContent(item.desc.orig_type, JSONbig.parse(card.origin)),
+              mapCardToContent(item.desc.type, card) +
+                mapCardToContent(
+                  item.desc.orig_type,
+                  JSONbig.parse(card.origin),
+                ),
               new Date(item.desc.timestamp * 1000),
+              `https://t.bilibili.com/${item.desc.dynamic_id}`,
             );
           default:
             return null;

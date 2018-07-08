@@ -31,6 +31,7 @@ export interface CreateMessageRequest {
     title: string;
     summary: string;
     content: string;
+    href?: string;
   };
 }
 export type CreateMessageResponse = true;
