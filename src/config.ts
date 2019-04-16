@@ -8,3 +8,6 @@ export const SANDRA_CRAWLER_UA =
 export const SANDRA_HAZEL_STORE =
   process.env.SANDRA_HAZEL_STORE || "store.json";
 export const LOG_LEVEL = process.env.LOG_LEVEL || "debug";
+export const SANDRA_CRAWLER_INTERVAL = +(
+  process.env.SANDRA_CRAWLER_INTERVAL || 15
+);
