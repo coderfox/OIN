@@ -73,12 +73,10 @@ import {
   Pixiv2Service,
   Pixiv3Service,
 } from "./services/rsshub/pixiv";
-import { SANDRA_CRAWLER_INTERVAL } from "./config";
+import { Ig1Service, Twitter1Service } from "./services/rsshub/instagram";
+// import { SANDRA_CRAWLER_INTERVAL } from "./config";
 
-const delay = () =>
-  new Promise(resolve =>
-    setTimeout(resolve, 1000 * 60 * SANDRA_CRAWLER_INTERVAL),
-  );
+const delay = () => new Promise(resolve => setTimeout(resolve, 1000 * 60 * 2));
 const loop = async (services: Service[], store: Store) => {
   await Promise.all(
     services.map(service =>
@@ -154,6 +152,8 @@ const main = async () => {
   services.push(new Pixiv1Service(store));
   services.push(new Pixiv2Service(store));
   services.push(new Pixiv3Service(store));
+  services.push(new Ig1Service(store));
+  services.push(new Twitter1Service(store));
   await Promise.all(services.map(service => service.initialize()));
   while (true) {
     await loop(services, store);

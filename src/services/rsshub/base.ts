@@ -41,7 +41,7 @@ abstract class RssHubService extends Service {
       item =>
         new Message(
           `${item.title}`,
-          item.description,
+          item.description.replace(/<[^>]*>/g, ""),
           item.description,
           new Date(item.pubdate),
           item.link,
