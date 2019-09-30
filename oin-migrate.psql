@@ -1,0 +1,132 @@
+CREATE TABLE "session" (
+	"token" uuid NOT NULL DEFAULT uuid_generate_v4 (),
+	"permission" character varying (10) ARRAY NOT NULL,
+	"created_at" TIMESTAMP NOT NULL DEFAULT now(),
+	"updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+	"expires_at" TIMESTAMP NOT NULL,
+	"user_id" uuid,
+	CONSTRAINT "PK_232f8e85d7633bd6ddfad421696" PRIMARY KEY ("token")
+);
+
+CREATE TABLE "message" (
+	"id" uuid NOT NULL DEFAULT uuid_generate_v4 (),
+	"readed" boolean NOT NULL,
+	"title" character varying (150) NOT NULL,
+	"summary" text NOT NULL,
+	"content" text NOT NULL,
+	"created_at" TIMESTAMP NOT NULL DEFAULT now(),
+	"updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+	"owner_id" uuid,
+	"subscription_id" uuid,
+	CONSTRAINT "PK_ba01f0a3e0123651915008bc578" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "service" (
+	"id" uuid NOT NULL,
+	"name" character varying (50) NOT NULL,
+	"token" uuid NOT NULL DEFAULT uuid_generate_v4 (),
+	"description" character varying,
+	"created_at" TIMESTAMP NOT NULL DEFAULT now(),
+	"updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+	CONSTRAINT "UQ_c082cd24d53c13d010a11be3dcb" UNIQUE ("token"),
+	CONSTRAINT "PK_85a21558c006647cd76fdce044b" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "subscription" (
+	"id" uuid NOT NULL DEFAULT uuid_generate_v4 (),
+	"config" text NOT NULL,
+	"deleted" boolean NOT NULL,
+	"created_at" TIMESTAMP NOT NULL DEFAULT now(),
+	"updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+	"owner_id" uuid,
+	"service_id" uuid,
+	CONSTRAINT "PK_8c3e00ebd02103caa1174cd5d9d" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "user" (
+	"id" uuid NOT NULL DEFAULT uuid_generate_v4 (),
+	"email" character varying (50) NOT NULL,
+	"password" character varying NOT NULL,
+	"permission" character varying ARRAY NOT NULL,
+	"created_at" TIMESTAMP NOT NULL DEFAULT now(),
+	"updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+	"delete_token" uuid,
+	CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX "email_unique_without_deletion" ON "user" ("email")
+WHERE
+	delete_token IS NULL;
+
+CREATE UNIQUE INDEX "email_unique_with_deletion" ON "user" ("email", "delete_token");
+
+ALTER TABLE "session"
+	ADD CONSTRAINT "FK_30e98e8746699fb9af235410aff" FOREIGN KEY ("user_id") REFERENCES "user" ("id");
+
+ALTER TABLE "message"
+	ADD CONSTRAINT "FK_f9d46fa3f655b6cd6a2a4925663" FOREIGN KEY ("owner_id") REFERENCES "user" ("id");
+
+ALTER TABLE "message"
+	ADD CONSTRAINT "FK_42d48114cb1d2ec951958614cf4" FOREIGN KEY ("subscription_id") REFERENCES "subscription" ("id");
+
+ALTER TABLE "subscription"
+	ADD CONSTRAINT "FK_6fc397c4a3db7320076e7aa1605" FOREIGN KEY ("owner_id") REFERENCES "user" ("id");
+
+ALTER TABLE "subscription"
+	ADD CONSTRAINT "FK_79f599f6ffb8c8e77c031fb2ed4" FOREIGN KEY ("service_id") REFERENCES "service" ("id");
+
+ALTER TABLE "message" ALTER COLUMN "title" TYPE text;
+
+ALTER TABLE "subscription"
+	ADD "name" character varying;
+
+ALTER TABLE "message"
+	ADD "href" character varying;
+
+ALTER TABLE "user"
+	ADD "nickname" character varying;
+
+UPDATE
+	"subscription"
+SET
+	"name" = "id";
+
+UPDATE
+	"user"
+SET
+	"nickname" = "email";
+
+ALTER TABLE "subscription" ALTER COLUMN "name" SET NOT NULL;
+
+ALTER TABLE "user" ALTER COLUMN "nickname" SET NOT NULL;
+
+ALTER TABLE "message" ALTER COLUMN "created_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE "message" ALTER COLUMN "updated_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE "service" ALTER COLUMN "created_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE "service" ALTER COLUMN "updated_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE "session" ALTER COLUMN "created_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE "session" ALTER COLUMN "updated_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE "session" ALTER COLUMN "expires_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE "subscription" ALTER COLUMN "created_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE "subscription" ALTER COLUMN "updated_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE "user" ALTER COLUMN "created_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE "user" ALTER COLUMN "updated_at" TYPE TIMESTAMP WITH TIME ZONE;
+
+CREATE TABLE "subscription_event" (
+	"id" uuid NOT NULL DEFAULT uuid_generate_v4 (),
+	"status" boolean NOT NULL,
+	"message" character varying NOT NULL,
+	"updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "subscription_id" uuid, CONSTRAINT "PK_878b79ef455c948db7f94615990" PRIMARY KEY ("id"));
+
+ALTER TABLE "subscription_event"
+	ADD CONSTRAINT "FK_9aefe091450823da119950f3290" FOREIGN KEY ("subscription_id") REFERENCES "subscription" ("id");
