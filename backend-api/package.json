@@ -1,0 +1,76 @@
+{
+  "name": "sandra.server.api.rest",
+  "private": true,
+  "version": "0.3.0",
+  "main": "dist/entry",
+  "dependencies": {
+    "@nestjs/common": "^5.0.0",
+    "@nestjs/core": "^5.0.0",
+    "@nestjs/testing": "^5.0.0",
+    "bcrypt": "^2.0.1",
+    "class-transformer": "^0.1.9",
+    "class-validator": "^0.8.1",
+    "dotenv": "^5.0.1",
+    "ms": "^2.0.0",
+    "pg": "^7.4.0",
+    "pino": "^4.10.2",
+    "raven": "^2.6.1",
+    "reflect-metadata": "^0.1.10",
+    "routing-controllers": "^0.7.6",
+    "rxjs": "^6.1.0",
+    "rxjs-compat": "^6.1.0",
+    "sendgrid": "^5.1.1",
+    "typeorm": "^0.2.5",
+    "typescript": "^2.6.1",
+    "uuid": "^3.1.0",
+    "validator": "^10.2.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^2.0.0",
+    "@types/dotenv": "^4.0.3",
+    "@types/koa-bodyparser": "^4.2.0",
+    "@types/koa-json": "^2.0.18",
+    "@types/koa-mount": "^3.0.1",
+    "@types/koa-router": "^7.0.28",
+    "@types/ms": "^0.7.29",
+    "@types/node": "^10.0.8",
+    "@types/pino": "^4.7.1",
+    "@types/raven": "^2.5.1",
+    "@types/uuid": "^3.0.0",
+    "@types/validator": "^9.4.1",
+    "ava": "^0.25.0",
+    "axios": "^0.18.0",
+    "axiosist": "^0.1.0",
+    "coveralls": "^3.0.1",
+    "nyc": "^11.7.3",
+    "supervisor": "^0.12.0",
+    "tslint": "^5.10.0",
+    "tslint-consistent-codestyle": "^1.13.0",
+    "tslint-eslint-rules": "^5.2.0",
+    "tslint-language-service": "^0.9.8"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:bin": "pkg -o sandra dist/entry.js",
+    "pretest": "tsc",
+    "lint": "tslint -p .",
+    "test": "nyc -r html ava",
+    "test-cov": "nyc -r lcovonly -r html ava",
+    "start": "node dist/entry",
+    "start:dev": "supervisor -i coverage dist/entry"
+  },
+  "ava": {
+    "files": [
+      "dist/**/*.test.js",
+      "dist/tests/**/*.js",
+      "!dist/tests/helpers/*.js"
+    ]
+  },
+  "bin": "dist/entry.js",
+  "pkg": {
+    "scripts": [
+      "dist/**/*.js"
+    ],
+    "assets": []
+  }
+}
