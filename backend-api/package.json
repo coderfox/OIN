@@ -39,7 +39,7 @@
     "@types/uuid": "^3.0.0",
     "@types/validator": "^9.4.1",
     "ava": "^0.25.0",
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "axiosist": "^0.1.0",
     "coveralls": "^3.0.1",
     "nyc": "^11.7.3",
