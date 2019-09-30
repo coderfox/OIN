@@ -1,0 +1,54 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+cache:
+  paths:
+    - node_modules
+
+before_script:
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
+variables:
+  SENTRY_DSN: https://c9040f99c1c44deab891aa2b58d42a95@sentry.io/1216029
+  API_ROOT: https://api.oin.app/rest
+
+build-master:
+  stage: build
+  script:
+    - >
+      docker build 
+      --pull -t "$CI_REGISTRY_IMAGE"
+      --build-arg SENTRY_DSN=$SENTRY_DSN
+      --build-arg API_ROOT=$API_ROOT
+      --build-arg COMMIT_SHA=$CI_COMMIT_SHA .
+    - docker push "$CI_REGISTRY_IMAGE"
+  only:
+    - master
+  tags:
+    - shell
+
+build:
+  stage: build
+  script:
+    - >
+      docker build 
+      --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+      --build-arg SENTRY_DSN=$SENTRY_DSN
+      --build-arg API_ROOT=$API_ROOT
+      --build-arg COMMIT_SHA=$CI_COMMIT_SHA .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  except:
+    - master
+  tags:
+    - shell
+
+plain_make:
+  stage: build
+  image: node:alpine
+  before_script:
+    - yarn
+  script:
+    - node_modules/.bin/tsc
+    - node_modules/.bin/tslint -p .
