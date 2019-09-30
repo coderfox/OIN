@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "private": true,
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "color-hash": "^1.0.3",
     "javascript-time-ago": "^1.0.31",
     "localforage": "^1.7.2",
